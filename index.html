@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Project Status Form</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Project Status Update</h1>
+    <form id="statusForm">
+      <label>Project Name</label>
+      <input type="text" id="project" required>
+
+      <label>Status</label>
+      <select id="status" required>
+        <option value="">--Select--</option>
+        <option>Not Started</option>
+        <option>In Progress</option>
+        <option>Blocked</option>
+        <option>Complete</option>
+      </select>
+
+      <label>Progress</label>
+      <textarea id="progress" rows="3" required></textarea>
+
+      <label>Blockers</label>
+      <textarea id="blockers" rows="3"></textarea>
+
+      <label>Next Steps</label>
+      <textarea id="nextSteps" rows="3"></textarea>
+
+      <button type="submit">Generate Summary</button>
+    </form>
+
+    <h2>Formatted Summary</h2>
+    <pre id="output"></pre>
+    <button id="copyBtn">Copy to Clipboard</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
