@@ -1,43 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Project Status Form</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Downtime</title>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"], 
+        textarea, 
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            box-sizing: border-box; /* Ensures padding doesn't break width */
+            font-size: 1rem;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            ring: 2px solid #c7d2fe;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .radio-option input {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+        }
+
+        button {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #4338ca;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Project Status Update</h1>
-    <form id="statusForm">
-      <label>Project Name</label>
-      <input type="text" id="project" required>
 
-      <label>Status</label>
-      <select id="status" required>
-        <option value="">--Select--</option>
-        <option>Not Started</option>
-        <option>In Progress</option>
-        <option>Blocked</option>
-        <option>Complete</option>
-      </select>
+<div class="container">
+    <h1>Downtime</h1>
+    
+    <form action="#" method="POST">
+        
+        <div class="form-group">
+            <label for="name">Full Name (Short Answer)</label>
+            <input type="text" id="name" name="name" placeholder="Enter your name" required>
+        </div>
 
-      <label>Progress</label>
-      <textarea id="progress" rows="3" required></textarea>
+        <div class="form-group">
+            <label for="description">Activity Details (Paragraph)</label>
+            <textarea id="description" name="description" placeholder="Tell us more about your downtime..."></textarea>
+        </div>
 
-      <label>Blockers</label>
-      <textarea id="blockers" rows="3"></textarea>
+        <div class="form-group">
+            <label for="category">Reason for Downtime (Dropdown)</label>
+            <select id="category" name="category">
+                <option value="" disabled selected>Select an option</option>
+                <option value="maintenance">Scheduled Maintenance</option>
+                <option value="rest">Personal Rest</option>
+                <option value="technical">Technical Issue</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
 
-      <label>Next Steps</label>
-      <textarea id="nextSteps" rows="3"></textarea>
+        <div class="form-group">
+            <label>Priority Level (Multiple Choice)</label>
+            <div class="radio-group">
+                <label class="radio-option">
+                    <input type="radio" name="priority" value="low"> Low
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="priority" value="medium"> Medium
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="priority" value="high"> High
+                </label>
+            </div>
+        </div>
 
-      <button type="submit">Generate Summary</button>
+        <button type="submit">Submit Entry</button>
+
     </form>
+</div>
 
-    <h2>Formatted Summary</h2>
-    <pre id="output"></pre>
-    <button id="copyBtn">Copy to Clipboard</button>
-  </div>
-
-  <script src="script.js"></script>
 </body>
 </html>
