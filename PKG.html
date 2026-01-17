@@ -7,6 +7,7 @@
     <style>
         :root {
             --primary: #2563eb;
+            --secondary: #475569;
             --bg: #f1f5f9;
             --card: #ffffff;
             --text: #0f172a;
@@ -34,6 +35,7 @@
         }
 
         h1 { text-align: center; color: var(--primary); margin: 0 0 25px 0; font-size: 1.8rem; }
+        h2 { text-align: center; color: var(--secondary); margin: 0 0 25px 0; font-size: 1.8rem;}
         h3 { border-left: 4px solid var(--primary); padding-left: 10px; margin: 25px 0 15px 0; font-size: 1.1rem; }
 
         .form-group { margin-bottom: 18px; }
@@ -122,8 +124,8 @@
 <body>
 
 <div class="container">
-    <h1>Packaging</h1>
-    <h2>PKG Major Downtime Report</h2>
+    <h1>Major Downtime Report</h1>
+    <h2>Packaging</h2>
     
     <form id="downtimeForm">
         <div class="form-group">
@@ -141,13 +143,10 @@
             <div class="block-options" id="equipmentGroup">
                 <label><input type="radio" name="equipment" value="1-1" required onchange="filterMachines()"> 1-1</label>
                 <label><input type="radio" name="equipment" value="1-2" onchange="filterMachines()"> 1-2</label>
-                <label><input type="radio" name="equipment" value="1-3" onchange="filterMachines()"> 1-3</label>
-                <label><input type="radio" name="equipment" value="1-4" onchange="filterMachines()"> 1-4</label>
-                <label><input type="radio" name="equipment" value="1-5" onchange="filterMachines()"> 1-5</label>
-                <label><input type="radio" name="equipment" value="1-H" onchange="filterMachines()"> 1-H</label>
-                <label><input type="radio" name="equipment" value="2-1" onchange="filterMachines()"> 2-1</label>
-                <label><input type="radio" name="equipment" value="2-5" onchange="filterMachines()"> 1-3</label>
-                <label><input type="radio" name="equipment" value="3-1" onchange="filterMachines()"> 1-3</label>
+                <label><input type="radio" name="equipment" value="1-3" onchange="filterMachines()"> 2-1</label>
+                <label><input type="radio" name="equipment" value="1-4" onchange="filterMachines()"> 2-2</label>
+                <label><input type="radio" name="equipment" value="1-5" onchange="filterMachines()"> 3-1</label>
+                <label><input type="radio" name="equipment" value="1-H" onchange="filterMachines()"> 3-2</label>
             </div>
         </div>
 
@@ -156,12 +155,10 @@
             <label>Machine:</label>
             <select id="machine" required onchange="updateUnits()">
                 <option value="" disabled selected>Select Machine</option>
-                <option value="ESP">ESP</option>
-                <option value="Lamination">LAMI</option>
-                <option value="D-STK">D-STK</option>
-                <option value="HalfCell/Taping">HC/TAPING</option>
-                <option value="Inspection">INSP</option>
-                <option value="Unloader">UNL</option>
+                <option value="Tab Welder">TABWLDR</option>
+                <option value="Pouch Folding">POUCH</option>
+                <option value="EL Filling">EL-FILLING</option>
+                <option value="Loader/Unloader">LDR/UNLDR</option>
             </select>
         </div>
 
@@ -174,7 +171,7 @@
 
         <div class="form-group">
             <label>Assembly:</label>
-            <input type="text" id="assembly" placeholder="e.g. Center/Upper Electrode Cutter">
+            <input type="text" id="assembly" placeholder="e.g. Forming Press/Short Checker">
         </div>
 
         <div class="form-group">
