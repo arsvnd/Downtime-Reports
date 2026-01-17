@@ -1,1 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PKG Major Downtime Report</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text: #0f172a;
+            --border: #cbd5e1;
+            --success: #059669;
+        }
 
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 15px;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 { text-align: center; color: var(--primary); margin: 0 0 25px 0; font-size: 1.8rem; }
+        h3 { border-left: 4px solid var(--primary); padding-left: 10px; margin: 25px 0 15px 0; font-size: 1.1rem; }
+
+        .form-group { margin-bottom: 18px; }
+        label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #475569; }
+
+        .block-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 8px;
+        }
+
+        .block-options label {
+            border: 1px solid var(--border);
+            padding: 12px 5px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            background: white;
+            transition: all 0.2s;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .block-options input[type="radio"] { display: none; }
+        .block-options label:has(input:checked) {
+            border-color: var(--primary);
+            background-color: #eff6ff;
+            color: var(--primary);
+            box-shadow: inset 0 0 0 1px var(--primary);
+        }
+
+        input[type="text"], input[type="date"], input[type="time"], select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            background: #fcfcfc;
+        }
+
+        textarea { min-height: 90px; resize: vertical; }
+        .hidden { display: none; }
+        
+        .btn-submit {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .btn-copy {
+            background: var(--success);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        #summaryContainer {
+            margin-top: 30px;
+            display: none;
+        }
+
+        #summaryOutput {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', Courier, monospace;
+            border: 1px solid var(--border);
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>PKG Major Downtime Report</h1>
+    
+    <form id="downtimeForm">
+        <div class="form-group">
+            <label>1. Stop Type:</label>
+            <div class="block-options">
+                <label><input type="radio" name="stopType" value="BM" required> BM</label>
+                <label><input type="radio" name="stopType" value="PD"> PD</label>
+                <label><input type="radio" name="stopType" value="Other" id="otherToggle"> Other</label>
+            </div>
+            <input type="text" id="otherStopType" class="hidden" placeholder="Specify other stop type..." style="margin-top:10px;">
+        </div>
+
+        <div class="form-group">
+            <label>2. Equipment</label>
+            <div class="block-options" id="equipmentGroup">
+                <label><input type="radio" name="equipment" value="1-1" required onchange="filterMachines()"> 1-1</label>
+                <label><input type="radio" name="equipment" value="1-2" onchange="filterMachines()"> 1-2</label>
+                <label><input type="radio" name="equipment" value="1-3" onchange="filterMachines()"> 1-3</label>
+                <label><input type="radio" name="equipment" value="1-4" onchange="filterMachines()"> 1-4</label>
+                <label><input type="radio" name="equipment" value="1-5" onchange="filterMachines()"> 1-5</label>
+                <label><input type="radio" name="equipment" value="1-H" onchange="filterMachines()"> 1-H</label>
+                <label><input type="radio" name="equipment" value="2-1" onchange="filterMachines()"> 2-1</label>
+                <label><input type="radio" name="equipment" value="2-5" onchange="filterMachines()"> 1-3</label>
+                <label><input type="radio" name="equipment" value="3-1" onchange="filterMachines()"> 1-3</label>
+            </div>
+        </div>
+
+        <label>3. Machine Area</label>
+        <div class="form-group">
+            <label>Machine:</label>
+            <select id="machine" required onchange="updateUnits()">
+                <option value="" disabled selected>Select Machine</option>
+                <option value="ESP">ESP</option>
+                <option value="Lamination">LAMI</option>
+                <option value="D-STK">D-STK</option>
+                <option value="HalfCell/Taping">HC/TAPING</option>
+                <option value="Inspection">INSP</option>
+                <option value="Unloader">UNL</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Unit:</label>
+            <select id="unit">
+                <option value="-">-</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Assembly:</label>
+            <input type="text" id="assembly" placeholder="e.g. Center/Upper Electrode Cutter">
+        </div>
+
+        <div class="form-group">
+            <label>Date:</label>
+            <input type="date" id="dateInput">
+        </div>
+
+        <div class="form-group">
+            <label>Start Time:</label>
+            <input type="time" id="startTime">
+        </div>
+
+        <div class="form-group">
+            <label>Issue Resolved?</label>
+            <div class="block-options">
+                <label><input type="radio" name="resolved" value="Yes" id="resYes"> Yes</label>
+                <label><input type="radio" name="resolved" value="No" checked> No</label>
+            </div>
+        </div>
+
+        <div class="form-group hidden" id="endTimeContainer">
+            <label>End Time:</label>
+            <input type="time" id="endTime">
+        </div>
+
+        <h3>Details</h3>
+        <div class="form-group">
+            <label>5. Phenomenon:</label>
+            <textarea id="phenomenon" placeholder="Describe what happened..."></textarea>
+        </div>
+        <div class="form-group">
+            <label>6. Root Cause:</label>
+            <textarea id="rootCause" placeholder="What caused the issue?"></textarea>
+        </div>
+        <div class="form-group">
+            <label>7. Action Taken:</label>
+            <textarea id="actionTaken" placeholder="How was the issue fixed?"></textarea>
+        </div>
+
+        <button type="button" class="btn-submit" onclick="generateSummary()">Generate Summary</button>
+    </form>
+
+    <div id="summaryContainer">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label>Generated Summary:</label>
+            <button class="btn-copy" onclick="copyToClipboard()">Copy Summary</button>
+        </div>
+        <div id="summaryOutput"></div>
+    </div>
+</div>
+
+<script>
+    // --- Filter Machines based on Equipment ---
+    function filterMachines() {
+        const equipment = document.querySelector('input[name="equipment"]:checked')?.value;
+        const machineSelect = document.getElementById('machine');
+        const options = machineSelect.options;
+
+        for (let i = 1; i < options.length; i++) {
+            const val = options[i].value;
+            if (equipment === '1-H') {
+                // Only show ESP, Lamination (LAMI), and Unloader (UNL)
+                if (val === 'ESP' || val === 'Lamination' || val === 'Unloader') {
+                    options[i].style.display = 'block';
+                } else {
+                    options[i].style.display = 'none';
+                }
+            } else {
+                // Show everything
+                options[i].style.display = 'block';
+            }
+        }
+        // Reset Machine and Unit if the current selection is now hidden
+        if (machineSelect.selectedOptions[0].style.display === 'none') {
+            machineSelect.selectedIndex = 0;
+            updateUnits();
+        }
+    }
+
+    // --- Dynamic Unit Logic ---
+    function updateUnits() {
+        const process = document.getElementById('machine').value;
+        const unitSelect = document.getElementById('unit');
+        let options = ['-'];
+
+        if (process === 'ESP') {
+            options = ['  ', 'Cathode Unwinder', 'Anode Unwinder', 'ATR', 'Crane'];
+        } else if (process === 'Lamination') {
+            options = [' ', 'Separator/PET Unwinder', 'Electrode/Separator Combiner', 'Heating/Laminator', 'Cell Final Cutter', 'Cell Tracking System', 'Cell Inspector', 'Cell Unloader'];
+        } else if (process === 'D-STK') {
+            options = [' ', 'Cell Loading C/V[1]', 'Cell Loading C/V[2]', 'Stacking Table[01]', 'Stacking Table[02]', 'Stacking Table[03]', 'Stacked Cell Transfer'];
+        } else if (process === 'HalfCell/Taping') {
+            options = [' ', 'Half Cell Loading', 'HalfCell Stack', 'LMS', 'Taping[01]', 'Taping[02]'];
+        } else if (process === 'Inspection') {
+            options = [' ', 'Taped Cell Vision', 'Taped Cell Rotate', 'Taped Cell  ', 'Cell Tracking System', 'Taped Cell Transfer'];
+        } else if (process === 'Unloader') {
+            options = [' ', 'Taped Cell Unloader'];
+        }
+
+        unitSelect.innerHTML = '';
+        options.forEach(opt => {
+            const el = document.createElement('option');
+            el.textContent = opt;
+            el.value = opt;
+            unitSelect.appendChild(el);
+        });
+    }
+
+    // --- Helper: Format Date to "15 January 2026" ---
+    function formatDate(dateStr) {
+        if (!dateStr) return "";
+        const date = new Date(dateStr + 'T12:00:00'); 
+        const day = date.getDate();
+        const month = date.toLocaleString('default', { month: 'long' });
+        const year = date.getFullYear();
+        return `${day} ${month} ${year}`;
+    }
+
+    // --- Helper: Format Time to "hh:mm PM" ---
+    function formatTime(timeStr) {
+        if (!timeStr) return "";
+        let [hours, minutes] = timeStr.split(':');
+        let ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12; 
+        return `${hours.toString().padStart(2, '0')}:${minutes} ${ampm}`;
+    }
+
+    // Initialization
+    const now = new Date();
+    document.getElementById('dateInput').value = now.toISOString().split('T')[0];
+    const currentHHMM = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+    document.getElementById('startTime').value = currentHHMM;
+
+    document.getElementsByName('stopType').forEach(el => {
+        el.addEventListener('change', () => {
+            document.getElementById('otherStopType').classList.toggle('hidden', el.value !== 'Other');
+        });
+    });
+
+    document.getElementsByName('resolved').forEach(el => {
+        el.addEventListener('change', () => {
+            document.getElementById('endTimeContainer').classList.toggle('hidden', el.value !== 'Yes');
+        });
+    });
+
+    function generateSummary() {
+        const stopTypeVal = document.querySelector('input[name="stopType"]:checked')?.value;
+        const stopType = stopTypeVal === 'Other' ? document.getElementById('otherStopType').value : stopTypeVal;
+        
+        const equipment = document.querySelector('input[name="equipment"]:checked')?.value || "";
+        const machine = document.getElementById('machine').value;
+        const unit = document.getElementById('unit').value;
+        const assembly = document.getElementById('assembly').value;
+        
+        const dateRaw = document.getElementById('dateInput').value;
+        const startRaw = document.getElementById('startTime').value;
+        const endRaw = document.getElementById('endTime').value;
+        const resolved = document.querySelector('input[name="resolved"]:checked').value;
+
+        const summary = `1. Stop Type:
+${stopType}
+
+2. Equipment:
+${equipment}
+
+3. Machine Area:
+    Machine: ${machine}
+    Unit: ${unit}
+    Assembly: ${assembly}
+    Date: ${formatDate(dateRaw)}
+    Start Time: ${formatTime(startRaw)}
+    End Time: ${resolved === 'Yes' ? formatTime(endRaw) : "-"}
+    Issue Resolved: ${resolved === 'Yes' ? "Yes ✅" : "No"}
+
+5. Phenomenon:
+${document.getElementById('phenomenon').value}
+
+6. Root Cause:
+${document.getElementById('rootCause').value}
+
+7. Action taken:
+${document.getElementById('actionTaken').value}`;
+
+        const container = document.getElementById('summaryContainer');
+        const output = document.getElementById('summaryOutput');
+        output.innerText = summary;
+        container.style.display = 'block';
+        container.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function copyToClipboard() {
+        const text = document.getElementById('summaryOutput').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.querySelector('.btn-copy');
+            const originalText = btn.innerText;
+            btn.innerText = "✓ Copied!";
+            btn.style.background = "#047857";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = "var(--success)";
+            }, 2000);
+        });
+    }
+</script>
+
+</body>
+</html>
