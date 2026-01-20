@@ -226,7 +226,7 @@
 </div>
 
 <script>
-    // --- Filter Machines based on Equipment ---
+    //Filter Machines based on Equipment
     function filterMachines() {
         const equipment = document.querySelector('input[name="equipment"]:checked')?.value;
         const machineSelect = document.getElementById('machine');
@@ -253,7 +253,7 @@
         }
     }
 
-    // --- Dynamic Unit Logic ---
+    // Dynamic Unit Logic
     function updateUnits() {
         const process = document.getElementById('machine').value;
         const unitSelect = document.getElementById('unit');
@@ -282,7 +282,7 @@
         });
     }
 
-    // --- Helper: Format Date to "15 January 2026" ---
+    // Format Date to "15 January 2026"
     function formatDate(dateStr) {
         if (!dateStr) return "";
         const date = new Date(dateStr + 'T12:00:00'); 
@@ -292,7 +292,6 @@
         return `${day} ${month} ${year}`;
     }
 
-    // --- Helper: Format Time to "hh:mm PM" ---
     function formatTime(timeStr) {
         if (!timeStr) return "";
         let [hours, minutes] = timeStr.split(':');
