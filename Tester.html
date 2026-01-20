@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PKG Major Downtime Report</title>
     <style>
         :root {
             --primary: #2563eb;
             --bg: #f1f5f9;
             --card: #ffffff;
-            --card-complete: #f0fdf4; 
+            --card-done: #f1f5f9; /* Subtle "Standard" completed color */
             --text: #0f172a;
             --border: #cbd5e1;
             --success: #059669;
@@ -21,32 +21,33 @@
             color: var(--text);
             padding: 15px;
             margin: 0;
-            padding-bottom: 100px; /* Space for sticky button */
+            display: flex;
+            justify-content: center;
         }
 
         .container {
             width: 100%;
             max-width: 600px;
-            margin: 0 auto;
+            background: var(--card);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
         }
 
         h1 { text-align: center; color: var(--primary); margin: 0 0 25px 0; font-size: 1.8rem; }
         h3 { border-left: 4px solid var(--primary); padding-left: 10px; margin: 25px 0 15px 0; font-size: 1.1rem; }
 
-        /* Step/Section Cards */
+        /* Section Carding */
         .section-card {
-            background: var(--card);
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            border-radius: 10px;
             margin-bottom: 20px;
+            border: 1px solid transparent;
             transition: all 0.3s ease;
-            border: 2px solid transparent;
         }
-
         .section-card.completed {
-            background: var(--card-complete);
-            border-color: var(--success);
+            background-color: var(--card-done);
+            border-color: var(--border);
         }
 
         .form-group { margin-bottom: 18px; position: relative; }
@@ -83,51 +84,49 @@
             padding: 12px;
             border: 1px solid var(--border);
             border-radius: 8px;
-            font-size: 16px; /* Mobile friendly size */
+            font-size: 16px; /* Mobile standard to prevent zoom */
             box-sizing: border-box;
             background: #fcfcfc;
         }
 
-        textarea { min-height: 90px; resize: vertical; }
-        
-        /* Mic/Speech UI */
-        .textarea-wrapper { position: relative; }
+        /* End Time Group */
+        .time-group { display: flex; gap: 8px; }
+        .btn-now {
+            background: #64748b;
+            color: white;
+            border: none;
+            padding: 0 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        /* Mic Button Styling */
+        .textarea-container { position: relative; }
         .mic-btn {
             position: absolute;
             right: 8px;
             top: 8px;
             background: #f1f5f9;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 5px 8px;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
             cursor: pointer;
-            z-index: 5;
-        }
-        .mic-btn.recording { background: #fee2e2; border-color: #ef4444; animation: pulse 1.5s infinite; }
-
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-
-        /* Time Fill */
-        .time-group { display: flex; gap: 5px; }
-        .btn-now { background: #64748b; color: white; border: none; border-radius: 8px; padding: 0 10px; cursor: pointer; font-size: 0.7rem; font-weight: bold; }
-
-        /* Sticky Button Container */
-        .sticky-action {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: white;
-            padding: 15px;
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+            font-size: 1rem;
             display: flex;
+            align-items: center;
             justify-content: center;
-            z-index: 1000;
         }
+        .mic-btn.active { background: #fee2e2; color: #ef4444; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.5; } }
 
+        textarea { min-height: 90px; resize: vertical; padding-right: 40px; }
+        .hidden { display: none; }
+        
         .btn-submit {
             width: 100%;
-            max-width: 600px;
             background: var(--primary);
             color: white;
             padding: 16px;
@@ -136,9 +135,9 @@
             font-size: 1.1rem;
             font-weight: bold;
             cursor: pointer;
+            margin-top: 20px;
         }
 
-        /* Summary Section (Intact Original Format) */
         .btn-copy {
             background: var(--success);
             color: white;
@@ -151,7 +150,6 @@
         }
 
         #summaryContainer { margin-top: 30px; display: none; }
-
         #summaryOutput {
             background: #f8fafc;
             padding: 20px;
@@ -162,8 +160,6 @@
             font-size: 0.95rem;
             line-height: 1.4;
         }
-
-        .hidden { display: none; }
     </style>
 </head>
 <body>
@@ -172,7 +168,7 @@
     <h1>PKG Major Downtime Report</h1>
     
     <form id="downtimeForm">
-        <div class="section-card" id="sec1">
+        <div class="section-card" id="card1">
             <div class="form-group">
                 <label>1. Stop Type:</label>
                 <div class="block-options">
@@ -196,7 +192,7 @@
             </div>
         </div>
 
-        <div class="section-card" id="sec2">
+        <div class="section-card" id="card2">
             <label>3. Machine Area</label>
             <div class="form-group">
                 <label>Machine:</label>
@@ -212,7 +208,7 @@
             <div class="form-group">
                 <label>Unit:</label>
                 <select id="unit">
-                    <option value="" disabled selected>Select a Unit</option>
+                    <option value="" disabled selected>Select Unit</option>
                 </select>
             </div>
 
@@ -222,7 +218,7 @@
             </div>
         </div>
 
-        <div class="section-card" id="sec3">
+        <div class="section-card" id="card3">
             <div class="form-group">
                 <label>Date:</label>
                 <input type="date" id="dateInput">
@@ -230,10 +226,7 @@
 
             <div class="form-group">
                 <label>Start Time:</label>
-                <div class="time-group">
-                    <input type="time" id="startTime">
-                    <button type="button" class="btn-now" onclick="setTime('startTime')">NOW</button>
-                </div>
+                <input type="time" id="startTime">
             </div>
 
             <div class="form-group">
@@ -248,39 +241,37 @@
                 <label>End Time:</label>
                 <div class="time-group">
                     <input type="time" id="endTime">
-                    <button type="button" class="btn-now" onclick="setTime('endTime')">NOW</button>
+                    <button type="button" class="btn-now" onclick="setNow('endTime')">NOW</button>
                 </div>
             </div>
         </div>
 
-        <div class="section-card" id="sec4">
-            <h3>Details</h3>
+        <h3>Details</h3>
+        <div class="section-card" id="card4">
             <div class="form-group">
                 <label>5. Phenomenon:</label>
-                <div class="textarea-wrapper">
+                <div class="textarea-container">
                     <textarea id="phenomenon" placeholder="Describe what happened..."></textarea>
-                    <button type="button" class="mic-btn" onclick="runSpeech('phenomenon')">🎤 Speech</button>
+                    <button type="button" class="mic-btn" onclick="startDictation('phenomenon')">🎤</button>
                 </div>
             </div>
             <div class="form-group">
                 <label>6. Root Cause:</label>
-                <div class="textarea-wrapper">
+                <div class="textarea-container">
                     <textarea id="rootCause" placeholder="What caused the issue?"></textarea>
-                    <button type="button" class="mic-btn" onclick="runSpeech('rootCause')">🎤 Speech</button>
+                    <button type="button" class="mic-btn" onclick="startDictation('rootCause')">🎤</button>
                 </div>
             </div>
             <div class="form-group">
                 <label>7. Action Taken:</label>
-                <div class="textarea-wrapper">
+                <div class="textarea-container">
                     <textarea id="actionTaken" placeholder="How was the issue fixed?"></textarea>
-                    <button type="button" class="mic-btn" onclick="runSpeech('actionTaken')">🎤 Speech</button>
+                    <button type="button" class="mic-btn" onclick="startDictation('actionTaken')">🎤</button>
                 </div>
             </div>
         </div>
 
-        <div class="sticky-action">
-            <button type="button" class="btn-submit" onclick="generateSummary()">Generate Summary</button>
-        </div>
+        <button type="button" class="btn-submit" onclick="generateSummary()">Generate Summary</button>
     </form>
 
     <div id="summaryContainer">
@@ -293,69 +284,88 @@
 </div>
 
 <script>
-    // --- Initial Setups ---
+    // Initialization
     const now = new Date();
     document.getElementById('dateInput').value = now.toISOString().split('T')[0];
-    setTime('startTime');
+    setNow('startTime');
 
-    function setTime(id) {
+    function setNow(id) {
         const d = new Date();
-        document.getElementById(id).value = d.getHours().toString().padStart(2, '0') + ":" + d.getMinutes().toString().padStart(2, '0');
+        const time = d.getHours().toString().padStart(2, '0') + ":" + d.getMinutes().toString().padStart(2, '0');
+        document.getElementById(id).value = time;
     }
 
-    // --- Dynamic Units ---
+    // Dynamic Unit Logic
     function updateUnits() {
         const process = document.getElementById('machine').value;
         const unitSelect = document.getElementById('unit');
         let options = [];
 
-        if (process === 'Tab Welder') options = ['Loader', 'Tab Welder (+)', 'Tab Welder (-)', 'Short Checker', 'LMS'];
-        else if (process === 'Pouch Forming') options = ['Al Loader', 'Al Forming', 'Pouch Vision'];
-        else if (process === 'Cell Assembly') options = ['Cell Insert', 'Pouch Folding', 'Sealer[1]', 'Sealer[2]'];
-        else if (process === 'EL Filling') options = ['Cell Loader', 'BCR Printing', 'Pre-Weight', 'EL-Filling/V-sealing', 'Post-Weight', 'IR Checker', 'Cell Unloader'];
+        if (process === 'Tab Welder') {
+            options = ['Loader', 'Tab Welder (+)', 'Tab Welder (-)', 'Short Checker', 'LMS'];
+        } else if (process === 'Pouch Forming') {
+            options = ['Al Loader', 'Al Forming', 'Pouch Vision'];
+        } else if (process === 'Cell Assembly') {
+            options = ['Cell Insert', 'Pouch Folding', 'Sealer[1]', 'Sealer[2]'];
+        } else if (process === 'EL Filling') {
+            options = ['Cell Loader', 'BCR Printing', 'Pre-Weight', 'EL-Filling/V-sealing', 'Post-Weight', 'IR Checker', 'Cell Unloader'];
+        } 
 
-        unitSelect.innerHTML = '<option value="" disabled selected>Select a Unit</option>';
+        unitSelect.innerHTML = '<option value="" disabled selected>Select Unit</option>';
         options.forEach(opt => {
             const el = document.createElement('option');
-            el.textContent = el.value = opt;
+            el.textContent = opt;
+            el.value = opt;
             unitSelect.appendChild(el);
         });
     }
 
-    // --- Completion Tracker ---
-    function updateProgress() {
-        ['sec1', 'sec2', 'sec3', 'sec4'].forEach(id => {
-            const el = document.getElementById(id);
-            const inputs = el.querySelectorAll('input[required], select[required], textarea');
+    // Speech to Text Logic
+    function startDictation(id) {
+        if (window.hasOwnProperty('webkitSpeechRecognition')) {
+            const recognition = new webkitSpeechRecognition();
+            const micBtn = document.querySelector(`#${id} + .mic-btn`);
+            
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = "en-US";
+            recognition.start();
+            micBtn.classList.add('active');
+
+            recognition.onresult = function(e) {
+                document.getElementById(id).value += e.results[0][0].transcript;
+                micBtn.classList.remove('active');
+                updateStepIndicators();
+            };
+
+            recognition.onerror = function() { micBtn.classList.remove('active'); };
+        } else {
+            alert("Speech to text not supported on this browser.");
+        }
+    }
+
+    // Step Indicator Logic
+    function updateStepIndicators() {
+        const sections = ['card1', 'card2', 'card3', 'card4'];
+        sections.forEach(secId => {
+            const card = document.getElementById(secId);
+            const inputs = card.querySelectorAll('input, select, textarea');
             let filled = true;
-            inputs.forEach(i => {
-                if (i.type === 'radio') {
-                    if (!el.querySelector(`input[name="${i.name}"]:checked`)) filled = false;
-                } else if (!i.value) filled = false;
+            inputs.forEach(input => {
+                if(input.hasAttribute('required') && !input.value) filled = false;
+                if(input.type === 'radio') {
+                    const name = input.name;
+                    if(!card.querySelector(`input[name="${name}"]:checked`)) filled = false;
+                }
             });
-            if (filled) el.classList.add('completed');
-            else el.classList.remove('completed');
+            if(filled) card.classList.add('completed');
+            else card.classList.remove('completed');
         });
     }
-    document.addEventListener('input', updateProgress);
 
-    // --- Speech To Text ---
-    function runSpeech(target) {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) return alert("Speech not supported");
-        
-        const rec = new SpeechRecognition();
-        const btn = document.querySelector(`#${target} ~ .mic-btn`);
-        rec.onstart = () => btn.classList.add('recording');
-        rec.onend = () => btn.classList.remove('recording');
-        rec.onresult = (e) => {
-            document.getElementById(target).value += e.results[0][0].transcript;
-            updateProgress();
-        };
-        rec.start();
-    }
+    document.addEventListener('input', updateStepIndicators);
 
-    // --- Toggle Logic ---
+    // Form Event Listeners
     document.getElementsByName('stopType').forEach(el => {
         el.addEventListener('change', () => {
             document.getElementById('otherStopType').classList.toggle('hidden', el.value !== 'Other');
@@ -366,11 +376,11 @@
         el.addEventListener('change', (e) => {
             const isYes = e.target.value === 'Yes';
             document.getElementById('endTimeContainer').classList.toggle('hidden', !isYes);
-            if(isYes) setTime('endTime');
+            if(isYes) setNow('endTime');
         });
     });
 
-    // --- Original Format Functions ---
+    // Formatting Helpers
     function formatDate(dateStr) {
         if (!dateStr) return "";
         const date = new Date(dateStr + 'T12:00:00'); 
@@ -379,10 +389,10 @@
 
     function formatTime(timeStr) {
         if (!timeStr) return "";
-        let [h, m] = timeStr.split(':');
-        let ampm = h >= 12 ? 'PM' : 'AM';
-        h = h % 12 || 12;
-        return `${h.toString().padStart(2, '0')}:${m} ${ampm}`;
+        let [hours, minutes] = timeStr.split(':');
+        let ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        return `${hours.toString().padStart(2, '0')}:${minutes} ${ampm}`;
     }
 
     function generateSummary() {
@@ -416,18 +426,22 @@ ${document.getElementById('rootCause').value}
 ${document.getElementById('actionTaken').value}`;
 
         document.getElementById('summaryOutput').innerText = summary;
-        document.getElementById('summaryContainer').style.display = 'block';
-        document.getElementById('summaryContainer').scrollIntoView({ behavior: 'smooth' });
+        const container = document.getElementById('summaryContainer');
+        container.style.display = 'block';
+        container.scrollIntoView({ behavior: 'smooth' });
     }
 
     function copyToClipboard() {
         const text = document.getElementById('summaryOutput').innerText;
         navigator.clipboard.writeText(text).then(() => {
             const btn = document.querySelector('.btn-copy');
-            const old = btn.innerText;
+            const originalText = btn.innerText;
             btn.innerText = "✓ Copied!";
             btn.style.background = "#047857";
-            setTimeout(() => { btn.innerText = old; btn.style.background = "var(--success)"; }, 2000);
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = "var(--success)";
+            }, 2000);
         });
     }
 </script>
