@@ -232,15 +232,22 @@
         if (process === 'Tab Welder') {
             options = ['Loader', 'Tab Welder (+)', 'Tab Welder (-)', 'Short Checker', 'LMS'];
         } else if (process === 'Pouch Forming') {
-            options = [' ', 'Al Loader', 'Al Forming', 'Pouch Vision'];
+            options = ['Al Loader', 'Al Forming', 'Pouch Vision'];
         } else if (process === 'Cell Assembly') {
-            options = [' ', 'Cell Insert', 'Pouch Folding', 'Sealer[1]', 'Sealer[2]'];
+            options = ['Cell Insert', 'Pouch Folding', 'Sealer[1]', 'Sealer[2]'];
         } else if (process === 'EL Filling') {
-            options = [' ', 'Cell Loader', 'BCR Printing', 'Pre-Weight', 'EL-Filling/V-sealing', 'Post-Weight', 'IR Checker', 'Cell Unloader'];
+            options = ['Cell Loader', 'BCR Printing', 'Pre-Weight', 'EL-Filling/V-sealing', 'Post-Weight', 'IR Checker', 'Cell Unloader'];
         } 
 
         unitSelect.innerHTML = '';
-        options.forEach(opt => {
+        const placeholder = document.createElement('option');
+    		placeholder.textContent = "Select a Unit";
+    		placeholder.value = "";       
+    		placeholder.disabled = true;  
+    		placeholder.selected = true;  
+    		placeholder.hidden = true;    
+    		unitSelect.appendChild(placeholder);
+       	 options.forEach(opt => {
             const el = document.createElement('option');
             el.textContent = opt;
             el.value = opt;
