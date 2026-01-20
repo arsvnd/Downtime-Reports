@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PKG Major Downtime Report</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --card-complete: #f0fdf4; 
+            --text: #0f172a;
+            --border: #cbd5e1;
+            --success: #059669;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 15px;
+            margin: 0;
+            padding-bottom: 100px; /* Space for sticky button */
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 { text-align: center; color: var(--primary); margin: 0 0 25px 0; font-size: 1.8rem; }
+        h3 { border-left: 4px solid var(--primary); padding-left: 10px; margin: 25px 0 15px 0; font-size: 1.1rem; }
+
+        /* Step/Section Cards */
+        .section-card {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .section-card.completed {
+            background: var(--card-complete);
+            border-color: var(--success);
+        }
+
+        .form-group { margin-bottom: 18px; position: relative; }
+        label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #475569; }
+
+        .block-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 8px;
+        }
+
+        .block-options label {
+            border: 1px solid var(--border);
+            padding: 12px 5px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            background: white;
+            transition: all 0.2s;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .block-options input[type="radio"] { display: none; }
+        .block-options label:has(input:checked) {
+            border-color: var(--primary);
+            background-color: #eff6ff;
+            color: var(--primary);
+            box-shadow: inset 0 0 0 1px var(--primary);
+        }
+
+        input[type="text"], input[type="date"], input[type="time"], select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 16px; /* Mobile friendly size */
+            box-sizing: border-box;
+            background: #fcfcfc;
+        }
+
+        textarea { min-height: 90px; resize: vertical; }
+        
+        /* Mic/Speech UI */
+        .textarea-wrapper { position: relative; }
+        .mic-btn {
+            position: absolute;
+            right: 8px;
+            top: 8px;
+            background: #f1f5f9;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 5px 8px;
+            cursor: pointer;
+            z-index: 5;
+        }
+        .mic-btn.recording { background: #fee2e2; border-color: #ef4444; animation: pulse 1.5s infinite; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        /* Time Fill */
+        .time-group { display: flex; gap: 5px; }
+        .btn-now { background: #64748b; color: white; border: none; border-radius: 8px; padding: 0 10px; cursor: pointer; font-size: 0.7rem; font-weight: bold; }
+
+        /* Sticky Button Container */
+        .sticky-action {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            padding: 15px;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .btn-submit {
+            width: 100%;
+            max-width: 600px;
+            background: var(--primary);
+            color: white;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Summary Section (Intact Original Format) */
+        .btn-copy {
+            background: var(--success);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        #summaryContainer { margin-top: 30px; display: none; }
+
+        #summaryOutput {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', Courier, monospace;
+            border: 1px solid var(--border);
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>PKG Major Downtime Report</h1>
+    
+    <form id="downtimeForm">
+        <div class="section-card" id="sec1">
+            <div class="form-group">
+                <label>1. Stop Type:</label>
+                <div class="block-options">
+                    <label><input type="radio" name="stopType" value="BM" required> BM</label>
+                    <label><input type="radio" name="stopType" value="PD"> PD</label>
+                    <label><input type="radio" name="stopType" value="Other" id="otherToggle"> Other</label>
+                </div>
+                <input type="text" id="otherStopType" class="hidden" placeholder="Specify other stop type..." style="margin-top:10px;">
+            </div>
+
+            <div class="form-group">
+                <label>2. Equipment</label>
+                <div class="block-options" id="equipmentGroup">
+                    <label><input type="radio" name="equipment" value="1-1" required> 1-1</label>
+                    <label><input type="radio" name="equipment" value="1-2"> 1-2</label>
+                    <label><input type="radio" name="equipment" value="2-1"> 2-1</label>
+                    <label><input type="radio" name="equipment" value="2-2"> 2-2</label>
+                    <label><input type="radio" name="equipment" value="3-1"> 3-1</label>
+                    <label><input type="radio" name="equipment" value="3-2"> 3-2</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-card" id="sec2">
+            <label>3. Machine Area</label>
+            <div class="form-group">
+                <label>Machine:</label>
+                <select id="machine" required onchange="updateUnits()">
+                    <option value="" disabled selected>Select Machine</option>
+                    <option value="Tab Welder">TAB WELDER</option>
+                    <option value="Pouch Forming">POUCH</option>
+                    <option value="Cell Assembly">CELL ASSY</option>
+                    <option value="EL Filling">EL FILLING</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Unit:</label>
+                <select id="unit">
+                    <option value="" disabled selected>Select a Unit</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Assembly:</label>
+                <input type="text" id="assembly" placeholder="e.g. Forming Press/Lead Vison">
+            </div>
+        </div>
+
+        <div class="section-card" id="sec3">
+            <div class="form-group">
+                <label>Date:</label>
+                <input type="date" id="dateInput">
+            </div>
+
+            <div class="form-group">
+                <label>Start Time:</label>
+                <div class="time-group">
+                    <input type="time" id="startTime">
+                    <button type="button" class="btn-now" onclick="setTime('startTime')">NOW</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Issue Resolved?</label>
+                <div class="block-options">
+                    <label><input type="radio" name="resolved" value="Yes" id="resYes"> Yes</label>
+                    <label><input type="radio" name="resolved" value="No" checked> No</label>
+                </div>
+            </div>
+
+            <div class="form-group hidden" id="endTimeContainer">
+                <label>End Time:</label>
+                <div class="time-group">
+                    <input type="time" id="endTime">
+                    <button type="button" class="btn-now" onclick="setTime('endTime')">NOW</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-card" id="sec4">
+            <h3>Details</h3>
+            <div class="form-group">
+                <label>5. Phenomenon:</label>
+                <div class="textarea-wrapper">
+                    <textarea id="phenomenon" placeholder="Describe what happened..."></textarea>
+                    <button type="button" class="mic-btn" onclick="runSpeech('phenomenon')">🎤 Speech</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>6. Root Cause:</label>
+                <div class="textarea-wrapper">
+                    <textarea id="rootCause" placeholder="What caused the issue?"></textarea>
+                    <button type="button" class="mic-btn" onclick="runSpeech('rootCause')">🎤 Speech</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>7. Action Taken:</label>
+                <div class="textarea-wrapper">
+                    <textarea id="actionTaken" placeholder="How was the issue fixed?"></textarea>
+                    <button type="button" class="mic-btn" onclick="runSpeech('actionTaken')">🎤 Speech</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="sticky-action">
+            <button type="button" class="btn-submit" onclick="generateSummary()">Generate Summary</button>
+        </div>
+    </form>
+
+    <div id="summaryContainer">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label>Generated Summary:</label>
+            <button class="btn-copy" onclick="copyToClipboard()">Copy Summary</button>
+        </div>
+        <div id="summaryOutput"></div>
+    </div>
+</div>
+
+<script>
+    // --- Initial Setups ---
+    const now = new Date();
+    document.getElementById('dateInput').value = now.toISOString().split('T')[0];
+    setTime('startTime');
+
+    function setTime(id) {
+        const d = new Date();
+        document.getElementById(id).value = d.getHours().toString().padStart(2, '0') + ":" + d.getMinutes().toString().padStart(2, '0');
+    }
+
+    // --- Dynamic Units ---
+    function updateUnits() {
+        const process = document.getElementById('machine').value;
+        const unitSelect = document.getElementById('unit');
+        let options = [];
+
+        if (process === 'Tab Welder') options = ['Loader', 'Tab Welder (+)', 'Tab Welder (-)', 'Short Checker', 'LMS'];
+        else if (process === 'Pouch Forming') options = ['Al Loader', 'Al Forming', 'Pouch Vision'];
+        else if (process === 'Cell Assembly') options = ['Cell Insert', 'Pouch Folding', 'Sealer[1]', 'Sealer[2]'];
+        else if (process === 'EL Filling') options = ['Cell Loader', 'BCR Printing', 'Pre-Weight', 'EL-Filling/V-sealing', 'Post-Weight', 'IR Checker', 'Cell Unloader'];
+
+        unitSelect.innerHTML = '<option value="" disabled selected>Select a Unit</option>';
+        options.forEach(opt => {
+            const el = document.createElement('option');
+            el.textContent = el.value = opt;
+            unitSelect.appendChild(el);
+        });
+    }
+
+    // --- Completion Tracker ---
+    function updateProgress() {
+        ['sec1', 'sec2', 'sec3', 'sec4'].forEach(id => {
+            const el = document.getElementById(id);
+            const inputs = el.querySelectorAll('input[required], select[required], textarea');
+            let filled = true;
+            inputs.forEach(i => {
+                if (i.type === 'radio') {
+                    if (!el.querySelector(`input[name="${i.name}"]:checked`)) filled = false;
+                } else if (!i.value) filled = false;
+            });
+            if (filled) el.classList.add('completed');
+            else el.classList.remove('completed');
+        });
+    }
+    document.addEventListener('input', updateProgress);
+
+    // --- Speech To Text ---
+    function runSpeech(target) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) return alert("Speech not supported");
+        
+        const rec = new SpeechRecognition();
+        const btn = document.querySelector(`#${target} ~ .mic-btn`);
+        rec.onstart = () => btn.classList.add('recording');
+        rec.onend = () => btn.classList.remove('recording');
+        rec.onresult = (e) => {
+            document.getElementById(target).value += e.results[0][0].transcript;
+            updateProgress();
+        };
+        rec.start();
+    }
+
+    // --- Toggle Logic ---
+    document.getElementsByName('stopType').forEach(el => {
+        el.addEventListener('change', () => {
+            document.getElementById('otherStopType').classList.toggle('hidden', el.value !== 'Other');
+        });
+    });
+
+    document.getElementsByName('resolved').forEach(el => {
+        el.addEventListener('change', (e) => {
+            const isYes = e.target.value === 'Yes';
+            document.getElementById('endTimeContainer').classList.toggle('hidden', !isYes);
+            if(isYes) setTime('endTime');
+        });
+    });
+
+    // --- Original Format Functions ---
+    function formatDate(dateStr) {
+        if (!dateStr) return "";
+        const date = new Date(dateStr + 'T12:00:00'); 
+        return `${date.getDate()} ${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`;
+    }
+
+    function formatTime(timeStr) {
+        if (!timeStr) return "";
+        let [h, m] = timeStr.split(':');
+        let ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+        return `${h.toString().padStart(2, '0')}:${m} ${ampm}`;
+    }
+
+    function generateSummary() {
+        const stopTypeVal = document.querySelector('input[name="stopType"]:checked')?.value;
+        const stopType = stopTypeVal === 'Other' ? document.getElementById('otherStopType').value : stopTypeVal;
+        const equipment = document.querySelector('input[name="equipment"]:checked')?.value || "";
+        const resolved = document.querySelector('input[name="resolved"]:checked').value;
+
+        const summary = `1. Stop Type:
+${stopType}
+
+2. Equipment:
+${equipment}
+
+3. Machine Area:
+    Machine: ${document.getElementById('machine').value}
+    Unit: ${document.getElementById('unit').value}
+    Assembly: ${document.getElementById('assembly').value}
+    Date: ${formatDate(document.getElementById('dateInput').value)}
+    Start Time: ${formatTime(document.getElementById('startTime').value)}
+    End Time: ${resolved === 'Yes' ? formatTime(document.getElementById('endTime').value) : "-"}
+    Issue Resolved: ${resolved === 'Yes' ? "Yes ✅" : "No"}
+
+5. Phenomenon:
+${document.getElementById('phenomenon').value}
+
+6. Root Cause:
+${document.getElementById('rootCause').value}
+
+7. Action taken:
+${document.getElementById('actionTaken').value}`;
+
+        document.getElementById('summaryOutput').innerText = summary;
+        document.getElementById('summaryContainer').style.display = 'block';
+        document.getElementById('summaryContainer').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function copyToClipboard() {
+        const text = document.getElementById('summaryOutput').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.querySelector('.btn-copy');
+            const old = btn.innerText;
+            btn.innerText = "✓ Copied!";
+            btn.style.background = "#047857";
+            setTimeout(() => { btn.innerText = old; btn.style.background = "var(--success)"; }, 2000);
+        });
+    }
+</script>
+
+</body>
+</html>
