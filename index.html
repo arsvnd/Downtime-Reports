@@ -238,7 +238,7 @@
     <h1>LNS Major Downtime Report</h1>
 
     <div id="dashboardView">
-        <button class="btn-main" onclick="createNewReport()">+ Create New Report</button>
+        <button class="btn-main" onclick="createNewReport()">Create New Report</button>
         <div id="reportsList"></div>
     </div>
 
@@ -267,6 +267,9 @@
                     <label><input type="radio" name="equipment" value="1-5" onchange="filterMachines()"> 1-5</label>
                     <label><input type="radio" name="equipment" value="1-H" onchange="filterMachines()"> 1-H</label>
                     <label><input type="radio" name="equipment" value="2-1" onchange="filterMachines()"> 2-1</label>
+                    <label><input type="radio" name="equipment" value="2-2" onchange="filterMachines()"> 2-2</label>
+                    <label><input type="radio" name="equipment" value="2-3" onchange="filterMachines()"> 2-3</label>
+                    <label><input type="radio" name="equipment" value="2-4" onchange="filterMachines()"> 2-4</label>
                     <label><input type="radio" name="equipment" value="2-5" onchange="filterMachines()"> 2-5</label>
                     <label><input type="radio" name="equipment" value="3-1" onchange="filterMachines()"> 3-1</label>
                 </div>
@@ -393,7 +396,6 @@
     list.innerHTML = '';
     
     if (reports.length === 0) {
-        // Hide the top "+ Create New Report" button since we'll show the center one
         document.querySelector('#dashboardView .btn-main').style.display = 'none';
         
         list.innerHTML = `
@@ -408,7 +410,7 @@
             </div>
         `;
     } else {
-        // Show the top "+ Create New Report" button if there are reports
+        
         document.querySelector('#dashboardView .btn-main').style.display = 'block';
 
         const sortedReports = [...reports].sort((a, b) => b.id - a.id);
@@ -416,7 +418,7 @@
         // Add reset note
         const resetNote = document.createElement('p');
         resetNote.style = "text-align:center; font-size:0.8rem; color:#94a3b8; margin-bottom: 15px;";
-        resetNote.innerText = "Note: Dashboard resets automatically at 6:00 AM & 6:00 PM";
+        resetNote.innerText = "Dashboard resets automatically at 6:00.";
         list.appendChild(resetNote);
 
         sortedReports.forEach(report => {
@@ -446,36 +448,6 @@
         });
     }
 }
-    /* function renderDashboard() {
-        const list = document.getElementById('reportsList');
-        list.innerHTML = reports.length === 0 ? '<div style="text-align:center; padding: 40px 20px; color:#64748b;">No reports saved. Click "Create New" to begin.</div>' : '';
-        const sortedReports = [...reports].sort((a, b) => b.id - a.id);
-        
-        sortedReports.forEach(report => {
-            const card = document.createElement('div');
-            card.className = 'report-card';
-            card.onclick = () => editReport(report.id);
-            const statusClass = report.resolved === 'Yes' ? 'status-resolved' : 'status-open';
-            const statusText = report.resolved === 'Yes' ? 'Resolved' : 'Open';
-            
-            card.innerHTML = `
-                <div class="report-info">
-                <div class="report-title">${report.equipment || 'Unknown'} | ${report.phenomenon}</div>
-                <div class="report-meta">
-                    <span>${formatDate(report.dateRaw)}</span>
-                    <span>•</span>
-                    <span>${formatTime(report.startRaw)}</span>
-                    <span class="status-badge ${statusClass}">${statusText}</span>
-                </div>
-            </div>
-            <div class="btn-actions">
-                <button class="btn-edit" onclick="editReport(${report.id})">Edit</button>
-                <button class="btn-delete" onclick="deleteReport(${report.id})">Delete</button>
-            </div>
-        `;
-            list.appendChild(card);
-        });
-    } */
 
     function createNewReport() {
         document.getElementById('editingId').value = '';
