@@ -10,8 +10,9 @@
             --bg: #f1f5f9;
             --card: #ffffff;
             --text: #0f172a;
+            --text4: #383f49;
             --border: #cbd5e1;
-            --success: #059669;
+            --success: #37ab87;
             --danger: #dc2626;
         }
 
@@ -61,8 +62,8 @@
 }
         .report-title {
     font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--text);
+    font-weight: 600;
+    color: var(--text4);
     line-height: 1.3;
     margin-bottom: 6px;
 }
@@ -73,7 +74,7 @@
     align-items: center;
     gap: 8px;
     font-size: 0.85rem;
-    color: #64748b;
+    color: #7f8c8d;
 }
         .status-badge {
     padding: 4px 10px;
@@ -88,26 +89,22 @@
 
         .btn-actions {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Two equal columns for touch targets */
+    grid-template-columns: 1fr 1fr; 
     gap: 12px;
 }
         .btn-edit { 
-            background: #2563eb; /* Modern Indigo */
-            color: white; 
-            border: none; 
+            background: #e9effd; 
+            color: #2563eb;
+            border: 1px solid #92b1f5; 
             padding: 12px; 
             border-radius: 8px; 
             cursor: pointer;
             transition: background 0.2s, transform 0.1s;
         }
 
-        .btn-edit:hover {
-            background: #285fd6;
-        }
-
         .btn-delete { 
-            background: #fff1f2; /* Very light red background */
-            color: #e11d48; /* Strong rose text */
+            background: #fff1f2;
+            color: #e11d48; 
             border: 1px solid #fecdd3; 
             padding: 12px; 
             border-radius: 8px; 
@@ -115,14 +112,7 @@
             transition: all 0.2s;
         }
 
-        .btn-delete:hover {
-            background: #ffe4e6;
-            color: #be123c;
-        }
-        .btn-edit:active, .btn-delete:active {
-            transform: scale(0.98);
-            opacity: 0.9;
-        }
+  
 /* Desktop Adjustment 
 @media (min-width: 480px) {
     .report-card {
@@ -153,9 +143,33 @@
             cursor: pointer;
             margin-bottom: 20px;
         }
-        .btn-back { background: #64748b; margin-bottom: 20px; width: 100%; padding: 10px 20px; }
+        .btn-back {
+  /* Layout & Sizing */
+  width: 100%;
+  margin-bottom: 20px;
+  padding: 10px 20px;
+  
+  /* Modern "Clear" Styling */
+  background: transparent;      /* Makes the button clear */
+  color: #475569;               /* A soft, modern slate gray for text */
+  border: 1px solid #e2e8f0;    /* Light, clean border color */
+  border-radius: 8px;           /* Modern rounded corners */
+  
+  /* Typography */
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  
+  /* Interaction */
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;                
+}
 
-        /* Form Styles (Your Original) */
+        /* Form Styles */
         .form-group { margin-bottom: 18px; }
         label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #475569; }
         .block-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px; }
@@ -183,9 +197,39 @@
         textarea { min-height: 90px; resize: vertical; }
         .hidden { display: none; }
         .btn-submit { width: 100%; background: var(--primary); color: white; padding: 16px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 20px; }
-        .btn-copy { background: var(--success); color: white; padding: 16px; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
+        .btn-copy { background: var(--success); color: white; padding: 16px; border: none; border-radius: 6px; font-family: 'Inter', sans-serif;
+  font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
         #summaryContainer { margin-top: 30px; display: none; }
         #summaryOutput { background: #f8fafc; padding: 20px; border-radius: 8px; white-space: pre-wrap; font-family: 'Courier New', Courier, monospace; border: 1px solid var(--border); font-size: 0.95rem; line-height: 1.4; }
+.zero-state-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 20px;
+    min-height: 400px;
+}
+
+.zero-state-image {
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+    margin-bottom: 30px;
+}
+
+.zero-state-text {
+    font-size: 1rem;
+    color: #475569;
+    margin-bottom: 30px;
+    line-height: 1.5;
+    max-width: 300px;
+}
+
+.zero-state-container .btn-main {
+    max-width: 300px;
+}
+
     </style>
 </head>
 <body>
@@ -342,6 +386,67 @@
 
     // --- DASHBOARD LOGIC ---
     function renderDashboard() {
+    const list = document.getElementById('reportsList');
+    const dashboardView = document.getElementById('dashboardView');
+    
+    // Clear existing content
+    list.innerHTML = '';
+    
+    if (reports.length === 0) {
+        // Hide the top "+ Create New Report" button since we'll show the center one
+        document.querySelector('#dashboardView .btn-main').style.display = 'none';
+        
+        list.innerHTML = `
+            <div class="zero-state-container">
+                <img src="https://illustrations.popsy.co/blue/business-presentation.svg" alt="No reports" class="zero-state-image">
+                
+                <div class="zero-state-text">
+                    Create a new report by clicking the button below to track your downtime.
+                </div>
+                
+                <button class="btn-main" onclick="createNewReport()">Create New Report</button>
+            </div>
+        `;
+    } else {
+        // Show the top "+ Create New Report" button if there are reports
+        document.querySelector('#dashboardView .btn-main').style.display = 'block';
+
+        const sortedReports = [...reports].sort((a, b) => b.id - a.id);
+        
+        // Add reset note
+        const resetNote = document.createElement('p');
+        resetNote.style = "text-align:center; font-size:0.8rem; color:#94a3b8; margin-bottom: 15px;";
+        resetNote.innerText = "Note: Dashboard resets automatically at 6:00 AM & 6:00 PM";
+        list.appendChild(resetNote);
+
+        sortedReports.forEach(report => {
+            const card = document.createElement('div');
+            card.className = 'report-card';
+            card.onclick = () => editReport(report.id);
+
+            const statusClass = report.resolved === 'Yes' ? 'status-resolved' : 'status-open';
+            const statusText = report.resolved === 'Yes' ? 'Resolved' : 'Open';
+            
+            card.innerHTML = `
+                <div class="report-info">
+                    <div class="report-title">${report.equipment || 'Unknown'} | ${report.phenomenon}</div>
+                    <div class="report-meta">
+                        <span>${formatDate(report.dateRaw)}</span>
+                        <span>•</span>
+                        <span>${formatTime(report.startRaw)}</span>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                </div>
+                <div class="btn-actions">
+                    <button class="btn-edit">Edit</button>
+                    <button class="btn-delete" onclick="event.stopPropagation(); deleteReport(${report.id})">Delete</button>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    }
+}
+    /* function renderDashboard() {
         const list = document.getElementById('reportsList');
         list.innerHTML = reports.length === 0 ? '<div style="text-align:center; padding: 40px 20px; color:#64748b;">No reports saved. Click "Create New" to begin.</div>' : '';
         const sortedReports = [...reports].sort((a, b) => b.id - a.id);
@@ -349,6 +454,7 @@
         sortedReports.forEach(report => {
             const card = document.createElement('div');
             card.className = 'report-card';
+            card.onclick = () => editReport(report.id);
             const statusClass = report.resolved === 'Yes' ? 'status-resolved' : 'status-open';
             const statusText = report.resolved === 'Yes' ? 'Resolved' : 'Open';
             
@@ -369,7 +475,7 @@
         `;
             list.appendChild(card);
         });
-    }
+    } */
 
     function createNewReport() {
         document.getElementById('editingId').value = '';
@@ -521,7 +627,7 @@
         });
 
         if (isDuplicate) {
-            errorEl.innerText = "Error: A report with this Equipment and Phenomenon already exists.";
+            errorEl.innerText = "Error: Report already exists.";
             errorEl.style.display = 'block';
             return;
         }
