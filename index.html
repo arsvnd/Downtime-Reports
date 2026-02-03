@@ -214,6 +214,8 @@
         </div>
 
         <button type="button" class="btn-submit" onclick="generateSummary()">Generate Summary</button>
+
+        <div id="errorMessage" style="color: #dc2626; font-weight: 600; margin-top: 10px; text-align: center; display: none;"></div>
     </form>
 
     <div id="summaryContainer">
@@ -320,20 +322,59 @@
     });
 
     function generateSummary() {
-        const stopTypeVal = document.querySelector('input[name="stopType"]:checked')?.value;
-        const stopType = stopTypeVal === 'Other' ? document.getElementById('otherStopType').value : stopTypeVal;
-        
-        const equipment = document.querySelector('input[name="equipment"]:checked')?.value || "";
-        const machine = document.getElementById('machine').value;
-        const unit = document.getElementById('unit').value;
-        const assembly = document.getElementById('assembly').value;
-        
-        const dateRaw = document.getElementById('dateInput').value;
-        const startRaw = document.getElementById('startTime').value;
-        const endRaw = document.getElementById('endTime').value;
-        const resolved = document.querySelector('input[name="resolved"]:checked').value;
+    // 1. MANDATORY FIELDS VALIDATION
+    const phenomenon = document.getElementById('phenomenon').value.trim();
+    const rootCause = document.getElementById('rootCause').value.trim();
+    const actionTaken = document.getElementById('actionTaken').value.trim();
+    const errorEl = document.getElementById('errorMessage');
 
-        const summary = `1. Stop Type:
+    // Check which one is blank first
+    if (!phenomenon) {
+        errorEl.innerText = "Please enter Phenomenon";
+        errorEl.style.display = 'block';
+        return;
+    } else if (!rootCause) {
+        errorEl.innerText = "Please enter Root Cause";
+        errorEl.style.display = 'block';
+        return;
+    }else if (!actionTaken) {
+        errorEl.innerText = "Please enter Action Taken";
+        errorEl.style.display = 'block';
+        return;
+    }  else {
+        errorEl.style.display = 'none'; // Hide if all filled
+    }
+
+    // 2. EXISTING DATA GATHERING
+    const stopTypeVal = document.querySelector('input[name="stopType"]:checked')?.value;
+    const stopType = stopTypeVal === 'Other' ? document.getElementById('otherStopType').value : stopTypeVal;
+    const equipment = document.querySelector('input[name="equipment"]:checked')?.value || "";
+    const machine = document.getElementById('machine').value;
+    const unit = document.getElementById('unit').value;
+    const assembly = document.getElementById('assembly').value;
+    const dateRaw = document.getElementById('dateInput').value;
+    const startRaw = document.getElementById('startTime').value;
+    const endRaw = document.getElementById('endTime').value;
+    const resolved = document.querySelector('input[name="resolved"]:checked').value;
+
+    // 3. DOWNTIME CALCULATION (Only if Resolved is Yes)
+    let downtimeLine = "";
+    if (resolved === 'Yes' && startRaw && endRaw) {
+        const start = new Date(`2000-01-01T${startRaw}`);
+        const end = new Date(`2000-01-01T${endRaw}`);
+        
+        // Handle overnight shifts if end time is numerically less than start time
+        let diff = end - start;
+        if (diff < 0) diff += 24 * 60 * 60 * 1000; 
+
+        const totalMinutes = Math.floor(diff / 60000);
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        downtimeLine = `\n\nTotal Downtime: ${hours}h ${minutes}m`;
+    }
+
+    // 4. GENERATE OUTPUT
+    const summary = `1. Stop Type:
 ${stopType}
 
 2. Equipment:
@@ -349,34 +390,20 @@ ${equipment}
     Issue Resolved: ${resolved === 'Yes' ? "Yes ✅" : "No"}
 
 5. Phenomenon:
-${document.getElementById('phenomenon').value}
+${phenomenon}
 
 6. Root Cause:
-${document.getElementById('rootCause').value}
+${rootCause}
 
 7. Action taken:
-${document.getElementById('actionTaken').value}`;
+${actionTaken}${downtimeLine}`;
 
-        const container = document.getElementById('summaryContainer');
-        const output = document.getElementById('summaryOutput');
-        output.innerText = summary;
-        container.style.display = 'block';
-        container.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function copyToClipboard() {
-        const text = document.getElementById('summaryOutput').innerText;
-        navigator.clipboard.writeText(text).then(() => {
-            const btn = document.querySelector('.btn-copy');
-            const originalText = btn.innerText;
-            btn.innerText = "✓ Copied!";
-            btn.style.background = "#047857";
-            setTimeout(() => {
-                btn.innerText = originalText;
-                btn.style.background = "var(--success)";
-            }, 2000);
-        });
-    }
+    const container = document.getElementById('summaryContainer');
+    const output = document.getElementById('summaryOutput');
+    output.innerText = summary;
+    container.style.display = 'block';
+    container.scrollIntoView({ behavior: 'smooth' });
+}
 </script>
 
 </body>
