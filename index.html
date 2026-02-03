@@ -38,33 +38,107 @@
         h3 { border-left: 4px solid var(--primary); padding-left: 10px; margin: 25px 0 15px 0; font-size: 1.1rem; }
 
         /* Dashboard Styles */
+        #reportsList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* Spacing between cards */
+    margin-top: 10px;
+}
         .report-card {
-            background: #f8fafc;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: transform 0.1s;
-        }
-        .report-info { flex-grow: 1; }
-        .report-title { font-weight: bold; color: var(--primary); display: block; margin-bottom: 4px; }
-        .report-meta { font-size: 0.85rem; color: #64748b; }
-        .status-badge { 
-            font-size: 0.75rem; 
-            padding: 2px 8px; 
-            border-radius: 12px; 
-            font-weight: bold; 
-            margin-left: 8px;
-        }
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column; /* Stack vertically on mobile */
+    gap: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.report-info {
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 12px;
+}
+        .report-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+    margin-bottom: 6px;
+}
+
+.report-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #64748b;
+}
+        .status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
         .status-resolved { background: #dcfce7; color: #166534; }
         .status-open { background: #fee2e2; color: #991b1b; }
 
-        .btn-actions { display: flex; gap: 8px; }
-        .btn-edit { background: #6366f1; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
-        .btn-delete { background: var(--danger); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
+        .btn-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two equal columns for touch targets */
+    gap: 12px;
+}
+        .btn-edit { 
+            background: #2563eb; /* Modern Indigo */
+            color: white; 
+            border: none; 
+            padding: 12px; 
+            border-radius: 8px; 
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn-edit:hover {
+            background: #285fd6;
+        }
+
+        .btn-delete { 
+            background: #fff1f2; /* Very light red background */
+            color: #e11d48; /* Strong rose text */
+            border: 1px solid #fecdd3; 
+            padding: 12px; 
+            border-radius: 8px; 
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-delete:hover {
+            background: #ffe4e6;
+            color: #be123c;
+        }
+        .btn-edit:active, .btn-delete:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+/* Desktop Adjustment 
+@media (min-width: 480px) {
+    .report-card {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .report-info {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    .btn-actions {
+        display: flex;
+        grid-template-columns: none;
+    }
+}*/
 
         .btn-main {
             display: block;
@@ -79,7 +153,7 @@
             cursor: pointer;
             margin-bottom: 20px;
         }
-        .btn-back { background: #64748b; margin-bottom: 20px; width: auto; padding: 10px 20px; }
+        .btn-back { background: #64748b; margin-bottom: 20px; width: 100%; padding: 10px 20px; }
 
         /* Form Styles (Your Original) */
         .form-group { margin-bottom: 18px; }
@@ -109,7 +183,7 @@
         textarea { min-height: 90px; resize: vertical; }
         .hidden { display: none; }
         .btn-submit { width: 100%; background: var(--primary); color: white; padding: 16px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 20px; }
-        .btn-copy { background: var(--success); color: white; padding: 10px 20px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
+        .btn-copy { background: var(--success); color: white; padding: 16px; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
         #summaryContainer { margin-top: 30px; display: none; }
         #summaryOutput { background: #f8fafc; padding: 20px; border-radius: 8px; white-space: pre-wrap; font-family: 'Courier New', Courier, monospace; border: 1px solid var(--border); font-size: 0.95rem; line-height: 1.4; }
     </style>
@@ -216,30 +290,63 @@
                 <label>7. Action Taken:</label>
                 <textarea id="actionTaken" placeholder="How was the issue fixed?"></textarea>
             </div>
-
-            <button type="button" class="btn-submit" onclick="generateSummary()">Generate Summary</button>
             <div id="errorMessage" style="color: var(--danger); font-weight: 600; margin-top: 10px; text-align: center; display: none;"></div>
+            <button type="button" class="btn-submit" onclick="generateSummary()">Generate Summary</button>
+            
         </form>
 
         <div id="summaryContainer">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <label>Generated Summary:</label>
-                <button class="btn-copy" onclick="copyToClipboard()">Copy Summary</button>
-            </div>
-            <div id="summaryOutput"></div>
-        </div>
+    <label>Generated Summary:</label>
+    <div id="summaryOutput"></div>
+    
+    <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button class="btn-copy" style="flex: 1; margin-bottom: 0;" onclick="copyToClipboard()">Copy Summary</button>
+        <button class="btn-main btn-back" style="flex: 1; margin-bottom: 0;" onclick="showDashboard()">Back to Dashboard</button>
+    </div>
+</div>
     </div>
 </div>
 
 <script>
     let reports = JSON.parse(localStorage.getItem('lns_storage_v1') || '[]');
 
+    function checkShiftReset() {
+        const lastReset = localStorage.getItem('lns_last_reset');
+        const now = new Date();
+    const sixAM = new Date();
+    sixAM.setHours(6, 0, 0, 0);
+    const sixPM = new Date();
+    sixPM.setHours(18, 0, 0, 0);
+    let lastResetPoint;
+    if (now >= sixPM) {
+        lastResetPoint = sixPM.getTime();
+    } else if (now >= sixAM) {
+        lastResetPoint = sixAM.getTime();
+    } else {
+        // If it's before 6am today, the last reset point was 6pm yesterday
+        const yesterdaySixPM = new Date();
+        yesterdaySixPM.setDate(yesterdaySixPM.getDate() - 1);
+        yesterdaySixPM.setHours(18, 0, 0, 0);
+        lastResetPoint = yesterdaySixPM.getTime();
+    }
+    if (!lastReset || parseInt(lastReset) < lastResetPoint) {
+        if (reports.length > 0) {
+            reports = [];
+            localStorage.setItem('lns_storage_v1', JSON.stringify(reports));
+            localStorage.setItem('lns_last_reset', Date.now());
+            renderDashboard();
+            console.log("Shift change detected: Dashboard cleared.");
+        }
+    }
+}
+
     // --- DASHBOARD LOGIC ---
     function renderDashboard() {
         const list = document.getElementById('reportsList');
-        list.innerHTML = reports.length === 0 ? '<p style="text-align:center; color:#64748b;">No reports saved yet.</p>' : '';
+        list.innerHTML = reports.length === 0 ? '<div style="text-align:center; padding: 40px 20px; color:#64748b;">No reports saved. Click "Create New" to begin.</div>' : '';
+        const sortedReports = [...reports].sort((a, b) => b.id - a.id);
         
-        reports.forEach(report => {
+        sortedReports.forEach(report => {
             const card = document.createElement('div');
             card.className = 'report-card';
             const statusClass = report.resolved === 'Yes' ? 'status-resolved' : 'status-open';
@@ -247,14 +354,19 @@
             
             card.innerHTML = `
                 <div class="report-info">
-                    <span class="report-title">${report.equipment || 'N/A'} | ${report.phenomenon.substring(0, 35)}${report.phenomenon.length > 35 ? '...' : ''}</span>
-                    <span class="report-meta">${formatDate(report.dateRaw)} • ${formatTime(report.startRaw)} <span class="status-badge ${statusClass}">${statusText}</span></span>
+                <div class="report-title">${report.equipment || 'Unknown'} | ${report.phenomenon}</div>
+                <div class="report-meta">
+                    <span>${formatDate(report.dateRaw)}</span>
+                    <span>•</span>
+                    <span>${formatTime(report.startRaw)}</span>
+                    <span class="status-badge ${statusClass}">${statusText}</span>
                 </div>
-                <div class="btn-actions">
-                    <button class="btn-edit" onclick="editReport(${report.id})">Edit</button>
-                    <button class="btn-delete" onclick="deleteReport(${report.id})">Delete</button>
-                </div>
-            `;
+            </div>
+            <div class="btn-actions">
+                <button class="btn-edit" onclick="editReport(${report.id})">Edit</button>
+                <button class="btn-delete" onclick="deleteReport(${report.id})">Delete</button>
+            </div>
+        `;
             list.appendChild(card);
         });
     }
@@ -391,23 +503,43 @@
         const actionTaken = document.getElementById('actionTaken').value.trim();
         const errorEl = document.getElementById('errorMessage');
 
+        // 1. Mandatory Validation
         if (!phenomenon) { errorEl.innerText = "Please enter Phenomenon"; errorEl.style.display = 'block'; return; }
         if (!rootCause) { errorEl.innerText = "Please enter Root Cause"; errorEl.style.display = 'block'; return; }
         if (!actionTaken) { errorEl.innerText = "Please enter Action Taken"; errorEl.style.display = 'block'; return; }
+        
+        // 2. DUPLICATE PREVENTION CHECK
+        const currentEquipment = document.querySelector('input[name="equipment"]:checked')?.value || "";
+        const currentEditingId = document.getElementById('editingId').value ? parseInt(document.getElementById('editingId').value) : null;
+
+        const isDuplicate = reports.some(report => {
+            // Check if another report has the same Equipment AND Phenomenon
+            // We exclude the current report if we are in "Edit" mode (matching IDs)
+            return report.id !== currentEditingId && 
+                   report.equipment === currentEquipment && 
+                   report.phenomenon.trim().toLowerCase() === phenomenon.toLowerCase();
+        });
+
+        if (isDuplicate) {
+            errorEl.innerText = "Error: A report with this Equipment and Phenomenon already exists.";
+            errorEl.style.display = 'block';
+            return;
+        }
+
         errorEl.style.display = 'none';
 
+        // 3. CAPTURE AND SAVE DATA (Original Logic)
         const stopTypeVal = document.querySelector('input[name="stopType"]:checked')?.value;
         const resolved = document.querySelector('input[name="resolved"]:checked').value;
         const startRaw = document.getElementById('startTime').value;
         const endRaw = document.getElementById('endTime').value;
 
-        // Save Data
         const reportData = {
-            id: document.getElementById('editingId').value ? parseInt(document.getElementById('editingId').value) : Date.now(),
+            id: currentEditingId || Date.now(),
             stopTypeVal: stopTypeVal,
             otherStopType: document.getElementById('otherStopType').value,
             stopType: stopTypeVal === 'Other' ? document.getElementById('otherStopType').value : stopTypeVal,
-            equipment: document.querySelector('input[name="equipment"]:checked')?.value || "",
+            equipment: currentEquipment,
             machine: document.getElementById('machine').value,
             unit: document.getElementById('unit').value,
             assembly: document.getElementById('assembly').value,
@@ -425,7 +557,7 @@
         else reports.push(reportData);
         localStorage.setItem('lns_storage_v1', JSON.stringify(reports));
 
-        // Downtime Calculation
+        // 4. DOWNTIME CALCULATION & SUMMARY GENERATION
         let downtimeLine = "";
         if (resolved === 'Yes' && startRaw && endRaw) {
             const start = new Date(`2000-01-01T${startRaw}`);
@@ -462,6 +594,9 @@ ${actionTaken}${downtimeLine}`;
         document.getElementById('summaryOutput').innerText = summary;
         document.getElementById('summaryContainer').style.display = 'block';
         document.getElementById('summaryContainer').scrollIntoView({ behavior: 'smooth' });
+        setTimeout(() => {
+        container.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }, 100);
     }
 
     function copyToClipboard() {
@@ -487,7 +622,9 @@ ${actionTaken}${downtimeLine}`;
     });
 
     // Init
+    checkShiftReset();
     renderDashboard();
+    setInterval(checkShiftReset, 60000);
 </script>
 
 </body>
