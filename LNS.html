@@ -642,7 +642,8 @@ ${reportData.equipment}
     Machine: ${reportData.machine}
     Unit: ${reportData.unit}
     Assembly: ${reportData.assembly}
-    Date: ${formatDate(reportData.dateRaw)}
+    
+4.  Date: ${formatDate(reportData.dateRaw)}
     Start Time: ${formatTime(reportData.startRaw)}
     End Time: ${resolved === 'Yes' ? formatTime(endRaw) : "-"}
     Issue Resolved: ${resolved === 'Yes' ? "Yes ✅" : "No"}
