@@ -559,10 +559,27 @@
         <button class="btn-back" onclick="showDashboard()">← Back to Dashboard</button>
         <h3>📋 Import Cutter IDs</h3>
         <p style="color:#475569; font-size:0.9rem; margin-bottom:16px; line-height:1.5;">
-            Paste your cutter IDs below. The format can have New/Old in any order — it will be sorted automatically.
+            Import cutter IDs from text or HMI screenshots.
         </p>
+        
         <div class="form-group">
-            <textarea id="importTextarea" rows="14" placeholder="Paste IDs here, e.g.:
+            <label>Import Mode</label>
+            <div class="block-options">
+                <label>
+                    <input type="radio" name="importMode" value="text" checked>
+                    Text Input
+                </label>
+                <label>
+                    <input type="radio" name="importMode" value="image">
+                    HMI Image
+                </label>
+            </div>
+        </div>
+
+        <!-- TEXT INPUT -->
+        <div id="textInputArea">
+            <div class="form-group">
+                <textarea id="importText" rows="14" placeholder="Paste IDs here, e.g.:
 New IDs
 Upper
 LCAGHY1005CU656X1.8
@@ -571,9 +588,26 @@ Old IDs
 Upper
 LCAGHY0013CU656X1.8
 LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-family:'Courier New',monospace;font-size:0.88rem;box-sizing:border-box;background:#fcfcfc;resize:vertical;line-height:1.6;"></textarea>
+            </div>
         </div>
+
+        <!-- IMAGE INPUT -->
+        <div id="imageInputArea" style="display:none;">
+            <div class="form-group">
+                <label>OLD Image</label>
+                <input type="file" id="oldImage" accept="image/*" class="cutter-num-input" style="padding: 10px 14px; font-size: 0.9rem;">
+            </div>
+            
+            <div class="form-group">
+                <label>NEW Image</label>
+                <input type="file" id="newImage" accept="image/*" class="cutter-num-input" style="padding: 10px 14px; font-size: 0.9rem;">
+            </div>
+            
+            <button class="btn-submit" onclick="processImages()">🔍 Extract IDs</button>
+        </div>
+        
         <div id="importError" class="error-msg"></div>
-        <button class="btn-submit" onclick="parseAndImport()">⚡ Parse &amp; Import</button>
+        <button class="btn-submit" id="textImportBtn" onclick="parseAndImport()">⚡ Parse &amp; Import</button>
     </div>
     <div id="formView" class="hidden">
         <button class="btn-back" onclick="showDashboard()">← Back to Dashboard</button>
@@ -789,10 +823,12 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
             <h3>Generated IDs</h3>
             <button class="btn-copy" onclick="copyToClipboard()">Copy to Clipboard</button>
             <div id="summaryOutput"></div>
+            <button class="btn-back" onclick="showDashboard()" style="margin-top: 20px;">← Back to Dashboard</button>
         </div>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
 <script>
     // ── Constants ──────────────────────────────────────────────────────────
     const STORAGE_KEY = 'cutter_ids_v1';
@@ -829,6 +865,165 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
 
     // ── Init ───────────────────────────────────────────────────────────────
     renderDashboard();
+
+    // ── Import Mode Toggle ───────────────────────────────────────────────
+    document.querySelectorAll('input[name="importMode"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            const mode = document.querySelector('input[name="importMode"]:checked').value;
+
+            document.getElementById('textInputArea').style.display =
+                mode === 'text' ? 'block' : 'none';
+
+            document.getElementById('imageInputArea').style.display =
+                mode === 'image' ? 'block' : 'none';
+                
+            document.getElementById('textImportBtn').style.display =
+                mode === 'text' ? 'block' : 'none';
+        });
+    });
+
+    // ── OCR Processing Function ───────────────────────────────────────────
+    async function processImages() {
+        const oldFile = document.getElementById('oldImage').files[0];
+        const newFile = document.getElementById('newImage').files[0];
+
+        if (!oldFile || !newFile) {
+            document.getElementById('importError').innerText = "Please upload both OLD and NEW images.";
+            document.getElementById('importError').style.display = 'block';
+            return;
+        }
+
+        // Show processing status
+        document.getElementById('importError').innerText = "Processing images... This may take a moment.";
+        document.getElementById('importError').style.display = 'block';
+
+        try {
+            const oldText = await runOCR(oldFile);
+            const newText = await runOCR(newFile);
+
+            console.log("OLD OCR:", oldText);
+            console.log("NEW OCR:", newText);
+
+            const oldIDs = extractCutterIDs(oldText);
+            const newIDs = extractCutterIDs(newText);
+
+            // Clear error message
+            document.getElementById('importError').style.display = 'none';
+
+            // 🔥 IMPORTANT: Feed into your EXISTING logic
+            generateReportFromArrays(oldIDs, newIDs);
+        } catch (error) {
+            document.getElementById('importError').innerText = "OCR processing failed: " + error.message;
+            document.getElementById('importError').style.display = 'block';
+        }
+    }
+
+    // ── OCR Engine ───────────────────────────────────────────────────────
+    async function runOCR(file) {
+        const { data: { text } } = await Tesseract.recognize(
+            file,
+            'eng',
+            {
+                logger: m => {
+                    if (m.status === 'recognizing text') {
+                        const progress = Math.round(m.progress * 100);
+                        document.getElementById('importError').innerText = `Processing... ${progress}%`;
+                    }
+                }
+            }
+        );
+        return text;
+    }
+
+    // ── Cutter ID Extraction (OCR-safe) ───────────────────────────────────
+    function extractCutterIDs(text) {
+        const lines = text.split(/\n|\r/);
+        let ids = [];
+
+        lines.forEach(line => {
+            // Replace common OCR mistakes
+            line = line.replace(/O/g, '0').replace(/I/g, '1').replace(/S/g, '5').replace(/Z/g, '2');
+            
+            // Look for LCAGHY patterns or standalone numbers
+            const lcaghyMatches = line.match(/LCAGHY(\d{3,4})/gi);
+            if (lcaghyMatches) {
+                lcaghyMatches.forEach(match => {
+                    const num = match.replace('LCAGHY', '').replace(/[^0-9]/g, '');
+                    if (num.length >= 3) {
+                        ids.push(num.padStart(4, '0'));
+                    }
+                });
+            }
+            
+            // Also look for standalone 3-5 digit numbers
+            const numberMatches = line.match(/\b\d{3,5}\b/g);
+            if (numberMatches) {
+                numberMatches.forEach(match => {
+                    if (match.length >= 3) {
+                        ids.push(match.padStart(4, '0'));
+                    }
+                });
+            }
+        });
+
+        return ids;
+    }
+
+    // ── Hook Into Existing Report Generator ───────────────────────────────
+    function generateReportFromArrays(oldIDs, newIDs) {
+        // Trim / normalize if needed
+        oldIDs = oldIDs.map(id => id.padStart(4, '0'));
+        newIDs = newIDs.map(id => id.padStart(4, '0'));
+
+        // Create a combined text that mimics the original text input format
+        const combinedText = `OLD IDs
+${oldIDs.map(id => `LCAGHY${id}`).join('\n')}
+NEW IDs
+${newIDs.map(id => `LCAGHY${id}`).join('\n')}`;
+
+        // Put this text into the text area and trigger the existing parser
+        document.getElementById('importText').value = combinedText;
+        
+        // Switch to text mode and parse
+        document.querySelector('input[name="importMode"][value="text"]').checked = true;
+        document.getElementById('textInputArea').style.display = 'block';
+        document.getElementById('imageInputArea').style.display = 'none';
+        document.getElementById('textImportBtn').style.display = 'block';
+        
+        // Trigger the existing import logic
+        parseAndImport();
+    }
+
+    // ── Auto-jump functionality ─────────────────────────────────────────────
+    function autoJumpToNext(currentInput) {
+        // Get all visible cutter number inputs in document order
+        const allInputs = Array.from(document.querySelectorAll('.cutter-num-input'))
+            .filter(input => {
+                // Only include inputs that are visible (not hidden by display:none)
+                const rect = input.getBoundingClientRect();
+                return rect.width > 0 && rect.height > 0;
+            });
+        
+        // Find the current input's index
+        const currentIndex = allInputs.indexOf(currentInput);
+        
+        if (currentIndex !== -1 && currentIndex < allInputs.length - 1) {
+            // Jump to the next input
+            const nextInput = allInputs[currentIndex + 1];
+            nextInput.focus();
+            
+            // Select all text in the next field for easy replacement
+            nextInput.select();
+            
+            // Add visual feedback on mobile
+            if (/iPhone|iPad|iPod|Android/.test(navigator.userAgent)) {
+                nextInput.style.backgroundColor = '#eff6ff';
+                setTimeout(() => {
+                    nextInput.style.backgroundColor = '';
+                }, 200);
+            }
+        }
+    }
 
     // ── Error helper ──────────────────────────────────────────────────────
     function showError(msg) {
@@ -938,7 +1133,7 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
                 <input type="tel" id="${oldKey}_${type}" class="cutter-num-input"
                        maxlength="4" placeholder="${TYPE_PLACEHOLDERS[oldKey]}"
                        inputmode="numeric" pattern="[0-9]*"
-                       oninput="this.value=this.value.replace(/\D/g,'')"
+                       oninput="this.value=this.value.replace(/\D/g,''); if(this.value.length===4) autoJumpToNext(this)"
                        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
             </div>
         `).join('');
@@ -950,7 +1145,7 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
                 <input type="tel" id="${newKey}_${type}" class="cutter-num-input"
                        maxlength="4" placeholder="${TYPE_PLACEHOLDERS[newKey]}"
                        inputmode="numeric" pattern="[0-9]*"
-                       oninput="this.value=this.value.replace(/\D/g,'')"
+                       oninput="this.value=this.value.replace(/\D/g,''); if(this.value.length===4) autoJumpToNext(this)"
                        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
             </div>
         `).join('');
@@ -1445,12 +1640,18 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
     function showImport() {
         document.getElementById('dashboardView').classList.add('hidden');
         document.getElementById('importView').classList.remove('hidden');
-        document.getElementById('importTextarea').value = '';
+        document.getElementById('importText').value = '';
         document.getElementById('importError').style.display = 'none';
+        
+        // Reset to text mode
+        document.querySelector('input[name="importMode"][value="text"]').checked = true;
+        document.getElementById('textInputArea').style.display = 'block';
+        document.getElementById('imageInputArea').style.display = 'none';
+        document.getElementById('textImportBtn').style.display = 'block';
     }
 
     function parseAndImport() {
-        const raw = document.getElementById('importTextarea').value.trim();
+        const raw = document.getElementById('importText').value.trim();
         const errEl = document.getElementById('importError');
         errEl.style.display = 'none';
 
