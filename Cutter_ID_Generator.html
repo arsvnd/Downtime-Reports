@@ -904,14 +904,14 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
             console.log("OLD OCR:", oldText);
             console.log("NEW OCR:", newText);
 
-            const oldIDs = extractCutterIDs(oldText);
-            const newIDs = extractCutterIDs(newText);
+            const oldData = extractCutterIDs(oldText);
+            const newData = extractCutterIDs(newText);
 
             // Clear error message
             document.getElementById('importError').style.display = 'none';
 
-            // 🔥 IMPORTANT: Feed into your EXISTING logic
-            generateReportFromArrays(oldIDs, newIDs);
+            // 🔥 IMPORTANT: Feed into your EXISTING logic with structured data
+            generateReportFromHMI(oldData, newData);
         } catch (error) {
             document.getElementById('importError').innerText = "OCR processing failed: " + error.message;
             document.getElementById('importError').style.display = 'block';
@@ -935,41 +935,121 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
         return text;
     }
 
-    // ── Cutter ID Extraction (OCR-safe) ───────────────────────────────────
+    // ── Cutter ID Extraction (HMI-specific) ───────────────────────────────
     function extractCutterIDs(text) {
-        const lines = text.split(/\n|\r/);
-        let ids = [];
+        const lines = text.split(/\n|\r/).map(line => line.trim()).filter(line => line.length > 0);
+        let result = {
+            upper: { cu_old: '', cl_old: '' },
+            center: { cu_old: '', cl_old: '' },
+            final: { fu_old: '', fl_old: '' }
+        };
 
-        lines.forEach(line => {
+        // Expected HMI format: 6 rows
+        // 1. Upper CU
+        // 2. Upper CL  
+        // 3. Center CU
+        // 4. Center CL
+        // 5. Final FU
+        // 6. Final FL
+        
+        const cutterMapping = [
+            { type: 'upper', field: 'cu_old', patterns: ['upper cu', 'cu upper'] },
+            { type: 'upper', field: 'cl_old', patterns: ['upper cl', 'cl upper'] },
+            { type: 'center', field: 'cu_old', patterns: ['center cu', 'cu center'] },
+            { type: 'center', field: 'cl_old', patterns: ['center cl', 'cl center'] },
+            { type: 'final', field: 'fu_old', patterns: ['final fu', 'fu final'] },
+            { type: 'final', field: 'fl_old', patterns: ['final fl', 'fl final'] }
+        ];
+
+        lines.forEach((line, index) => {
             // Replace common OCR mistakes
             line = line.replace(/O/g, '0').replace(/I/g, '1').replace(/S/g, '5').replace(/Z/g, '2');
             
-            // Look for LCAGHY patterns or standalone numbers
-            const lcaghyMatches = line.match(/LCAGHY(\d{3,4})/gi);
-            if (lcaghyMatches) {
-                lcaghyMatches.forEach(match => {
-                    const num = match.replace('LCAGHY', '').replace(/[^0-9]/g, '');
-                    if (num.length >= 3) {
-                        ids.push(num.padStart(4, '0'));
-                    }
-                });
+            // Try to extract cutter ID from this line
+            let cutterID = '';
+            
+            // Look for LCAGHY pattern
+            const lcaghyMatch = line.match(/LCAGHY(\d{3,4})/i);
+            if (lcaghyMatch) {
+                cutterID = lcaghyMatch[1].padStart(4, '0');
+            } else {
+                // Look for standalone 3-5 digit numbers
+                const numberMatch = line.match(/\b(\d{3,5})\b/);
+                if (numberMatch) {
+                    cutterID = numberMatch[1].padStart(4, '0');
+                }
             }
             
-            // Also look for standalone 3-5 digit numbers
-            const numberMatches = line.match(/\b\d{3,5}\b/g);
-            if (numberMatches) {
-                numberMatches.forEach(match => {
-                    if (match.length >= 3) {
-                        ids.push(match.padStart(4, '0'));
-                    }
-                });
+            // If we found a cutter ID and this line index matches our mapping
+            if (cutterID && index < cutterMapping.length) {
+                const mapping = cutterMapping[index];
+                
+                // Additional validation: check if line contains expected patterns
+                const lineLower = line.toLowerCase();
+                const hasExpectedPattern = mapping.patterns.some(pattern => 
+                    lineLower.includes(pattern) || 
+                    lineLower.includes(mapping.type) || 
+                    lineLower.includes(mapping.field.split('_')[0])
+                );
+                
+                // If pattern matches or we're at the expected position, assign it
+                if (hasExpectedPattern || index < 6) {
+                    result[mapping.type][mapping.field] = cutterID;
+                }
             }
         });
 
-        return ids;
+        console.log('HMI Extraction Result:', result);
+        return result;
     }
 
-    // ── Hook Into Existing Report Generator ───────────────────────────────
+    // ── Hook Into Existing Report Generator (HMI-specific) ───────────────────
+    function generateReportFromHMI(oldData, newData) {
+        // Create formatted text that matches the expected import format
+        let oldTextLines = ['OLD IDs'];
+        let newTextLines = ['NEW IDs'];
+        
+        // Process each cutter type
+        ['upper', 'center', 'final'].forEach(type => {
+            const oldTypeData = oldData[type];
+            const newTypeData = newData[type];
+            
+            // Check if we have data for this cutter type
+            const hasOldData = Object.values(oldTypeData).some(val => val !== '');
+            const hasNewData = Object.values(newTypeData).some(val => val !== '');
+            
+            if (hasOldData) {
+                oldTextLines.push(type.charAt(0).toUpperCase() + type.slice(1));
+                if (oldTypeData.cu_old) oldTextLines.push(`LCAGHY${oldTypeData.cu_old}CU${SUFFIX_CONFIG.CU.tail}`);
+                if (oldTypeData.cl_old) oldTextLines.push(`LCAGHY${oldTypeData.cl_old}CL${SUFFIX_CONFIG.CL.tail}`);
+            }
+            
+            if (hasNewData) {
+                newTextLines.push(type.charAt(0).toUpperCase() + type.slice(1));
+                if (newTypeData.cu_old) newTextLines.push(`LCAGHY${newTypeData.cu_old}CU${SUFFIX_CONFIG.CU.tail}`);
+                if (newTypeData.cl_old) newTextLines.push(`LCAGHY${newTypeData.cl_old}CL${SUFFIX_CONFIG.CL.tail}`);
+                if (newTypeData.fu_old) newTextLines.push(`LCAGHY${newTypeData.fu_old}FU${SUFFIX_CONFIG.FU.tail}`);
+                if (newTypeData.fl_old) newTextLines.push(`LCAGHY${newTypeData.fl_old}FL${SUFFIX_CONFIG.FL.tail}`);
+            }
+        });
+        
+        // Combine into final text
+        const combinedText = oldTextLines.join('\n') + '\n' + newTextLines.join('\n');
+
+        // Put this text into the text area and trigger the existing parser
+        document.getElementById('importText').value = combinedText;
+        
+        // Switch to text mode and parse
+        document.querySelector('input[name="importMode"][value="text"]').checked = true;
+        document.getElementById('textInputArea').style.display = 'block';
+        document.getElementById('imageInputArea').style.display = 'none';
+        document.getElementById('textImportBtn').style.display = 'block';
+        
+        // Trigger the existing import logic
+        parseAndImport();
+    }
+
+    // ── Hook Into Existing Report Generator (Legacy) ───────────────────────
     function generateReportFromArrays(oldIDs, newIDs) {
         // Trim / normalize if needed
         oldIDs = oldIDs.map(id => id.padStart(4, '0'));
