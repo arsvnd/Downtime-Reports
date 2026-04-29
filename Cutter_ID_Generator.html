@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cutter ID Generator</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text: #0f172a;
+            --text4: #383f49;
+            --border: #cbd5e1;
+            --success: #37ab87;
+            --danger: #dc2626;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 10px;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 640px) {
+            body { padding: 5px; }
+            .container { padding: 15px; border-radius: 12px; }
+            h1 { font-size: 1.5rem; margin-bottom: 20px; }
+            h3 { font-size: 1rem; margin: 20px 0 12px 0; }
+            .cutter-card-icon { width: 50px; height: 50px; font-size: 1.5rem; }
+            .cutter-card-title { font-size: 1rem; }
+            .cutter-card-description { font-size: 0.82rem; }
+            .cutter-num-input { padding: 10px 14px; font-size: 16px; min-height: 44px; }
+            .cutter-card-add-btn, .cutter-card-remove-btn { padding: 10px 14px; font-size: 0.82rem; min-width: 90px; }
+        }
+
+        h1 { text-align: center; color: var(--primary); margin: 0 0 25px 0; font-size: 1.8rem; }
+        h3 { border-left: 4px solid var(--primary); padding-left: 10px; margin: 25px 0 15px 0; font-size: 1.1rem; }
+
+        /* Dashboard */
+        #reportsList { display: flex; flex-direction: column; gap: 16px; margin-top: 10px; }
+
+        .report-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .report-info { border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; }
+
+        .report-title { font-size: 1.1rem; font-weight: 600; color: var(--text4); line-height: 1.3; margin-bottom: 6px; }
+
+        .report-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 0.85rem; color: #7f8c8d; }
+
+        .cutter-badge {
+            padding: 3px 9px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .badge-upper { background: #dbeafe; color: #1e40af; }
+        .badge-center { background: #dcfce7; color: #166534; }
+        .badge-final { background: #fef3c7; color: #92400e; }
+
+        .btn-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        .btn-edit {
+            background: #e9effd; color: #2563eb; border: 1px solid #92b1f5;
+            padding: 12px; border-radius: 8px; cursor: pointer;
+            transition: background 0.2s; font-size: 0.9rem; font-weight: 600;
+        }
+
+        .btn-delete {
+            background: #fff1f2; color: #e11d48; border: 1px solid #fecdd3;
+            padding: 12px; border-radius: 8px; cursor: pointer;
+            transition: all 0.2s; font-size: 0.9rem; font-weight: 600;
+        }
+
+        .btn-main {
+            display: block; width: 100%; background: var(--primary); color: white;
+            padding: 16px; border: none; border-radius: 8px; font-size: 1.1rem;
+            font-weight: bold; cursor: pointer; margin-bottom: 20px;
+        }
+
+        .btn-back {
+            width: 100%; margin-bottom: 20px; padding: 10px 20px;
+            background: transparent; color: #475569; border: 1px solid #e2e8f0;
+            border-radius: 8px; font-family: 'Segoe UI', sans-serif;
+            font-size: 14px; font-weight: 500; cursor: pointer;
+            transition: all 0.2s ease-in-out; display: flex;
+            align-items: center; justify-content: center; gap: 8px; box-sizing: border-box;
+        }
+        .btn-back:hover { background: #f8fafc; }
+
+        /* Form */
+        .form-group { margin-bottom: 18px; }
+
+        label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #475569; }
+
+        .block-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px; }
+
+        .block-options label {
+            border: 1px solid var(--border); padding: 12px 5px;
+            text-align: center; border-radius: 8px; cursor: pointer;
+            background: white; transition: all 0.2s; font-weight: 500; margin: 0;
+        }
+        .block-options input[type="radio"] { display: none; }
+        .block-options label:has(input:checked) {
+            border-color: var(--primary); background-color: #eff6ff;
+            color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary);
+        }
+
+        input[type="text"], input[type="date"], input[type="time"], select {
+            width: 100%; padding: 12px; border: 1px solid var(--border);
+            border-radius: 8px; font-size: 1rem; box-sizing: border-box; background: #fcfcfc;
+        }
+
+        .btn-import-dash {
+            background: #f1f5f9;
+            color: #374151;
+            border: 1px solid var(--border);
+            padding: 16px 20px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.2s;
+        }
+        .btn-import-dash:hover { background: #e2e8f0; }
+
+
+
+        .btn-submit {
+            width: 100%; background: var(--primary); color: white; padding: 16px;
+            border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold;
+            cursor: pointer; margin-top: 20px;
+        }
+
+        .btn-copy {
+            background: var(--success); color: white; padding: 14px 20px;
+            border: none; border-radius: 6px; font-size: 14px; font-weight: 600;
+            cursor: pointer; margin-bottom: 10px; width: 100%;
+        }
+
+        #summaryContainer { margin-top: 30px; display: none; }
+
+        #summaryOutput {
+            background: #f8fafc; padding: 20px; border-radius: 8px;
+            white-space: pre-wrap; font-family: 'Courier New', Courier, monospace;
+            border: 1px solid var(--border); font-size: 0.95rem; line-height: 1.6;
+        }
+
+        .zero-state-container {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; text-align: center; padding: 10px 20px; min-height: 350px;
+        }
+        .zero-state-icon { font-size: 4rem; margin-bottom: 20px; opacity: 0.4; }
+        .zero-state-text { font-size: 1rem; color: #475569; margin-bottom: 30px; line-height: 1.5; max-width: 300px; }
+        .zero-state-container .btn-main { max-width: 300px; }
+
+        .hidden { display: none !important; }
+
+        .error-msg { color: var(--danger); font-size: 0.88rem; margin-top: 8px; display: none; }
+
+        #summaryContainer { margin-top: 30px; display: none; }
+
+        .input-hint { font-size: 0.78rem; color: #94a3b8; margin-top: 4px; font-weight: 400; }
+
+        /* Cutter type expandable cards */
+        .cutter-type-cards { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
+
+        .cutter-type-card {
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            background: white;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transition: border-color 0.25s, box-shadow 0.25s;
+        }
+
+        .cutter-type-card.selected {
+            border-color: var(--primary);
+            box-shadow: 0 4px 16px rgba(37,99,235,0.18);
+        }
+
+        /* Clickable header row only — not the expanded body */
+        .cutter-card-main {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 20px;
+            cursor: pointer;
+            min-height: 76px;
+            user-select: none;
+        }
+
+        .cutter-card-left { display: flex; align-items: center; flex: 1; gap: 16px; }
+
+        .cutter-card-icon {
+            font-size: 1.8rem; width: 56px; height: 56px;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 12px; flex-shrink: 0; border: 1px solid #e2e8f0;
+        }
+
+        .cutter-card-content { flex: 1; }
+        .cutter-card-title { font-weight: 600; font-size: 1.1rem; color: var(--text); margin-bottom: 2px; }
+        .cutter-card-description { font-size: 0.85rem; color: #64748b; line-height: 1.4; }
+
+        .cutter-card-add-btn {
+            background: var(--primary); color: white; border: none;
+            border-radius: 10px; padding: 10px 18px; font-size: 0.85rem;
+            font-weight: 600; cursor: pointer; min-width: 110px; min-height: 40px;
+            box-shadow: 0 2px 4px rgba(37,99,235,0.2);
+            transition: background 0.2s, transform 0.15s, box-shadow 0.15s;
+        }
+        .cutter-card-add-btn:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(37,99,235,0.3); }
+
+        .cutter-card-remove-btn {
+            background: var(--danger); color: white; border: none;
+            border-radius: 10px; padding: 10px 18px; font-size: 0.85rem;
+            font-weight: 600; cursor: pointer; min-width: 110px; min-height: 40px;
+            box-shadow: 0 2px 4px rgba(220,38,38,0.2);
+            transition: background 0.2s, transform 0.15s, box-shadow 0.15s;
+        }
+        .cutter-card-remove-btn:hover { background: #b91c1c; transform: translateY(-1px); }
+
+        /* Expandable body */
+        .cutter-card-expandable {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease;
+            background: #fafbfc;
+            border-top: 0px solid var(--border);
+        }
+        .cutter-card-expandable.open {
+            max-height: 700px;
+            border-top: 1px solid var(--border);
+        }
+
+        .cutter-card-body { padding: 20px; }
+
+        .cutter-pair { background: #f1f5f9; border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+        .cutter-pair:last-child { margin-bottom: 0; }
+        .cutter-pair-title { font-weight: 700; font-size: 0.85rem; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+
+        .cutter-fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 420px) { .cutter-fields-grid { grid-template-columns: 1fr; } }
+
+        .cutter-num-input {
+            width: 100%; padding: 11px 14px; border: 2px solid var(--border);
+            border-radius: 8px; font-size: 1rem; font-family: 'Courier New', monospace;
+            letter-spacing: 0.08em; box-sizing: border-box; background: white;
+            transition: border-color 0.2s;
+        }
+        .cutter-num-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        .cutter-num-input::placeholder { color: #94a3b8; letter-spacing: 0.05em; }
+
+        .cutter-next-btn {
+            margin-top: 14px; background: var(--primary); color: white;
+            border: none; border-radius: 8px; padding: 9px 18px;
+            font-size: 0.85rem; font-weight: 600; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .cutter-next-btn:hover { background: #1d4ed8; }
+
+        /* Selected cutter summary badges */
+        #selectedCutterSummary { margin-bottom: 4px; }
+
+        /* Tasks Checklist */
+        .tasks-container {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 8px;
+        }
+
+        .task-item {
+            margin-bottom: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .task-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .task-item[data-types="center"] {
+            display: none;
+        }
+
+        .task-item[data-types="final"] {
+            display: none;
+        }
+
+        .task-item.show-center {
+            display: block;
+        }
+
+        .task-item.show-final {
+            display: block;
+        }
+
+        .task-checkbox {
+            display: flex;
+            align-items: flex-start;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background-color 0.2s ease;
+            user-select: none;
+        }
+
+        .task-checkbox:hover {
+            background-color: #f1f5f9;
+        }
+
+        .task-checkbox input[type="checkbox"] {
+            display: none;
+        }
+
+        .checkmark {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #cbd5e1;
+            border-radius: 4px;
+            margin-right: 12px;
+            flex-shrink: 0;
+            margin-top: 2px;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .task-checkbox input[type="checkbox"]:checked + .checkmark {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .task-checkbox input[type="checkbox"]:checked + .checkmark::after {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 2px;
+            width: 6px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .task-text {
+            font-size: 0.95rem;
+            color: var(--text);
+            line-height: 1.4;
+            font-weight: 500;
+        }
+
+        .task-checkbox input[type="checkbox"]:checked ~ .task-text {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Task completion progress */
+        .tasks-progress {
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: #64748b;
+            text-align: center;
+        }
+
+        .tasks-progress.has-tasks {
+            color: var(--primary);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>✂️ Cutter ID Generator</h1>
+
+    <!-- DASHBOARD VIEW -->
+    <div id="dashboardView">
+        <div id="dashBtnRow" style="display:none; gap:10px; margin-bottom:20px; flex-direction:row;">
+            <button class="btn-main" style="margin-bottom:0; flex:1;" onclick="createNewRecord()">+ New Cutter Change</button>
+            <button class="btn-import-dash" onclick="showImport()">📋 Import IDs</button>
+        </div>
+        <div id="reportsList">
+            <div class="zero-state-container">
+                <div class="zero-state-icon">🔧</div>
+                <div class="zero-state-text">No cutter change records yet. Create one to generate and save your cutter IDs.</div>
+                <button class="btn-main" onclick="createNewRecord()">+ New Cutter Change</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- IMPORT VIEW -->
+    <div id="importView" class="hidden">
+        <button class="btn-back" onclick="showDashboard()">← Back to Dashboard</button>
+        <h3>📋 Import Cutter IDs</h3>
+        <p style="color:#475569; font-size:0.9rem; margin-bottom:16px; line-height:1.5;">
+            Paste your cutter IDs below. The format can have New/Old in any order — it will be sorted automatically.
+        </p>
+        <div class="form-group">
+            <textarea id="importTextarea" rows="14" placeholder="Paste IDs here, e.g.:
+New IDs
+Upper
+LCAGHY1005CU656X1.8
+LCAGHY2002CL718X0.0
+Old IDs
+Upper
+LCAGHY0013CU656X1.8
+LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-family:'Courier New',monospace;font-size:0.88rem;box-sizing:border-box;background:#fcfcfc;resize:vertical;line-height:1.6;"></textarea>
+        </div>
+        <div id="importError" class="error-msg"></div>
+        <button class="btn-submit" onclick="parseAndImport()">⚡ Parse &amp; Import</button>
+    </div>
+    <div id="formView" class="hidden">
+        <button class="btn-back" onclick="showDashboard()">← Back to Dashboard</button>
+        <input type="hidden" id="editingId" value="">
+
+        <h3>1. Date &amp; Time</h3>
+        <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="dateInput" required>
+        </div>
+        <div class="form-group">
+            <label>Time</label>
+            <select id="timeInput" required>
+                <option value="">Select time</option>
+                <option value="00:00">12:00 AM</option>
+                <option value="00:30">12:30 AM</option>
+                <option value="01:00">1:00 AM</option>
+                <option value="01:30">1:30 AM</option>
+                <option value="02:00">2:00 AM</option>
+                <option value="02:30">2:30 AM</option>
+                <option value="03:00">3:00 AM</option>
+                <option value="03:30">3:30 AM</option>
+                <option value="04:00">4:00 AM</option>
+                <option value="04:30">4:30 AM</option>
+                <option value="05:00">5:00 AM</option>
+                <option value="05:30">5:30 AM</option>
+                <option value="06:00">6:00 AM</option>
+                <option value="06:30">6:30 AM</option>
+                <option value="07:00">7:00 AM</option>
+                <option value="07:30">7:30 AM</option>
+                <option value="08:00">8:00 AM</option>
+                <option value="08:30">8:30 AM</option>
+                <option value="09:00">9:00 AM</option>
+                <option value="09:30">9:30 AM</option>
+                <option value="10:00">10:00 AM</option>
+                <option value="10:30">10:30 AM</option>
+                <option value="11:00">11:00 AM</option>
+                <option value="11:30">11:30 AM</option>
+                <option value="12:00">12:00 PM</option>
+                <option value="12:30">12:30 PM</option>
+                <option value="13:00">1:00 PM</option>
+                <option value="13:30">1:30 PM</option>
+                <option value="14:00">2:00 PM</option>
+                <option value="14:30">2:30 PM</option>
+                <option value="15:00">3:00 PM</option>
+                <option value="15:30">3:30 PM</option>
+                <option value="16:00">4:00 PM</option>
+                <option value="16:30">4:30 PM</option>
+                <option value="17:00">5:00 PM</option>
+                <option value="17:30">5:30 PM</option>
+                <option value="18:00">6:00 PM</option>
+                <option value="18:30">6:30 PM</option>
+                <option value="19:00">7:00 PM</option>
+                <option value="19:30">7:30 PM</option>
+                <option value="20:00">8:00 PM</option>
+                <option value="20:30">8:30 PM</option>
+                <option value="21:00">9:00 PM</option>
+                <option value="21:30">9:30 PM</option>
+                <option value="22:00">10:00 PM</option>
+                <option value="22:30">10:30 PM</option>
+                <option value="23:00">11:00 PM</option>
+                <option value="23:30">11:30 PM</option>
+            </select>
+        </div>
+
+        <h3>2. Line</h3>
+        <div class="form-group">
+            <div class="block-options">
+                <label><input type="radio" name="line" value="1-1"> 1-1</label>
+                <label><input type="radio" name="line" value="1-2"> 1-2</label>
+                <label><input type="radio" name="line" value="1-3"> 1-3</label>
+                <label><input type="radio" name="line" value="1-4"> 1-4</label>
+                <label><input type="radio" name="line" value="1-5"> 1-5</label>
+                <label><input type="radio" name="line" value="1-H"> 1-H</label>
+                <label><input type="radio" name="line" value="2-1"> 2-1</label>
+                <label><input type="radio" name="line" value="2-2"> 2-2</label>
+                <label><input type="radio" name="line" value="2-3"> 2-3</label>
+                <label><input type="radio" name="line" value="2-4"> 2-4</label>
+                <label><input type="radio" name="line" value="2-5"> 2-5</label>
+                <label><input type="radio" name="line" value="3-1"> 3-1</label>
+            </div>
+        </div>
+
+        <h3>3. Cutter Type</h3>
+        <div id="selectedCutterSummary"></div>
+        <div class="cutter-type-cards">
+
+            <!-- Upper Card -->
+            <div class="cutter-type-card" id="card-upper">
+                <div class="cutter-card-main" onclick="toggleCard('upper')">
+                    <div class="cutter-card-left">
+                        <div class="cutter-card-icon">⬆️</div>
+                        <div class="cutter-card-content">
+                            <div class="cutter-card-title">Upper</div>
+                            <div class="cutter-card-description">CU / CL — upper blade cutter pair</div>
+                        </div>
+                    </div>
+                    <button class="cutter-card-add-btn" id="btn-upper"
+                            onclick="event.stopPropagation(); toggleCutterType('upper')">Add</button>
+                </div>
+                <div class="cutter-card-expandable" id="expand-upper">
+                    <div class="cutter-card-body" id="body-upper"></div>
+                </div>
+            </div>
+
+            <!-- Center Card -->
+            <div class="cutter-type-card" id="card-center">
+                <div class="cutter-card-main" onclick="toggleCard('center')">
+                    <div class="cutter-card-left">
+                        <div class="cutter-card-icon">🎯</div>
+                        <div class="cutter-card-content">
+                            <div class="cutter-card-title">Center</div>
+                            <div class="cutter-card-description">CU / CL — center blade cutter pair</div>
+                        </div>
+                    </div>
+                    <button class="cutter-card-add-btn" id="btn-center"
+                            onclick="event.stopPropagation(); toggleCutterType('center')">Add</button>
+                </div>
+                <div class="cutter-card-expandable" id="expand-center">
+                    <div class="cutter-card-body" id="body-center"></div>
+                </div>
+            </div>
+
+            <!-- Final Card -->
+            <div class="cutter-type-card" id="card-final">
+                <div class="cutter-card-main" onclick="toggleCard('final')">
+                    <div class="cutter-card-left">
+                        <div class="cutter-card-icon">✨</div>
+                        <div class="cutter-card-content">
+                            <div class="cutter-card-title">Final</div>
+                            <div class="cutter-card-description">FU / FL — final blade cutter pair</div>
+                        </div>
+                    </div>
+                    <button class="cutter-card-add-btn" id="btn-final"
+                            onclick="event.stopPropagation(); toggleCutterType('final')">Add</button>
+                </div>
+                <div class="cutter-card-expandable" id="expand-final">
+                    <div class="cutter-card-body" id="body-final"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <h3>4. Tasks Checklist</h3>
+        <div id="tasksSection" class="form-group" style="display: none;">
+            <div class="tasks-container">
+                <!-- Always visible tasks -->
+                <div class="task-item" data-types="all">
+                    <label class="task-checkbox">
+                        <input type="checkbox" id="task_linear_greasing" name="tasks" value="linear_greasing">
+                        <span class="checkmark"></span>
+                        <span class="task-text">Linear greasing</span>
+                    </label>
+                </div>
+                
+                <div class="task-item" data-types="all">
+                    <label class="task-checkbox">
+                        <input type="checkbox" id="task_guide_master_bolt" name="tasks" value="guide_master_bolt">
+                        <span class="checkmark"></span>
+                        <span class="task-text">Guide master bolt check</span>
+                    </label>
+                </div>
+
+                <!-- Center-only tasks -->
+                <div class="task-item" data-types="center">
+                    <label class="task-checkbox">
+                        <input type="checkbox" id="task_esp_lami_purging" name="tasks" value="esp_lami_purging">
+                        <span class="checkmark"></span>
+                        <span class="task-text">ESP Lami purging</span>
+                    </label>
+                </div>
+                
+                <div class="task-item" data-types="center">
+                    <label class="task-checkbox">
+                        <input type="checkbox" id="task_ring_blower_filter" name="tasks" value="ring_blower_filter">
+                        <span class="checkmark"></span>
+                        <span class="task-text">Ring Blower, Turtle Pump Filter cleaning</span>
+                    </label>
+                </div>
+
+                <!-- Final-only tasks -->
+                <div class="task-item" data-types="final">
+                    <label class="task-checkbox">
+                        <input type="checkbox" id="task_stk_purging" name="tasks" value="stk_purging">
+                        <span class="checkmark"></span>
+                        <span class="task-text">STK purging</span>
+                    </label>
+                </div>
+                
+                <div class="task-item" data-types="final">
+                    <label class="task-checkbox">
+                        <input type="checkbox" id="task_vulkollan_replacement" name="tasks" value="vulkollan_replacement">
+                        <span class="checkmark"></span>
+                        <span class="task-text">Vulkollan Replacement</span>
+                    </label>
+                </div>
+                
+                <div class="task-item" data-types="final">
+                    <label class="task-checkbox">
+                        <input type="checkbox" id="task_ssss_greasing" name="tasks" value="ssss_greasing">
+                        <span class="checkmark"></span>
+                        <span class="task-text">SSSS, Short checker, Vision gripper linear greasing</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div id="errorMessage" class="error-msg"></div>
+        <button class="btn-submit" onclick="saveRecord()">💾 Save &amp; Generate IDs</button>
+
+        <!-- Summary -->
+        <div id="summaryContainer">
+            <h3>Generated IDs</h3>
+            <button class="btn-copy" onclick="copyToClipboard()">Copy to Clipboard</button>
+            <div id="summaryOutput"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ── Constants ──────────────────────────────────────────────────────────
+    const STORAGE_KEY = 'cutter_ids_v1';
+
+    const SUFFIX_CONFIG = {
+        CU: { tail: '656X1.8' },
+        CL: { tail: '718X0.0' },
+        FU: { tail: '656X1.2' },
+        FL: { tail: '718X0.0' }
+    };
+
+    // Fields per type: [suffix, oldKey, newKey]
+    const TYPE_FIELDS = {
+        upper:  [['CU', 'cu_old', 'cu_new'], ['CL', 'cl_old', 'cl_new']],
+        center: [['CU', 'cu_old', 'cu_new'], ['CL', 'cl_old', 'cl_new']],
+        final:  [['FU', 'fu_old', 'fu_new'], ['FL', 'fl_old', 'fl_new']]
+    };
+
+    const TYPE_PLACEHOLDERS = {
+        cu_old: '0013', cu_new: '1005',
+        cl_old: '2007', cl_new: '2002',
+        fu_old: '5023', fu_new: '5010',
+        fl_old: '0233', fl_new: '6037'
+    };
+
+    function buildID(num4, suffix) {
+        return `LCAGHY${String(num4).padStart(4,'0')}${suffix}${SUFFIX_CONFIG[suffix].tail}`;
+    }
+
+    // ── State ──────────────────────────────────────────────────────────────
+    let records = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    // selectedCutterTypes: ordered array, e.g. ['upper','final']
+    let selectedCutterTypes = [];
+
+    // ── Init ───────────────────────────────────────────────────────────────
+    renderDashboard();
+
+    // ── Error helper ──────────────────────────────────────────────────────
+    function showError(msg) {
+        const el = document.getElementById('errorMessage');
+        el.innerText = msg;
+        el.style.display = 'block';
+    }
+
+    function clearError() {
+        const el = document.getElementById('errorMessage');
+        el.style.display = 'none';
+    }
+
+    // ── Card toggle (header click = expand/collapse preview only) ─────────
+    // Clicking the card header just expands to show the fields if already added,
+    // or does nothing if not yet added (the Add button adds it).
+    function toggleCard(type) {
+        if (!selectedCutterTypes.includes(type)) return; // not selected yet — ignore
+        const expand = document.getElementById(`expand-${type}`);
+        expand.classList.toggle('open');
+    }
+
+    // ── Add / Remove cutter type ───────────────────────────────────────────
+    function toggleCutterType(type) {
+        clearError();
+        if (selectedCutterTypes.includes(type)) {
+            removeCutterType(type);
+        } else {
+            addCutterType(type);
+        }
+    }
+
+    function addCutterType(type) {
+        selectedCutterTypes.push(type);
+        const idx = selectedCutterTypes.indexOf(type);
+
+        // Render fields into the card body
+        document.getElementById(`body-${type}`).innerHTML = renderCutterFields(type, idx);
+
+        // Open the expandable
+        document.getElementById(`expand-${type}`).classList.add('open');
+
+        // Style the card as selected
+        document.getElementById(`card-${type}`).classList.add('selected');
+
+        // Flip button to Remove
+        const btn = document.getElementById(`btn-${type}`);
+        btn.textContent = 'Remove';
+        btn.classList.remove('cutter-card-add-btn');
+        btn.classList.add('cutter-card-remove-btn');
+
+        updateSelectedSummary();
+    }
+
+    function removeCutterType(type) {
+        selectedCutterTypes = selectedCutterTypes.filter(t => t !== type);
+
+        // Clear and close
+        document.getElementById(`body-${type}`).innerHTML = '';
+        document.getElementById(`expand-${type}`).classList.remove('open');
+        document.getElementById(`card-${type}`).classList.remove('selected');
+
+        // Flip button back to Add
+        const btn = document.getElementById(`btn-${type}`);
+        btn.textContent = 'Add';
+        btn.classList.remove('cutter-card-remove-btn');
+        btn.classList.add('cutter-card-add-btn');
+
+        updateSelectedSummary();
+        // Re-index any remaining types so their field IDs stay correct
+        reIndexFields();
+    }
+
+    // After a removal, re-render fields for all remaining types to keep indices consistent
+    function reIndexFields() {
+        selectedCutterTypes.forEach((type, idx) => {
+            // Capture current values before re-render
+            const saved = {};
+            TYPE_FIELDS[type].forEach(([, oldKey, newKey]) => {
+                const oldEl = document.getElementById(`${oldKey}_${type}`);
+                const newEl = document.getElementById(`${newKey}_${type}`);
+                if (oldEl) saved[oldKey] = oldEl.value;
+                if (newEl) saved[newKey] = newEl.value;
+            });
+
+            document.getElementById(`body-${type}`).innerHTML = renderCutterFields(type, idx);
+
+            // Restore values
+            TYPE_FIELDS[type].forEach(([, oldKey, newKey]) => {
+                const oldEl = document.getElementById(`${oldKey}_${type}`);
+                const newEl = document.getElementById(`${newKey}_${type}`);
+                if (oldEl && saved[oldKey]) oldEl.value = saved[oldKey];
+                if (newEl && saved[newKey]) newEl.value = saved[newKey];
+            });
+        });
+    }
+
+    // ── Field ID scheme: keyed by type name, not index ────────────────────
+    // e.g. cu_old_upper, cl_new_center — avoids index-shift bugs entirely
+    function renderCutterFields(type, _idx) {
+        const pairs = TYPE_FIELDS[type];
+
+        // OLD section: all suffixes' old inputs
+        const oldRows = pairs.map(([suffix, oldKey]) => `
+            <div>
+                <label>${suffix} <span class="input-hint">4 digits</span></label>
+                <input type="tel" id="${oldKey}_${type}" class="cutter-num-input"
+                       maxlength="4" placeholder="${TYPE_PLACEHOLDERS[oldKey]}"
+                       inputmode="numeric" pattern="[0-9]*"
+                       oninput="this.value=this.value.replace(/\D/g,'')">
+            </div>
+        `).join('');
+
+        // NEW section: all suffixes' new inputs
+        const newRows = pairs.map(([suffix, , newKey]) => `
+            <div>
+                <label>${suffix} <span class="input-hint">4 digits</span></label>
+                <input type="tel" id="${newKey}_${type}" class="cutter-num-input"
+                       maxlength="4" placeholder="${TYPE_PLACEHOLDERS[newKey]}"
+                       inputmode="numeric" pattern="[0-9]*"
+                       oninput="this.value=this.value.replace(/\D/g,'')">
+            </div>
+        `).join('');
+
+        return `
+            <div class="cutter-pair">
+                <div class="cutter-pair-title">OLD</div>
+                <div class="cutter-fields-grid">${oldRows}</div>
+            </div>
+            <div class="cutter-pair">
+                <div class="cutter-pair-title">NEW</div>
+                <div class="cutter-fields-grid">${newRows}</div>
+            </div>
+        `;
+    }
+
+    function updateSelectedSummary() {
+        const el = document.getElementById('selectedCutterSummary');
+        if (selectedCutterTypes.length === 0) { 
+            el.innerHTML = ''; 
+            document.getElementById('tasksSection').style.display = 'none';
+            return; 
+        }
+        const badges = selectedCutterTypes.map(t =>
+            `<span class="cutter-badge badge-${t}">${t.charAt(0).toUpperCase()+t.slice(1)}</span>`
+        ).join(' ');
+        el.innerHTML = `<div style="margin-bottom:12px;font-size:0.85rem;color:#475569;"><strong>Selected:</strong> ${badges}</div>`;
+        
+        // Show tasks section and update visibility
+        document.getElementById('tasksSection').style.display = 'block';
+        updateTasksVisibility();
+    }
+
+    function updateTasksVisibility() {
+        const tasksContainer = document.querySelector('.tasks-container');
+        const allTaskItems = tasksContainer.querySelectorAll('.task-item');
+        
+        // Hide all conditional tasks first
+        allTaskItems.forEach(item => {
+            if (item.dataset.types !== 'all') {
+                item.style.display = 'none';
+                item.classList.remove('show-center', 'show-final');
+            }
+        });
+        
+        // Show tasks based on selected cutter types
+        selectedCutterTypes.forEach(type => {
+            const conditionalTasks = tasksContainer.querySelectorAll(`.task-item[data-types="${type}"]`);
+            conditionalTasks.forEach(task => {
+                task.style.display = 'block';
+                task.classList.add(`show-${type}`);
+            });
+        });
+        
+        updateTasksProgress();
+    }
+
+    function updateTasksProgress() {
+        const visibleTasks = document.querySelectorAll('.task-item:not([style*="display: none"])');
+        const checkedTasks = document.querySelectorAll('.task-item:not([style*="display: none"]) input[type="checkbox"]:checked');
+        
+        if (visibleTasks.length === 0) return;
+        
+        const progress = Math.round((checkedTasks.length / visibleTasks.length) * 100);
+        
+        // Add or update progress indicator
+        let progressEl = document.querySelector('.tasks-progress');
+        if (!progressEl) {
+            progressEl = document.createElement('div');
+            progressEl.className = 'tasks-progress';
+            document.querySelector('.tasks-container').insertBefore(progressEl, document.querySelector('.tasks-container').firstChild);
+        }
+        
+        progressEl.textContent = `${checkedTasks.length} of ${visibleTasks.length} tasks completed (${progress}%)`;
+        progressEl.classList.toggle('has-tasks', checkedTasks.length > 0);
+    }
+
+    // Add event listeners for task checkboxes
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('input[name="tasks"]').forEach(checkbox => {
+            checkbox.addEventListener('change', updateTasksProgress);
+        });
+    });
+
+    function getCompletedTasks() {
+        const checkedTasks = document.querySelectorAll('input[name="tasks"]:checked');
+        return Array.from(checkedTasks).map(task => task.value);
+    }
+
+    function setCompletedTasks(taskValues) {
+        // Clear all checkboxes first
+        document.querySelectorAll('input[name="tasks"]').forEach(task => {
+            task.checked = false;
+        });
+        
+        // Set checked state for provided task values
+        taskValues.forEach(taskValue => {
+            const task = document.querySelector(`input[name="tasks"][value="${taskValue}"]`);
+            if (task) {
+                task.checked = true;
+            }
+        });
+        
+        updateTasksProgress();
+    }
+
+    // ── Dashboard ──────────────────────────────────────────────────────────
+    function renderDashboard() {
+        records = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        const list = document.getElementById('reportsList');
+        const btnRow = document.getElementById('dashBtnRow');
+
+        if (records.length === 0) {
+            btnRow.style.display = 'none';
+            list.innerHTML = `
+                <div class="zero-state-container">
+                    <div class="zero-state-icon">🔧</div>
+                    <div class="zero-state-text">No cutter change records yet. Create one or import existing IDs.</div>
+                    <button class="btn-main" onclick="createNewRecord()">+ New Cutter Change</button>
+                    <button class="btn-import-dash" style="width:100%;max-width:300px;" onclick="showImport()">📋 Import IDs</button>
+                </div>`;
+            return;
+        }
+
+        btnRow.style.display = 'flex';
+
+        list.innerHTML = records.slice().reverse().map(r => {
+            const types = Array.isArray(r.cutterTypes) ? r.cutterTypes : [r.cutterType].filter(Boolean);
+            const badges = types.map(t =>
+                `<span class="cutter-badge badge-${t}">${t.charAt(0).toUpperCase()+t.slice(1)}</span>`
+            ).join(' ');
+
+            // Preview IDs
+            let previewHtml = '';
+            types.forEach(type => {
+                const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+                previewHtml += `<div style="margin-bottom:10px;"><strong style="font-size:0.85rem;">${typeLabel}</strong><br>`;
+                previewHtml += `<div style="font-size:0.8rem;font-family:'Courier New',monospace;color:#374151;line-height:1.8;">`;
+                TYPE_FIELDS[type].forEach(([suffix, oldKey, newKey]) => {
+                    const oldVal = r[`${oldKey}_${type}`];
+                    const newVal = r[`${newKey}_${type}`];
+                    if (oldVal) previewHtml += `OLD: ${buildID(oldVal, suffix)}<br>`;
+                    if (newVal) previewHtml += `NEW: ${buildID(newVal, suffix)}<br>`;
+                });
+                previewHtml += `</div></div>`;
+            });
+
+            return `
+            <div class="report-card">
+                <div class="report-info">
+                    <div class="report-title">${r.dateLabel} &nbsp;·&nbsp; Line ${r.line}</div>
+                    <div class="report-meta">${badges}<span>${r.timeLabel}</span></div>
+                </div>
+                <div style="background:#f8fafc;padding:12px;border-radius:8px;border:1px solid var(--border);">
+                    ${previewHtml}
+                </div>
+                <div class="btn-actions">
+                    <button class="btn-edit" onclick="editRecord(${r.id})">✏️ Edit / View</button>
+                    <button class="btn-delete" onclick="deleteRecord(${r.id})">🗑️ Delete</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // ── Create / Edit / Navigation ─────────────────────────────────────────
+    function createNewRecord() {
+        clearError();
+        selectedCutterTypes = [];
+        document.getElementById('editingId').value = '';
+
+        // Reset form fields
+        document.querySelectorAll('input[name="line"]').forEach(r => r.checked = false);
+        document.getElementById('summaryContainer').style.display = 'none';
+        document.getElementById('selectedCutterSummary').innerHTML = '';
+        document.getElementById('tasksSection').style.display = 'none';
+
+        // Reset all 3 cards to clean state
+        ['upper','center','final'].forEach(type => {
+            document.getElementById(`body-${type}`).innerHTML = '';
+            document.getElementById(`expand-${type}`).classList.remove('open');
+            document.getElementById(`card-${type}`).classList.remove('selected');
+            const btn = document.getElementById(`btn-${type}`);
+            btn.textContent = 'Add';
+            btn.classList.remove('cutter-card-remove-btn');
+            btn.classList.add('cutter-card-add-btn');
+        });
+
+        // Clear all task checkboxes
+        document.querySelectorAll('input[name="tasks"]').forEach(task => {
+            task.checked = false;
+        });
+
+        // Remove progress indicator if it exists
+        const progressEl = document.querySelector('.tasks-progress');
+        if (progressEl) {
+            progressEl.remove();
+        }
+
+        const now = new Date();
+        document.getElementById('dateInput').value = now.toISOString().slice(0,10);
+        
+        // Set default time to current 30-minute interval
+        const currentHours = now.getHours();
+        const currentMinutes = now.getMinutes();
+        const roundedMinutes = currentMinutes >= 30 ? 30 : 0;
+        const timeValue = `${currentHours.toString().padStart(2, '0')}:${roundedMinutes.toString().padStart(2, '0')}`;
+        document.getElementById('timeInput').value = timeValue;
+
+        showForm();
+    }
+
+    function editRecord(id) {
+        const r = records.find(x => x.id === id);
+        if (!r) return;
+
+        clearError();
+        selectedCutterTypes = [];
+        document.getElementById('editingId').value = id;
+
+        // First reset all cards
+        ['upper','center','final'].forEach(type => {
+            document.getElementById(`body-${type}`).innerHTML = '';
+            document.getElementById(`expand-${type}`).classList.remove('open');
+            document.getElementById(`card-${type}`).classList.remove('selected');
+            const btn = document.getElementById(`btn-${type}`);
+            btn.textContent = 'Add';
+            btn.classList.remove('cutter-card-remove-btn');
+            btn.classList.add('cutter-card-add-btn');
+        });
+
+        document.getElementById('dateInput').value = r.dateRaw;
+        document.getElementById('timeInput').value = r.timeRaw;
+
+        document.querySelectorAll('input[name="line"]').forEach(radio => {
+            radio.checked = (radio.value === r.line);
+        });
+
+        // Re-add each cutter type and populate its saved values
+        const types = Array.isArray(r.cutterTypes) ? r.cutterTypes : [r.cutterType].filter(Boolean);
+        types.forEach(type => {
+            addCutterType(type); // renders fields and opens card
+
+            // Populate saved values (fields are keyed by type name)
+            TYPE_FIELDS[type].forEach(([, oldKey, newKey]) => {
+                const oldEl = document.getElementById(`${oldKey}_${type}`);
+                const newEl = document.getElementById(`${newKey}_${type}`);
+                // Support both new key scheme (_type) and legacy scheme (no suffix)
+                if (oldEl) oldEl.value = r[`${oldKey}_${type}`] || r[oldKey] || '';
+                if (newEl) newEl.value = r[`${newKey}_${type}`] || r[newKey] || '';
+            });
+        });
+
+        showForm();
+        // Show saved summary
+        document.getElementById('summaryOutput').innerText = buildSummaryText(r);
+        document.getElementById('summaryContainer').style.display = 'block';
+        
+        // Restore completed tasks
+        if (r.completedTasks && Array.isArray(r.completedTasks)) {
+            setCompletedTasks(r.completedTasks);
+        }
+    }
+
+    function showForm() {
+        document.getElementById('dashboardView').classList.add('hidden');
+        document.getElementById('formView').classList.remove('hidden');
+    }
+
+    function showDashboard() {
+        document.getElementById('dashboardView').classList.remove('hidden');
+        document.getElementById('formView').classList.add('hidden');
+        document.getElementById('importView').classList.add('hidden');
+        renderDashboard();
+    }
+
+    // ── Format helpers ─────────────────────────────────────────────────────
+    function formatDateLabel(dateStr) {
+        if (!dateStr) return '';
+        const d = new Date(dateStr + 'T12:00:00');
+        const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+        return `${months[d.getMonth()]} ${d.getDate()}`;
+    }
+
+    function formatTimeLabel(timeStr) {
+        if (!timeStr) return '';
+        let [h, m] = timeStr.split(':');
+        let hNum = parseInt(h);
+        const ampm = hNum >= 12 ? 'PM' : 'AM';
+        hNum = hNum % 12 || 12;
+        return `${hNum}:${m}${ampm}`;
+    }
+
+    // ── Summary text builder (matches spec format exactly) ─────────────────
+    function buildSummaryText(r) {
+        const types = Array.isArray(r.cutterTypes) ? r.cutterTypes : [r.cutterType].filter(Boolean);
+        let text = `${r.dateLabel} ${r.timeLabel}\nLine: ${r.line}\n`;
+
+        types.forEach((type, i) => {
+            const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+            text += `${typeLabel}\n`;
+            text += `OLD\n`;
+            TYPE_FIELDS[type].forEach(([suffix, oldKey]) => {
+                text += `${buildID(r[`${oldKey}_${type}`] || r[oldKey], suffix)}\n`;
+            });
+            text += `NEW\n`;
+            TYPE_FIELDS[type].forEach(([suffix, , newKey]) => {
+                text += `${buildID(r[`${newKey}_${type}`] || r[newKey], suffix)}\n`;
+            });
+            // Blank line between sections (not after last)
+            if (i < types.length - 1) text += '\n';
+        });
+
+        // Add task completion status
+        if (r.completedTasks && r.completedTasks.length > 0) {
+            text += `\nTASKS COMPLETED\n`;
+            
+            const allTasks = {
+                'linear_greasing': 'Linear greasing',
+                'guide_master_bolt': 'Guide master bolt check',
+                'esp_lami_purging': 'ESP Lami purging',
+                'ring_blower_filter': 'Ring Blower, Turtle Pump Filter cleaning',
+                'stk_purging': 'STK purging',
+                'vulkollan_replacement': 'Vulkollan Replacement',
+                'ssss_greasing': 'SSSS, Short checker, Vision gripper linear greasing'
+            };
+
+            // Determine which tasks should be visible based on cutter types
+            const visibleTasks = [];
+            
+            // Always visible tasks
+            visibleTasks.push('linear_greasing', 'guide_master_bolt');
+            
+            // Center-only tasks
+            if (types.includes('center')) {
+                visibleTasks.push('esp_lami_purging', 'ring_blower_filter');
+            }
+            
+            // Final-only tasks
+            if (types.includes('final')) {
+                visibleTasks.push('stk_purging', 'vulkollan_replacement', 'ssss_greasing');
+            }
+
+            // Separate completed and incomplete tasks
+            const completedTasks = [];
+            const incompleteTasks = [];
+
+            visibleTasks.forEach(taskKey => {
+                if (r.completedTasks.includes(taskKey)) {
+                    completedTasks.push(allTasks[taskKey]);
+                } else {
+                    incompleteTasks.push(allTasks[taskKey]);
+                }
+            });
+
+            // Show completed tasks
+            if (completedTasks.length > 0) {
+                text += `✅ Done:\n`;
+                completedTasks.forEach(task => {
+                    text += `   ${task}\n`;
+                });
+            }
+
+            // Show incomplete tasks
+            if (incompleteTasks.length > 0) {
+                text += `❌ Not Done:\n`;
+                incompleteTasks.forEach(task => {
+                    text += `   ${task}\n`;
+                });
+            }
+        }
+
+        return text.trimEnd();
+    }
+
+    // ── Save ───────────────────────────────────────────────────────────────
+    function saveRecord() {
+        clearError();
+
+        const line = document.querySelector('input[name="line"]:checked')?.value;
+        const dateRaw = document.getElementById('dateInput').value;
+        const timeRaw = document.getElementById('timeInput').value;
+
+        if (!line)                          { showError('Please select a Line.'); return; }
+        if (selectedCutterTypes.length === 0) { showError('Please select at least one Cutter Type.'); return; }
+        if (!dateRaw)                       { showError('Please enter a Date.'); return; }
+        if (!timeRaw)                       { showError('Please enter a Time.'); return; }
+
+        let recordData = {
+            line,
+            cutterTypes: [...selectedCutterTypes],
+            dateRaw,
+            timeRaw,
+            dateLabel: formatDateLabel(dateRaw),
+            timeLabel: formatTimeLabel(timeRaw),
+            completedTasks: getCompletedTasks(), // Add completed tasks
+        };
+
+        // Validate & collect cutter numbers — keyed as e.g. cu_old_upper
+        for (const type of selectedCutterTypes) {
+            for (const [, oldKey, newKey] of TYPE_FIELDS[type]) {
+                const oldVal = document.getElementById(`${oldKey}_${type}`)?.value.trim();
+                const newVal = document.getElementById(`${newKey}_${type}`)?.value.trim();
+
+                if (!oldVal || oldVal.length !== 4) { showError(`${type.toUpperCase()} — ${oldKey.replace('_',' ').toUpperCase()}: enter exactly 4 digits.`); return; }
+                if (!newVal || newVal.length !== 4) { showError(`${type.toUpperCase()} — ${newKey.replace('_',' ').toUpperCase()}: enter exactly 4 digits.`); return; }
+
+                recordData[`${oldKey}_${type}`] = oldVal;
+                recordData[`${newKey}_${type}`] = newVal;
+            }
+        }
+
+        const editingIdRaw = document.getElementById('editingId').value;
+        const editingId = editingIdRaw ? parseInt(editingIdRaw) : null;
+
+        if (editingId) {
+            recordData.id = editingId;
+            const idx = records.findIndex(r => r.id === editingId);
+            if (idx > -1) records[idx] = recordData;
+            else records.push(recordData);
+        } else {
+            recordData.id = Date.now();
+            records.push(recordData);
+        }
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+
+        // Show summary
+        document.getElementById('summaryOutput').innerText = buildSummaryText(recordData);
+        const container = document.getElementById('summaryContainer');
+        container.style.display = 'block';
+        setTimeout(() => container.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+    }
+
+    // ── Delete ─────────────────────────────────────────────────────────────
+    function deleteRecord(id) {
+        if (!confirm('Delete this cutter change record?')) return;
+        records = records.filter(r => r.id !== id);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+        renderDashboard();
+    }
+
+    // ── Import ─────────────────────────────────────────────────────────────
+    function showImport() {
+        document.getElementById('dashboardView').classList.add('hidden');
+        document.getElementById('importView').classList.remove('hidden');
+        document.getElementById('importTextarea').value = '';
+        document.getElementById('importError').style.display = 'none';
+    }
+
+    function parseAndImport() {
+        const raw = document.getElementById('importTextarea').value.trim();
+        const errEl = document.getElementById('importError');
+        errEl.style.display = 'none';
+
+        if (!raw) {
+            errEl.innerText = 'Please paste some IDs first.';
+            errEl.style.display = 'block';
+            return;
+        }
+
+        // ── Parser ──────────────────────────────────────────────────────
+        // Position-based lookback: scan the full raw text for every LCAGHY ID,
+        // then look back up to 400 chars for the nearest age + type keyword.
+        // Suffix drives type — FU/FL always = final; CU/CL = upper unless center keyword is nearer than upper keyword.
+
+        const data = {};  // data[type][age][suffix] = '####'
+
+        const AGE_OLD  = /\b(old|before|prev|previous|original|orig|current|remov(ed)?|taken\s*out|pulled|discarded)\b/gi;
+        const AGE_NEW  = /\b(new|after|install(ed)?|replacing|next|added)\b/gi;
+        const T_UPPER  = /\bupp(er)?\b/gi;
+        const T_CENTER = /\bcen(ter|tre)?\b/gi;
+        const ID_RE    = /LCAGHY(\d{3,4})(CU|CL|FU|FL)/gi;
+
+        function lastMatchPos(text, re) {
+            re.lastIndex = 0;
+            let pos = -1, m;
+            while ((m = re.exec(text)) !== null) pos = m.index;
+            return pos;
+        }
+
+        const LOOKBACK = 400;
+        let m;
+        ID_RE.lastIndex = 0;
+        while ((m = ID_RE.exec(raw)) !== null) {
+            const num    = m[1].padStart(4, '0');
+            const suffix = m[2].toUpperCase();
+            const window = raw.slice(Math.max(0, m.index - LOOKBACK), m.index);
+
+            // Nearest age keyword before this ID
+            const oldPos = lastMatchPos(window, AGE_OLD);
+            const newPos = lastMatchPos(window, AGE_NEW);
+            const age = (oldPos === -1 && newPos === -1) ? null
+                      : newPos > oldPos ? 'new' : 'old';
+
+            // Type: FU/FL always = final; CU/CL = center if center keyword is nearer, else upper
+            let type;
+            if (suffix === 'FU' || suffix === 'FL') {
+                type = 'final';
+            } else {
+                const uPos = lastMatchPos(window, T_UPPER);
+                const cPos = lastMatchPos(window, T_CENTER);
+                type = cPos > uPos ? 'center' : 'upper';
+            }
+
+            if (!age) continue;
+
+            if (!data[type])      data[type]      = {};
+            if (!data[type][age]) data[type][age] = {};
+            if (!data[type][age][suffix]) data[type][age][suffix] = num;
+        }
+
+        // Validate: each found type must have all required suffixes for both old/new
+        const REQUIRED = {
+            upper:  { suffixes: ['CU', 'CL'], oldKeys: ['cu_old','cl_old'], newKeys: ['cu_new','cl_new'] },
+            center: { suffixes: ['CU', 'CL'], oldKeys: ['cu_old','cl_old'], newKeys: ['cu_new','cl_new'] },
+            final:  { suffixes: ['FU', 'FL'], oldKeys: ['fu_old','fl_old'], newKeys: ['fu_new','fl_new'] },
+        };
+
+        const foundTypes = Object.keys(data);
+        if (foundTypes.length === 0) {
+            errEl.innerText = 'No valid LCAGHY IDs found. Make sure the text includes cutter IDs like LCAGHY0013CU656X1.8.';
+            errEl.style.display = 'block';
+            return;
+        }
+
+        const errors = [];
+        foundTypes.forEach(type => {
+            const req = REQUIRED[type];
+            req.suffixes.forEach(suf => {
+                if (!data[type]?.old?.[suf]) errors.push(`Missing OLD ${suf} for ${type}`);
+                if (!data[type]?.new?.[suf]) errors.push(`Missing NEW ${suf} for ${type}`);
+            });
+        });
+
+        if (errors.length) {
+            errEl.innerText = 'Incomplete data: ' + errors.join(', ') + '.';
+            errEl.style.display = 'block';
+            return;
+        }
+
+        // ── Build record ────────────────────────────────────────────────
+        const now = new Date();
+        const dateRaw = now.toISOString().slice(0, 10);
+        const timeRaw = now.toTimeString().slice(0, 5);
+
+        let recordData = {
+            id: Date.now(),
+            line: '',               // user will pick line after import
+            cutterTypes: foundTypes,
+            dateRaw,
+            timeRaw,
+            dateLabel: formatDateLabel(dateRaw),
+            timeLabel: formatTimeLabel(timeRaw),
+        };
+
+        foundTypes.forEach(type => {
+            const req = REQUIRED[type];
+            req.suffixes.forEach((suf, i) => {
+                recordData[`${req.oldKeys[i]}_${type}`] = data[type].old[suf];
+                recordData[`${req.newKeys[i]}_${type}`] = data[type].new[suf];
+            });
+        });
+
+        // Push to records and open as edit so user can set line + date/time
+        records.push(recordData);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+
+        // Open edit view — user confirms line & datetime then saves
+        document.getElementById('importView').classList.add('hidden');
+        editRecord(recordData.id);
+
+        // Show a notice at the top of the form
+        const notice = document.createElement('div');
+        notice.style.cssText = 'background:#dcfce7;border:1px solid #86efac;color:#166534;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:0.9rem;font-weight:500;';
+        notice.innerHTML = `✅ Imported ${foundTypes.map(t=>t.charAt(0).toUpperCase()+t.slice(1)).join(', ')} IDs — confirm the line and date/time below, then save.`;
+        const form = document.getElementById('formView');
+        form.insertBefore(notice, form.children[1]); // after Back button
+        setTimeout(() => notice.remove(), 8000);
+    }
+
+
+    function copyToClipboard() {
+        const text = document.getElementById('summaryOutput').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.querySelector('.btn-copy');
+            btn.innerText = '✓ Copied!';
+            setTimeout(() => { btn.innerText = 'Copy to Clipboard'; }, 2000);
+        });
+    }
+</script>
+</body>
+</html>
