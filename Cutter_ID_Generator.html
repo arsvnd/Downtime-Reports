@@ -533,6 +533,46 @@
             color: var(--primary);
             font-weight: 600;
         }
+
+        /* OCR Preview Styles */
+        .ids-preview-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .id-preview-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .id-preview-label {
+            font-weight: 600;
+            color: var(--text);
+            min-width: 60px;
+        }
+
+        .id-preview-input {
+            flex: 1;
+            padding: 6px 8px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .id-preview-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -609,6 +649,31 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
         <div id="importError" class="error-msg"></div>
         <button class="btn-submit" id="textImportBtn" onclick="parseAndImport()">⚡ Parse &amp; Import</button>
     </div>
+    <!-- OCR PREVIEW VIEW -->
+    <div id="ocrPreviewView" class="hidden">
+        <button class="btn-back" onclick="showImport()">← Back to Import</button>
+        <h3>🔍 Review Detected IDs</h3>
+        <p style="color:#475569; font-size:0.9rem; margin-bottom:16px; line-height:1.5;">
+            Please review and edit any incorrect digits before generating the report.
+        </p>
+        
+        <div class="form-group">
+            <label>OLD IDs</label>
+            <div id="oldIdsPreview" class="ids-preview-container"></div>
+        </div>
+        
+        <div class="form-group">
+            <label>NEW IDs</label>
+            <div id="newIdsPreview" class="ids-preview-container"></div>
+        </div>
+        
+        <div id="importError" class="error-msg"></div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-back" onclick="showImport()">← Back</button>
+            <button class="btn-submit" onclick="generateReportFromPreview()">✅ Generate Report</button>
+        </div>
+    </div>
+
     <div id="formView" class="hidden">
         <button class="btn-back" onclick="showDashboard()">← Back to Dashboard</button>
         <input type="hidden" id="editingId" value="">
@@ -828,6 +893,7 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
     // ── Constants ──────────────────────────────────────────────────────────
     const STORAGE_KEY = 'cutter_ids_v1';
@@ -897,8 +963,13 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
         document.getElementById('importError').style.display = 'block';
 
         try {
-            const oldText = await runOCR(oldFile);
-            const newText = await runOCR(newFile);
+            const oldText = await runOCR(oldFile, (progress) => {
+                document.getElementById('importError').innerText = `Processing OLD image... ${progress}`;
+            });
+            
+            const newText = await runOCR(newFile, (progress) => {
+                document.getElementById('importError').innerText = `Processing NEW image... ${progress}`;
+            });
 
             console.log("OLD OCR:", oldText);
             console.log("NEW OCR:", newText);
@@ -909,262 +980,171 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
             // Clear error message
             document.getElementById('importError').style.display = 'none';
 
-            // 🔥 IMPORTANT: Feed into your EXISTING logic with structured data
-            generateReportFromHMI(oldData, newData);
+            // 🔥 Show preview screen instead of directly generating report
+            showOCRPreview(oldData, newData);
         } catch (error) {
             document.getElementById('importError').innerText = "OCR processing failed: " + error.message;
             document.getElementById('importError').style.display = 'block';
         }
     }
 
-    // ── Modern OCR Engine (Vision API) ───────────────────────────────────────
-    async function runOCR(file) {
-        try {
-            // Method 1: Try using browser's built-in OCR (if available)
-            if ('TextDetector' in window) {
-                return await runBrowserOCR(file);
-            }
-            
-            // Method 2: Use enhanced OCR with better preprocessing
-            return await runEnhancedOCR(file);
-        } catch (error) {
-            console.error('OCR failed, falling back to basic extraction:', error);
-            throw error;
-        }
-    }
+    // ── Improved OCR Engine with Preprocessing ───────────────────────────────
+    async function runOCR(file, onProgress) {
+        const preprocessedImages = await preprocessForOCR(file);
 
-    // ── Browser Native OCR (Chrome/Edge) ───────────────────────────────────
-    async function runBrowserOCR(file) {
-        const img = new Image();
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        return new Promise((resolve, reject) => {
-            img.onload = async () => {
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.drawImage(img, 0, 0);
-                
-                try {
-                    // Use Shape Detection API if available
-                    const textDetector = new TextDetector();
-                    const textRegions = await textDetector.detect(canvas);
-                    
-                    let extractedText = '';
-                    for (const region of textRegions) {
-                        extractedText += region.rawValue + '\n';
+        let bestText = "";
+        let bestScore = -1;
+
+        for (const img of preprocessedImages) {
+            const result = await Tesseract.recognize(img, "eng", {
+                logger: m => {
+                    if (m.status === "recognizing text" && onProgress) {
+                        onProgress(Math.round(m.progress * 100) + "%");
                     }
-                    
-                    resolve(extractedText);
-                } catch (e) {
-                    reject(e);
-                }
-            };
-            
-            img.onerror = reject;
-            img.src = URL.createObjectURL(file);
-        });
-    }
+                },
 
-    // ── Enhanced OCR with Blue Text Detection ───────────────────────────────
-    async function runEnhancedOCR(file) {
-        const img = new Image();
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        return new Promise((resolve, reject) => {
-            img.onload = () => {
-                try {
-                    // Preprocess image for better OCR
-                    canvas.width = img.width * 2; // 2x scaling for better accuracy
-                    canvas.height = img.height * 2;
-                    
-                    // Apply image enhancement
-                    ctx.imageSmoothingEnabled = true;
-                    ctx.imageSmoothingQuality = 'high';
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    
-                    // Get image data for blue text filtering
-                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                    const data = imageData.data;
-                    
-                    // Filter for blue text specifically
-                    for (let i = 0; i < data.length; i += 4) {
-                        const r = data[i];     // Red
-                        const g = data[i + 1]; // Green
-                        const b = data[i + 2]; // Blue
-                        
-                        // Detect blue pixels (typical HMI blue: low red, low green, high blue)
-                        const isBlueText = b > 100 && r < 100 && g < 100 && (b - r) > 50 && (b - g) > 50;
-                        
-                        if (isBlueText) {
-                            // Make blue text black for better OCR
-                            data[i] = 0;     // Black
-                            data[i + 1] = 0; // Black
-                            data[i + 2] = 0; // Black
-                        } else {
-                            // Make everything else white
-                            data[i] = 255;     // White
-                            data[i + 1] = 255; // White
-                            data[i + 2] = 255; // White
-                        }
-                        // Alpha remains unchanged
-                    }
-                    
-                    ctx.putImageData(imageData, 0, 0);
-                    
-                    // Use canvas-based text extraction simulation
-                    const extractedText = extractTextFromCanvas(canvas);
-                    resolve(extractedText);
-                    
-                } catch (e) {
-                    reject(e);
-                }
-            };
-            
-            img.onerror = reject;
-            img.src = URL.createObjectURL(file);
-        });
-    }
+                tessedit_char_whitelist: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.",
+                tessedit_pageseg_mode: "6",
+                preserve_interword_spaces: "1"
+            });
 
-    // ── Canvas-based Text Extraction Simulation ───────────────────────────
-    function extractTextFromCanvas(canvas) {
-        // This is a simplified text extraction that works better than Tesseract
-        // for structured HMI displays with numbers
-        
-        const ctx = canvas.getContext('2d');
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const data = imageData.data;
-        
-        // Find text regions by analyzing pixel patterns
-        const lines = [];
-        const lineHeight = canvas.height / 8; // Assume 8 lines of text
-        
-        for (let y = 0; y < canvas.height; y += lineHeight) {
-            let lineText = '';
-            let currentNumber = '';
-            
-            for (let x = 0; x < canvas.width; x += 2) {
-                const idx = (y * canvas.width + x) * 4;
-                const pixel = data[idx];
-                
-                // Black pixel (text)
-                if (pixel < 50) {
-                    currentNumber += detectDigit(x, y, data, canvas.width, canvas.height);
-                } else if (currentNumber.length > 0) {
-                    // End of number
-                    lineText += currentNumber + ' ';
-                    currentNumber = '';
-                }
-            }
-            
-            if (lineText.trim()) {
-                lines.push(lineText.trim());
-            }
-        }
-        
-        // Post-process to extract cutter IDs
-        return postProcessOCR(lines.join('\n'));
-    }
+            const text = result.data.text || "";
+            const score = scoreOCRText(text);
 
-    // ── Digit Detection from Pixels ───────────────────────────────────────
-    function detectDigit(startX, startY, data, width, height) {
-        // Simple pattern recognition for digits
-        // This is a basic implementation - in production, you'd use ML models
-        
-        const patterns = {
-            '0': [1,1,1,1,0,1,1,0,1,1,0,1,1,1,1],
-            '1': [0,1,0,1,1,0,0,1,0,0,1,0,1,1,1],
-            '2': [1,1,1,0,0,1,1,1,1,1,0,0,1,1,1],
-            '3': [1,1,1,0,0,1,1,1,1,0,0,1,1,1,1],
-            '4': [1,0,1,1,0,1,1,1,1,0,0,1,0,0,1],
-            '5': [1,1,1,1,0,0,1,1,1,0,0,1,1,1,1],
-            '6': [1,1,1,1,0,0,1,1,1,1,0,1,1,1,1],
-            '7': [1,1,1,0,0,1,0,1,0,0,1,0,0,1,0],
-            '8': [1,1,1,1,0,1,1,1,1,1,0,1,1,1,1],
-            '9': [1,1,1,1,0,1,1,1,1,0,0,1,1,1,1]
-        };
-        
-        // Sample a 3x5 grid around the pixel
-        const sample = [];
-        for (let dy = -2; dy <= 2; dy++) {
-            for (let dx = -1; dx <= 1; dx++) {
-                const x = startX + dx;
-                const y = startY + dy;
-                if (x >= 0 && x < width && y >= 0 && y < height) {
-                    const idx = (y * width + x) * 4;
-                    sample.push(data[idx] < 50 ? 1 : 0);
-                } else {
-                    sample.push(0);
-                }
-            }
-        }
-        
-        // Find best matching pattern
-        let bestMatch = '';
-        let bestScore = 0;
-        
-        for (const [digit, pattern] of Object.entries(patterns)) {
-            let score = 0;
-            for (let i = 0; i < Math.min(sample.length, pattern.length); i++) {
-                if (sample[i] === pattern[i]) score++;
-            }
             if (score > bestScore) {
                 bestScore = score;
-                bestMatch = digit;
+                bestText = text;
             }
         }
-        
-        return bestScore > 10 ? bestMatch : '';
+
+        return normalizeOCRText(bestText);
     }
 
-    // ── Post-process OCR Results ───────────────────────────────────────────
-    function postProcessOCR(rawText) {
-        // Clean up and structure the OCR results
-        const lines = rawText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-        
-        // Look for cutter ID patterns
-        const cutterIDs = [];
-        
-        lines.forEach(line => {
-            // Find LCAGHY patterns
-            const lcaghyMatches = line.match(/LCAGHY(\d{3,4})/gi);
-            if (lcaghyMatches) {
-                lcaghyMatches.forEach(match => {
-                    const num = match.replace('LCAGHY', '').replace(/[^0-9]/g, '');
-                    if (num.length >= 3) {
-                        cutterIDs.push(num.padStart(4, '0'));
-                    }
-                });
-            }
-            
-            // Find standalone numbers
-            const numberMatches = line.match(/\b(\d{3,5})\b/g);
-            if (numberMatches) {
-                numberMatches.forEach(match => {
-                    cutterIDs.push(match.padStart(4, '0'));
-                });
-            }
+    // ── Advanced Image Preprocessing ───────────────────────────────────────
+    async function preprocessForOCR(file) {
+        const img = await loadImage(file);
+
+        const variants = [];
+
+        variants.push(makeOCRCanvas(img, {
+            scale: 3,
+            grayscale: true,
+            threshold: 150,
+            invert: false
+        }));
+
+        variants.push(makeOCRCanvas(img, {
+            scale: 3,
+            grayscale: true,
+            threshold: 180,
+            invert: false
+        }));
+
+        variants.push(makeOCRCanvas(img, {
+            scale: 3,
+            grayscale: true,
+            threshold: 120,
+            invert: false
+        }));
+
+        variants.push(makeOCRCanvas(img, {
+            scale: 3,
+            grayscale: true,
+            threshold: 150,
+            invert: true
+        }));
+
+        return variants;
+    }
+
+    function loadImage(file) {
+        return new Promise((resolve, reject) => {
+            const url = URL.createObjectURL(file);
+            const img = new Image();
+
+            img.onload = () => {
+                URL.revokeObjectURL(url);
+                resolve(img);
+            };
+
+            img.onerror = reject;
+            img.src = url;
         });
-        
-        // Structure the output based on HMI format
-        const hmiStructure = [
-            'Upper CU',
-            'Upper CL',
-            'Center CU', 
-            'Center CL',
-            'Final FU',
-            'Final FL'
-        ];
-        
-        let result = '';
-        hmiStructure.forEach((label, index) => {
-            if (cutterIDs[index]) {
-                result += `${label} LCAGHY${cutterIDs[index]}\n`;
+    }
+
+    function makeOCRCanvas(img, options) {
+        const scale = options.scale || 3;
+
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        for (let i = 0; i < data.length; i += 4) {
+            let r = data[i];
+            let g = data[i + 1];
+            let b = data[i + 2];
+
+            let gray = 0.299 * r + 0.587 * g + 0.114 * b;
+
+            let value = gray > options.threshold ? 255 : 0;
+
+            if (options.invert) {
+                value = 255 - value;
             }
-        });
-        
-        return result;
+
+            data[i] = value;
+            data[i + 1] = value;
+            data[i + 2] = value;
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+
+        return canvas;
+    }
+
+    // ── OCR Text Normalization and Cleanup ─────────────────────────────────
+    function normalizeOCRText(text) {
+        return text
+            .toUpperCase()
+
+            // Common OCR mistakes
+            .replace(/LCA6HY/g, "LCAGHY")
+            .replace(/LC4GHY/g, "LCAGHY")
+            .replace(/LCAGH¥/g, "LCAGHY")
+            .replace(/LCAGHV/g, "LCAGHY")
+            .replace(/LCAGH/g, "LCAGHY")
+
+            // Fix suffix mistakes
+            .replace(/C0/g, "CU")
+            .replace(/CI/g, "CL")
+            .replace(/F1/g, "FL")
+            .replace(/F0/g, "FU")
+
+            // Fix digit-like letters only after LCAGHY
+            .replace(/LCAGHY([O0-9ILSB]{3,5})/g, function (_, digits) {
+                const fixed = digits
+                    .replace(/O/g, "0")
+                    .replace(/I/g, "1")
+                    .replace(/L/g, "1")
+                    .replace(/S/g, "5")
+                    .replace(/B/g, "8");
+
+                return "LCAGHY" + fixed;
+            });
+    }
+
+    function scoreOCRText(text) {
+        const normalized = normalizeOCRText(text);
+        const matches = normalized.match(/LCAGHY\d{3,4}(CU|CL|FU|FL)/g);
+        return matches ? matches.length : 0;
     }
 
     // ── Cutter ID Extraction (HMI-specific) ───────────────────────────────
@@ -1193,39 +1173,56 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
             { type: 'final', field: 'fl_old', patterns: ['final fl', 'fl final'] }
         ];
 
+        // More forgiving regex for OCR mistakes
+        const ID_RE = /L\s*C\s*A\s*G\s*H\s*Y\s*([0-9OILSB]{3,5})\s*(CU|CL|FU|FL|C0|CI|F0|F1)/gi;
+
         lines.forEach((line, index) => {
             // Replace common OCR mistakes
             line = line.replace(/O/g, '0').replace(/I/g, '1').replace(/S/g, '5').replace(/Z/g, '2');
             
-            // Try to extract cutter ID from this line
-            let cutterID = '';
-            
-            // Look for LCAGHY pattern
-            const lcaghyMatch = line.match(/LCAGHY(\d{3,4})/i);
-            if (lcaghyMatch) {
-                cutterID = lcaghyMatch[1].padStart(4, '0');
-            } else {
-                // Look for standalone 3-5 digit numbers
-                const numberMatch = line.match(/\b(\d{3,5})\b/);
-                if (numberMatch) {
-                    cutterID = numberMatch[1].padStart(4, '0');
+            // Look for LCAGHY patterns with forgiving regex
+            let match;
+            while ((match = ID_RE.exec(line)) !== null) {
+                const num = match[1]
+                    .toUpperCase()
+                    .replace(/O/g, "0")
+                    .replace(/I/g, "1")
+                    .replace(/L/g, "1")
+                    .replace(/S/g, "5")
+                    .replace(/B/g, "8")
+                    .slice(-4)
+                    .padStart(4, "0");
+
+                let suffix = match[2].toUpperCase()
+                    .replace("C0", "CU")
+                    .replace("CI", "CL")
+                    .replace("F0", "FU")
+                    .replace("F1", "FL");
+
+                // Map to cutter types
+                if (suffix === 'CU' || suffix === 'CL') {
+                    const type = index < 2 ? 'upper' : (index < 4 ? 'center' : 'final');
+                    const field = suffix === 'CU' ? 'cu_old' : 'cl_old';
+                    if (!result[type][field]) {
+                        result[type][field] = num;
+                    }
+                } else if (suffix === 'FU' || suffix === 'FL') {
+                    if (!result.final.fu_old && suffix === 'FU') {
+                        result.final.fu_old = num;
+                    } else if (!result.final.fl_old && suffix === 'FL') {
+                        result.final.fl_old = num;
+                    }
                 }
             }
             
-            // If we found a cutter ID and this line index matches our mapping
-            if (cutterID && index < cutterMapping.length) {
+            // Fallback: position-based assignment if no matches found
+            if (index < cutterMapping.length && !ID_RE.test(line)) {
                 const mapping = cutterMapping[index];
                 
-                // Additional validation: check if line contains expected patterns
-                const lineLower = line.toLowerCase();
-                const hasExpectedPattern = mapping.patterns.some(pattern => 
-                    lineLower.includes(pattern) || 
-                    lineLower.includes(mapping.type) || 
-                    lineLower.includes(mapping.field.split('_')[0])
-                );
-                
-                // If pattern matches or we're at the expected position, assign it
-                if (hasExpectedPattern || index < 6) {
+                // Look for standalone 3-5 digit numbers
+                const numberMatch = line.match(/\b(\d{3,5})\b/);
+                if (numberMatch) {
+                    const cutterID = numberMatch[1].padStart(4, '0');
                     result[mapping.type][mapping.field] = cutterID;
                 }
             }
@@ -1233,6 +1230,121 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
 
         console.log('HMI Extraction Result:', result);
         return result;
+    }
+
+    // ── OCR Preview Functions ───────────────────────────────────────────────
+    let previewOldData = {};
+    let previewNewData = {};
+
+    function showOCRPreview(oldData, newData) {
+        previewOldData = oldData;
+        previewNewData = newData;
+        
+        // Hide other views and show preview
+        document.getElementById('importView').classList.add('hidden');
+        document.getElementById('ocrPreviewView').classList.remove('hidden');
+        
+        // Generate preview HTML
+        generatePreviewHTML('oldIdsPreview', oldData);
+        generatePreviewHTML('newIdsPreview', newData);
+    }
+
+    function generatePreviewHTML(containerId, data) {
+        const container = document.getElementById(containerId);
+        let html = '';
+        
+        ['upper', 'center', 'final'].forEach(type => {
+            const typeData = data[type];
+            const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+            
+            if (typeData.cu_old) {
+                html += `
+                    <div class="id-preview-item">
+                        <span class="id-preview-label">${typeLabel} CU:</span>
+                        <input type="text" class="id-preview-input" 
+                               id="preview_${type}_cu_old" 
+                               value="${typeData.cu_old}" 
+                               maxlength="4" 
+                               pattern="[0-9]*"
+                               oninput="this.value=this.value.replace(/\\D/g,'')">
+                    </div>
+                `;
+            }
+            
+            if (typeData.cl_old) {
+                html += `
+                    <div class="id-preview-item">
+                        <span class="id-preview-label">${typeLabel} CL:</span>
+                        <input type="text" class="id-preview-input" 
+                               id="preview_${type}_cl_old" 
+                               value="${typeData.cl_old}" 
+                               maxlength="4" 
+                               pattern="[0-9]*"
+                               oninput="this.value=this.value.replace(/\\D/g,'')">
+                    </div>
+                `;
+            }
+            
+            if (typeData.fu_old) {
+                html += `
+                    <div class="id-preview-item">
+                        <span class="id-preview-label">${typeLabel} FU:</span>
+                        <input type="text" class="id-preview-input" 
+                               id="preview_${type}_fu_old" 
+                               value="${typeData.fu_old}" 
+                               maxlength="4" 
+                               pattern="[0-9]*"
+                               oninput="this.value=this.value.replace(/\\D/g,'')">
+                    </div>
+                `;
+            }
+            
+            if (typeData.fl_old) {
+                html += `
+                    <div class="id-preview-item">
+                        <span class="id-preview-label">${typeLabel} FL:</span>
+                        <input type="text" class="id-preview-input" 
+                               id="preview_${type}_fl_old" 
+                               value="${typeData.fl_old}" 
+                               maxlength="4" 
+                               pattern="[0-9]*"
+                               oninput="this.value=this.value.replace(/\\D/g,'')">
+                    </div>
+                `;
+            }
+        });
+        
+        container.innerHTML = html || '<p style="color: #64748b; font-style: italic;">No IDs detected</p>';
+    }
+
+    function generateReportFromPreview() {
+        // Collect edited values from preview
+        const editedOldData = {};
+        const editedNewData = {};
+        
+        ['upper', 'center', 'final'].forEach(type => {
+            editedOldData[type] = {};
+            editedNewData[type] = {};
+            
+            // Collect old data
+            ['cu_old', 'cl_old', 'fu_old', 'fl_old'].forEach(field => {
+                const input = document.getElementById(`preview_${type}_${field}`);
+                if (input) {
+                    editedOldData[type][field] = input.value.padStart(4, '0');
+                }
+            });
+            
+            // Collect new data
+            ['cu_old', 'cl_old', 'fu_old', 'fl_old'].forEach(field => {
+                const input = document.getElementById(`preview_new_${type}_${field}`);
+                if (input) {
+                    editedNewData[type][field] = input.value.padStart(4, '0');
+                }
+            });
+        });
+        
+        // Generate report from edited data
+        generateReportFromHMI(editedOldData, editedNewData);
     }
 
     // ── Hook Into Existing Report Generator (HMI-specific) ───────────────────
