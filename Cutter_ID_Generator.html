@@ -1219,7 +1219,9 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
                 const numberMatch = line.match(/\b(\d{3,5})\b/);
                 if (numberMatch) {
                     const cutterID = numberMatch[1].padStart(4, '0');
-                    result[mapping.type][mapping.field] = cutterID;
+                    if (!result[mapping.type][mapping.field]) {
+                        result[mapping.type][mapping.field] = cutterID;
+                    }
                 }
             }
         });
@@ -1362,6 +1364,8 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
                 oldTextLines.push(type.charAt(0).toUpperCase() + type.slice(1));
                 if (oldTypeData.cu_old) oldTextLines.push(`LCAGHY${oldTypeData.cu_old}CU${SUFFIX_CONFIG.CU.tail}`);
                 if (oldTypeData.cl_old) oldTextLines.push(`LCAGHY${oldTypeData.cl_old}CL${SUFFIX_CONFIG.CL.tail}`);
+                if (oldTypeData.fu_old) oldTextLines.push(`LCAGHY${oldTypeData.fu_old}FU${SUFFIX_CONFIG.FU.tail}`);
+                if (oldTypeData.fl_old) oldTextLines.push(`LCAGHY${oldTypeData.fl_old}FL${SUFFIX_CONFIG.FL.tail}`);
             }
             
             if (hasNewData) {
