@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Cutter ID Generator">
+    <meta name="format-detection" content="telephone=no">
     <title>Cutter ID Generator</title>
     <style>
         :root {
@@ -37,15 +41,146 @@
 
         /* Mobile optimizations */
         @media (max-width: 640px) {
-            body { padding: 5px; }
-            .container { padding: 15px; border-radius: 12px; }
+            body { 
+                padding: 5px;
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+            .container { 
+                padding: 15px; 
+                border-radius: 12px;
+                max-width: 100%;
+            }
             h1 { font-size: 1.5rem; margin-bottom: 20px; }
             h3 { font-size: 1rem; margin: 20px 0 12px 0; }
+            
+            .cutter-type-card { padding: 16px; min-height: 70px; }
+            .cutter-card-left { gap: 12px; }
             .cutter-card-icon { width: 50px; height: 50px; font-size: 1.5rem; }
             .cutter-card-title { font-size: 1rem; }
             .cutter-card-description { font-size: 0.82rem; }
-            .cutter-num-input { padding: 10px 14px; font-size: 16px; min-height: 44px; }
-            .cutter-card-add-btn, .cutter-card-remove-btn { padding: 10px 14px; font-size: 0.82rem; min-width: 90px; }
+            
+            .cutter-card-expanded { max-height: 500px; margin-top: 16px; padding-top: 16px; }
+            .cutter-fields-grid { grid-template-columns: 1fr; gap: 12px; }
+            .cutter-pair-title { font-size: 1rem; margin-bottom: 6px; }
+            
+            .cutter-num-input { 
+                padding: 10px 14px; 
+                font-size: 16px; 
+                min-height: 44px;
+                -webkit-appearance: none;
+                appearance: none;
+                border-radius: 8px;
+            }
+            
+            .cutter-card-add-btn, .cutter-card-remove-btn { 
+                padding: 10px 14px; 
+                font-size: 0.82rem; 
+                min-width: 90px;
+                min-height: 44px;
+            }
+            
+            /* iPhone-specific button adjustments */
+            .btn-main, .btn-submit {
+                min-height: 44px;
+                font-size: 16px;
+                -webkit-appearance: none;
+                appearance: none;
+                -webkit-user-select: none;
+                user-select: none;
+            }
+            
+            .btn-back {
+                min-height: 44px;
+                font-size: 16px;
+            }
+            
+            /* Task checklist iPhone optimizations */
+            .task-checkbox {
+                padding: 12px;
+                min-height: 44px;
+            }
+            
+            .checkmark {
+                width: 24px;
+                height: 24px;
+            }
+            
+            /* Safe area for notched iPhones */
+            @supports (padding: max(0px)) {
+                .container {
+                    padding-left: max(15px, env(safe-area-inset-left));
+                    padding-right: max(15px, env(safe-area-inset-right));
+                }
+            }
+        }
+
+        /* iPhone landscape optimizations */
+        @media (max-width: 896px) and (orientation: landscape) {
+            .container {
+                margin: 10px;
+                padding: 12px;
+            }
+            
+            h1 {
+                font-size: 1.3rem;
+                margin-bottom: 15px;
+            }
+            
+            .cutter-type-card {
+                padding: 12px;
+                min-height: 60px;
+            }
+            
+            .cutter-card-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+            
+            .cutter-card-title {
+                font-size: 0.9rem;
+            }
+            
+            .cutter-card-description {
+                font-size: 0.75rem;
+            }
+        }
+
+        /* iOS Safari specific fixes */
+        @supports (-webkit-touch-callout: none) {
+            /* Prevent zoom on input focus */
+            .cutter-num-input {
+                font-size: 16px !important;
+                transform: scale(1);
+            }
+            
+            /* Smooth scrolling for iOS */
+            body {
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
+            }
+            
+            /* Prevent rubber band effect */
+            .container {
+                overscroll-behavior: contain;
+            }
+            
+            /* Better checkbox rendering on iOS */
+            .checkmark {
+                -webkit-appearance: none;
+                appearance: none;
+                border: 2px solid #cbd5e1;
+                border-radius: 4px;
+            }
+        }
+
+        /* iPhone notch and home indicator support */
+        @supports (padding: max(0px)) {
+            body {
+                padding-top: max(5px, env(safe-area-inset-top));
+                padding-bottom: max(5px, env(safe-area-inset-bottom));
+            }
         }
 
         h1 { text-align: center; color: var(--primary); margin: 0 0 25px 0; font-size: 1.8rem; }
@@ -407,14 +542,14 @@
     <!-- DASHBOARD VIEW -->
     <div id="dashboardView">
         <div id="dashBtnRow" style="display:none; gap:10px; margin-bottom:20px; flex-direction:row;">
-            <button class="btn-main" style="margin-bottom:0; flex:1;" onclick="createNewRecord()">+ New Cutter Change</button>
+            <button class="btn-main" style="margin-bottom:0; flex:1;" onclick="createNewRecord()">New Cutter Change</button>
             <button class="btn-import-dash" onclick="showImport()">📋 Import IDs</button>
         </div>
         <div id="reportsList">
             <div class="zero-state-container">
                 <div class="zero-state-icon">🔧</div>
                 <div class="zero-state-text">No cutter change records yet. Create one to generate and save your cutter IDs.</div>
-                <button class="btn-main" onclick="createNewRecord()">+ New Cutter Change</button>
+                <button class="btn-main" onclick="createNewRecord()">New Cutter Change</button>
             </div>
         </div>
     </div>
@@ -803,7 +938,8 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
                 <input type="tel" id="${oldKey}_${type}" class="cutter-num-input"
                        maxlength="4" placeholder="${TYPE_PLACEHOLDERS[oldKey]}"
                        inputmode="numeric" pattern="[0-9]*"
-                       oninput="this.value=this.value.replace(/\D/g,'')">
+                       oninput="this.value=this.value.replace(/\D/g,'')"
+                       autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
             </div>
         `).join('');
 
@@ -814,7 +950,8 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
                 <input type="tel" id="${newKey}_${type}" class="cutter-num-input"
                        maxlength="4" placeholder="${TYPE_PLACEHOLDERS[newKey]}"
                        inputmode="numeric" pattern="[0-9]*"
-                       oninput="this.value=this.value.replace(/\D/g,'')">
+                       oninput="this.value=this.value.replace(/\D/g,'')"
+                       autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
             </div>
         `).join('');
 
@@ -896,6 +1033,55 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
         document.querySelectorAll('input[name="tasks"]').forEach(checkbox => {
             checkbox.addEventListener('change', updateTasksProgress);
         });
+        
+        // iPhone-specific optimizations
+        if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+            // Prevent double-tap zoom on buttons
+            document.querySelectorAll('button, .task-checkbox').forEach(element => {
+                element.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    this.click();
+                });
+            });
+            
+            // Add swipe gestures for navigation
+            let touchStartX = 0;
+            let touchStartY = 0;
+            
+            document.addEventListener('touchstart', function(e) {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }, { passive: true });
+            
+            document.addEventListener('touchend', function(e) {
+                const touchEndX = e.changedTouches[0].clientX;
+                const touchEndY = e.changedTouches[0].clientY;
+                const deltaX = touchEndX - touchStartX;
+                const deltaY = touchEndY - touchStartY;
+                
+                // Horizontal swipe detection
+                if (Math.abs(deltaX) > 50 && Math.abs(deltaY) < 30) {
+                    if (deltaX > 0 && touchStartX < 50) {
+                        // Swipe right from left edge - go back
+                        if (document.getElementById('formView').classList.contains('hidden') === false) {
+                            showDashboard();
+                        }
+                    }
+                }
+            });
+            
+            // Add haptic feedback for actions
+            const addHapticFeedback = function() {
+                if (window.navigator && window.navigator.vibrate) {
+                    window.navigator.vibrate(10);
+                }
+            };
+            
+            // Add haptic feedback to buttons
+            document.querySelectorAll('button, .task-checkbox').forEach(element => {
+                element.addEventListener('click', addHapticFeedback);
+            });
+        }
     });
 
     function getCompletedTasks() {
