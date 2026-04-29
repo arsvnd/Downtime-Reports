@@ -667,7 +667,7 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
             <div id="newIdsPreview" class="ids-preview-container"></div>
         </div>
         
-        <div id="importError" class="error-msg"></div>
+        <div id="previewError" class="error-msg"></div>
         <div style="display: flex; gap: 10px;">
             <button class="btn-back" onclick="showImport()">← Back</button>
             <button class="btn-submit" onclick="generateReportFromPreview()">✅ Generate Report</button>
@@ -1002,9 +1002,8 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
                         onProgress(Math.round(m.progress * 100) + "%");
                     }
                 },
-
-                tessedit_char_whitelist: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.",
-                tessedit_pageseg_mode: "6",
+                tessedit_char_whitelist: "LCAGHYCUF0123456789",
+                tessedit_pageseg_mode: Tesseract.PSM.SPARSE_TEXT,
                 preserve_interword_spaces: "1"
             });
 
@@ -1177,9 +1176,6 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
         const ID_RE = /L\s*C\s*A\s*G\s*H\s*Y\s*([0-9OILSB]{3,5})\s*(CU|CL|FU|FL|C0|CI|F0|F1)/gi;
 
         lines.forEach((line, index) => {
-            // Replace common OCR mistakes
-            line = line.replace(/O/g, '0').replace(/I/g, '1').replace(/S/g, '5').replace(/Z/g, '2');
-            
             // Look for LCAGHY patterns with forgiving regex
             let match;
             while ((match = ID_RE.exec(line)) !== null) {
@@ -1216,7 +1212,7 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
             }
             
             // Fallback: position-based assignment if no matches found
-            if (index < cutterMapping.length && !ID_RE.test(line)) {
+            if (index < cutterMapping.length) {
                 const mapping = cutterMapping[index];
                 
                 // Look for standalone 3-5 digit numbers
@@ -1245,11 +1241,11 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
         document.getElementById('ocrPreviewView').classList.remove('hidden');
         
         // Generate preview HTML
-        generatePreviewHTML('oldIdsPreview', oldData);
-        generatePreviewHTML('newIdsPreview', newData);
+        generatePreviewHTML('oldIdsPreview', oldData, 'old');
+        generatePreviewHTML('newIdsPreview', newData, 'new');
     }
 
-    function generatePreviewHTML(containerId, data) {
+    function generatePreviewHTML(containerId, data, side) {
         const container = document.getElementById(containerId);
         let html = '';
         
@@ -1262,7 +1258,7 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
                     <div class="id-preview-item">
                         <span class="id-preview-label">${typeLabel} CU:</span>
                         <input type="text" class="id-preview-input" 
-                               id="preview_${type}_cu_old" 
+                               id="preview_${side}_${type}_cu_old" 
                                value="${typeData.cu_old}" 
                                maxlength="4" 
                                pattern="[0-9]*"
@@ -1276,7 +1272,7 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
                     <div class="id-preview-item">
                         <span class="id-preview-label">${typeLabel} CL:</span>
                         <input type="text" class="id-preview-input" 
-                               id="preview_${type}_cl_old" 
+                               id="preview_${side}_${type}_cl_old" 
                                value="${typeData.cl_old}" 
                                maxlength="4" 
                                pattern="[0-9]*"
@@ -1290,7 +1286,7 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
                     <div class="id-preview-item">
                         <span class="id-preview-label">${typeLabel} FU:</span>
                         <input type="text" class="id-preview-input" 
-                               id="preview_${type}_fu_old" 
+                               id="preview_${side}_${type}_fu_old" 
                                value="${typeData.fu_old}" 
                                maxlength="4" 
                                pattern="[0-9]*"
@@ -1304,7 +1300,7 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
                     <div class="id-preview-item">
                         <span class="id-preview-label">${typeLabel} FL:</span>
                         <input type="text" class="id-preview-input" 
-                               id="preview_${type}_fl_old" 
+                               id="preview_${side}_${type}_fl_old" 
                                value="${typeData.fl_old}" 
                                maxlength="4" 
                                pattern="[0-9]*"
@@ -1328,7 +1324,7 @@ LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--borde
             
             // Collect old data
             ['cu_old', 'cl_old', 'fu_old', 'fl_old'].forEach(field => {
-                const input = document.getElementById(`preview_${type}_${field}`);
+                const input = document.getElementById(`preview_old_${type}_${field}`);
                 if (input) {
                     editedOldData[type][field] = input.value.padStart(4, '0');
                 }
