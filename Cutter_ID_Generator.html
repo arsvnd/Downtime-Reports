@@ -431,9 +431,8 @@
     
     function goBack() {
         vibrate();
-        saveDraft(); // Ensure any half-typed data is saved
+        saveDraft(); 
         
-        // Route backwards contextually based on current screen
         switch(state.current) {
             case 'line': go('home', 'left'); break;
             case 'cutters': go('line', 'left'); break;
@@ -466,30 +465,6 @@
         backBtn.style.visibility = "visible";
         progContainer.style.visibility = "visible";
         progFill.style.width = calculateProgress() + "%";
-    }
-
-    async function finishAndCopy() {
-        vibrate([20, 50, 20, 50, 30]); // Big dopamine vibration
-        state.report.status = "complete";
-        saveDraft();
-        
-        const btn = document.getElementById("finishBtn");
-        
-        try {
-            await navigator.clipboard.writeText(buildReportText());
-            if (btn) {
-                btn.innerText = "✓ Copied! Returning home...";
-                btn.classList.add("copy-success");
-                btn.style.transform = "scale(1.02)";
-            }
-        } catch(e) {
-            if (btn) btn.innerText = "✓ Finalized! (Clipboard blocked)";
-        }
-
-        // Auto-route back to home after a brief success delay
-        setTimeout(() => {
-            goHome();
-        }, 1500);
     }
 
     function render() {
@@ -635,7 +610,6 @@
         const isOld = type === "old";
         const key = isOld ? "oldIDs" : "newIDs";
         
-        // Contextual variables
         const title = isOld ? "Remove Old Cutters" : "Install New Cutters";
         const bannerClass = isOld ? "banner-old" : "banner-new";
         const bannerIcon = isOld ? "📤" : "📥";
@@ -727,7 +701,7 @@
                 </div>
             </div>
             <div class="bottom-bar">
-                <button id="finishBtn" class="btn btn-ready" onclick="finishAndCopy()">✓ Done & Copy Report</button>
+                <button id="reviewBtn" class="btn btn-ready" onclick="generateReport()">Review Final Report</button>
             </div>
         `;
     }
@@ -740,7 +714,7 @@
                 <div class="report-preview" id="reportText">${buildReportText()}</div>
             </div>
             <div class="bottom-bar">
-                <button class="btn btn-secondary" onclick="goHome()">Done</button>
+                <button class="btn btn-secondary" onclick="goHome()">Back to Home</button>
                 <button class="btn" id="copyBtn" onclick="copyReport()">Copy to Clipboard</button>
             </div>
         `;
@@ -811,6 +785,22 @@
             saveToStorage();
             render();
         }
+    }
+
+    function generateReport() {
+        vibrate([20, 50, 20, 50, 30]);
+
+        const btn = document.getElementById("reviewBtn");
+        if (btn) {
+            btn.innerText = "Generating Report...";
+            btn.style.transform = "scale(1.02)";
+        }
+
+        setTimeout(() => {
+            state.report.status = "complete";
+            saveDraft();
+            go("report");
+        }, 500); // Slight delay for the generation "feel"
     }
 
     // --- Helpers ---
@@ -923,6 +913,17 @@
         } catch(e) { alert("Failed to copy text."); }
     }
 
+    // --- Dynamic Scrolling on Focus ---
+    // This perfectly isolates scrolling so it ONLY happens when a field is focused
+    // naturally (either by a user tap or by our code shifting focus).
+    document.getElementById("app-container").addEventListener("focusin", e => {
+        if (e.target.classList.contains("id-input")) {
+            setTimeout(() => {
+                e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 150); // Small delay to let the mobile keyboard slide up
+        }
+    });
+
     // --- Frictionless Inputs & Dopamine Logic ---
     document.getElementById("app-container").addEventListener("input", e => {
         if (e.target.classList.contains("id-input")) {
@@ -934,7 +935,6 @@
             triggerInputStateUpdate(e.target, val);
             
             if (val.length === 4) {
-                // Dopamine pop + green styling
                 wrapper.classList.add('is-complete');
                 vibrate([15, 30]);
 
@@ -950,13 +950,12 @@
                     }
                 }
 
-                // Auto-focus next and smoothly scroll to keep it in center view
+                // Auto-focus next field
                 const focusIdx = Number(e.target.dataset.focusindex);
                 const nextInput = document.querySelector(`.id-input[data-focusindex="${focusIdx + 1}"]`);
                 
                 if (nextInput) {
-                    nextInput.focus();
-                    setTimeout(() => nextInput.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+                    nextInput.focus(); // Triggers the focusin event to handle scrolling natively
                 } else {
                     // Leaving the keyboard open and scrolling to the pulsing button
                     const nextBtn = document.getElementById('stepNextBtn');
@@ -1013,8 +1012,7 @@
                         }
                     }
 
-                    nextInput.focus();
-                    setTimeout(() => nextInput.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+                    nextInput.focus(); // Triggers the focusin event to handle scrolling natively
                 }
             }
         }
@@ -1027,11 +1025,10 @@
             if (focusIdx > 0) {
                 const prevInput = document.querySelector(`.id-input[data-focusindex="${focusIdx - 1}"]`);
                 if (prevInput) {
-                    prevInput.focus();
+                    prevInput.focus(); // Triggers the focusin event to handle scrolling natively
                     const val = prevInput.value;
                     prevInput.value = '';
                     prevInput.value = val;
-                    setTimeout(() => prevInput.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
                 }
             }
         }
