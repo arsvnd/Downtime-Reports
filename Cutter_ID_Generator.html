@@ -146,7 +146,7 @@
 
         /* Typography */
         h1, h2, h3 { font-weight: 800; margin-bottom: 8px; color: var(--text-main); }
-        h1 { font-size: 32px; text-align: center; letter-spacing: -0.04em; }
+        h1 { font-size: 32px; text-align: center; letter-spacing: -0.04em; user-select: none; }
         h2 { font-size: 24px; text-align: center; margin-bottom: 24px; letter-spacing: -0.03em; }
         h3 { font-size: 15px; margin-bottom: 16px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
         p.subtitle { color: var(--text-muted); text-align: center; margin-bottom: 32px; font-size: 15px; line-height: 1.4; }
@@ -329,9 +329,114 @@
             color: white !important;
         }
 
+        /* =========================================
+           EASTER EGG MODAL & GRADIENT BUTTON
+           ========================================= */
+        #easter-egg-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        #easter-egg-modal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .easter-egg-content {
+            background: white;
+            padding: 32px 24px;
+            border-radius: 28px;
+            width: 85%;
+            max-width: 340px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+        #easter-egg-modal.show .easter-egg-content {
+            transform: scale(1);
+        }
+        .easter-egg-content img {
+            width: 100%;
+            max-width: 220px;
+            margin-bottom: 24px;
+        }
+        .easter-egg-content p {
+            font-size: 15px;
+            line-height: 1.5;
+            color: var(--text-muted);
+            margin-bottom: 32px;
+            font-weight: 500;
+        }
+        .easter-egg-close {
+            position: absolute;
+            top: 16px; right: 20px;
+            font-size: 28px;
+            color: #CCCCCC;
+            cursor: pointer;
+            background: none;
+            border: none;
+            line-height: 1;
+        }
+
+        /* Magic Gradient Button Style (image_484df6.png style) */
+        .btn-gradient-magic {
+            background: linear-gradient(90deg, #ff8a65 0%, #ff5287 50%, #ff8a65 100%);
+            background-size: 200% auto;
+            color: white;
+            border: 4px solid #fff3f0;
+            border-radius: 9999px;
+            padding: 16px 24px;
+            font-size: 18px;
+            font-weight: 800;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 8px 24px rgba(255, 82, 135, 0.3);
+            transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            animation: gradient-shift 3s linear infinite;
+        }
+        @keyframes gradient-shift {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+        .btn-gradient-magic:active {
+            transform: scale(0.95);
+            box-shadow: 0 4px 12px rgba(255, 82, 135, 0.2);
+        }
+        .btn-gradient-magic svg {
+            width: 22px; height: 22px; fill: white;
+        }
     </style>
 </head>
 <body>
+
+<div id="easter-egg-modal">
+    <div class="easter-egg-content">
+        <button class="easter-egg-close" onclick="closeEasterEgg()">&times;</button>
+        <img src="https://illustrations.popsy.co/red/remote-work.svg" alt="Remote Work">
+        <p>This app has no budget, no team, no office, no sleep, and absolutely nobody asking for it. Just @arsvnd, a laptop, and too much free time. See what free time looks like.</p>
+        <button class="btn-gradient-magic" onclick="alert('I told you not to tap it!')">
+            Don't tap this
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 0C12 6.627 17.373 12 24 12C17.373 12 12 17.373 12 24C12 17.373 6.627 12 0 12C6.627 12 12 6.627 12 0Z" />
+                <path d="M19 16C19 18.209 20.791 20 23 20C20.791 20 19 21.791 19 24C19 21.791 17.209 20 15 20C17.209 20 19 18.209 19 16Z" />
+            </svg>
+        </button>
+    </div>
+</div>
 
 <div id="app-container">
     <header>
@@ -344,6 +449,29 @@
 </div>
 
 <script>
+    // --- Easter Egg Logic ---
+    let titleTapCount = 0;
+    let titleTapTimer = null;
+
+    function handleTitleTap() {
+        titleTapCount++;
+        clearTimeout(titleTapTimer);
+        
+        if (titleTapCount >= 7) {
+            vibrate([30, 50, 30, 50, 50]);
+            document.getElementById('easter-egg-modal').classList.add('show');
+            titleTapCount = 0;
+        } else {
+            titleTapTimer = setTimeout(() => {
+                titleTapCount = 0;
+            }, 1500); // Resets if taps are more than 1.5s apart
+        }
+    }
+
+    function closeEasterEgg() {
+        document.getElementById('easter-egg-modal').classList.remove('show');
+    }
+
     // --- Data & Config ---
     const STORAGE_KEY = "cutter_reports_v7_polished";
     const LINES = ["1-1", "1-2", "1-3", "1-4", "1-5", "1-H", "2-1", "2-2", "2-3", "2-4", "2-5", "3-1"];
@@ -529,8 +657,8 @@
 
         return `
             <div class="scrollable-body">
-                <h1>Cutter Change Reports</h1>
-                <p class="subtitle">Manage and generate your production reports.</p>
+                <h1 onclick="handleTitleTap()">Cutter Change Reports</h1>
+                <p class="subtitle">Manage and generate your cutter change reports.</p>
                 <div class="report-list">${listHTML}</div>
             </div>
             <div class="bottom-bar">
@@ -579,7 +707,7 @@
 
         return `
             <div class="scrollable-body">
-                <h2>Draft Dashboard</h2>
+                <h2>Your Progress</h2>
                 <p class="subtitle" style="margin-bottom:20px;">Review your progress and complete the missing data.</p>
                 
                 <div class="editable-subtitle" onclick="go('line', 'left')">
@@ -613,11 +741,11 @@
         const title = isOld ? "Remove Old Cutters" : "Install New Cutters";
         const bannerClass = isOld ? "banner-old" : "banner-new";
         const bannerIcon = isOld ? "📤" : "📥";
-        const bannerText = isOld ? "Scan or enter the IDs of the cutters you are REMOVING." : "Scan or enter the IDs of the NEW cutters being installed.";
+        const bannerText = isOld ? "Enter the IDs of the OLD cutters you are REMOVING." : "Enter the IDs of the NEW cutters being INSTALLED.";
         const contextLabel = isOld ? "(Removing)" : "(Installing)";
         
         const nextScreen = isOld ? "newer" : "checklist";
-        const nextText = isOld ? "Next: New IDs" : "Next: Checklist";
+        const nextText = isOld ? "Record Removed Cutters" : "Record Installed Cutters";
         const isComplete = checkIdsComplete(key); 
         
         let html = `
@@ -679,7 +807,7 @@
 
         return `
             <div class="scrollable-body">
-                <h2>Maintenance Checklist & Remarks</h2>
+                <h2>Confirm Tasks & Add Notes</h2>
                 <p class="subtitle">Log completed tasks and additional notes.</p>
                 
                 <div style="display: flex; gap: 16px; margin-bottom: 24px;">
@@ -715,7 +843,7 @@
             </div>
             <div class="bottom-bar">
                 <button class="btn btn-secondary" onclick="goHome()">Back to Home</button>
-                <button class="btn" id="copyBtn" onclick="copyReport()">Copy to Clipboard</button>
+                <button class="btn" id="copyBtn" onclick="copyReport()">Copy Report</button>
             </div>
         `;
     }
@@ -904,10 +1032,10 @@
             await navigator.clipboard.writeText(buildReportText());
             vibrate([15, 50, 15]);
             const btn = document.getElementById("copyBtn");
-            btn.innerText = "Copied to Clipboard!";
+            btn.innerText = "Report Copied";
             btn.classList.add("copy-success");
             setTimeout(() => {
-                btn.innerText = "Copy to Clipboard";
+                btn.innerText = "Copy Report";
                 btn.classList.remove("copy-success");
             }, 2000);
         } catch(e) { alert("Failed to copy text."); }
@@ -945,8 +1073,8 @@
                     if (nextBtn) {
                         nextBtn.disabled = false;
                         nextBtn.classList.add('btn-ready');
-                        const targetText = key === "oldIDs" ? "New IDs" : "Checklist";
-                        nextBtn.innerText = `✓ Ready - Next: ${targetText}`;
+                        const targetText = key === "oldIDs" ? "Record Removed Cutters" : "Record Installed Cutters";
+                        nextBtn.innerText = `✓ Ready - ${targetText}`;
                     }
                 }
 
@@ -974,8 +1102,8 @@
                     nextBtn.disabled = true;
                     nextBtn.classList.remove('btn-ready');
                     const key = e.target.dataset.key;
-                    const targetText = key === "oldIDs" ? "New IDs" : "Checklist";
-                    nextBtn.innerText = `Next: ${targetText}`;
+                    const targetText = key === "oldIDs" ? "Record Removed Cutters" : "Record Installed Cutters";
+                    nextBtn.innerText = targetText;
                 }
             }
         }
@@ -1007,8 +1135,8 @@
                         if (nextBtn) {
                             nextBtn.disabled = false;
                             nextBtn.classList.add('btn-ready');
-                            const targetText = key === "oldIDs" ? "New IDs" : "Checklist";
-                            nextBtn.innerText = `✓ Ready - Next: ${targetText}`;
+                            const targetText = key === "oldIDs" ? "Record Removed Cutters" : "Record Installed Cutters";
+                            nextBtn.innerText = `✓ Ready - ${targetText}`;
                         }
                     }
 
