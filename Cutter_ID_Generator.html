@@ -293,13 +293,49 @@
         .empty-state img { width: 180px; margin-bottom: 24px; opacity: 0.9; }
         .empty-state p { font-size: 15px; color: var(--text-muted); line-height: 1.5;}
 
+        /* =========================================
+           UX UPGRADES: Banners & Animations
+           ========================================= */
+        .status-banner {
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 24px;
+            font-weight: 700;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .status-banner.banner-old {
+            background-color: #FFF0F0;
+            color: var(--accent-red);
+            border: 1px solid #FFE5E5;
+        }
+        .status-banner.banner-new {
+            background-color: #F0FDF4;
+            color: #15803D;
+            border: 1px solid #DCFCE7;
+        }
+        .banner-icon { font-size: 20px; }
+
+        @keyframes pulse-btn {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+            70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+        .btn-ready {
+            animation: pulse-btn 1.5s infinite cubic-bezier(0.66, 0, 0, 1);
+            background-color: var(--accent-green) !important;
+            color: white !important;
+        }
+
     </style>
 </head>
 <body>
 
 <div id="app-container">
     <header>
-        <button class="home-btn" id="nav-home" onclick="goHome()">Back</button>
+        <button class="home-btn" id="nav-back" onclick="goBack()">Back</button>
         <div class="progress-container" id="progress-container">
             <div class="progress-bar" id="progressFill"></div>
         </div>
@@ -371,7 +407,7 @@
         return progress;
     }
 
-    // --- Routing & Rendering ---
+    // --- Routing & Navigation Flow ---
     function go(screenName, dir = "right") {
         vibrate();
         state.current = screenName;
@@ -393,30 +429,67 @@
 
     function goHome() { go("home", "left"); }
     
+    function goBack() {
+        vibrate();
+        saveDraft(); // Ensure any half-typed data is saved
+        
+        // Route backwards contextually based on current screen
+        switch(state.current) {
+            case 'line': go('home', 'left'); break;
+            case 'cutters': go('line', 'left'); break;
+            case 'hub': go('home', 'left'); break;
+            case 'old': 
+            case 'newer': 
+            case 'checklist': 
+            case 'report':
+                go('hub', 'left'); break;
+            default: go('home', 'left');
+        }
+    }
+
     function saveAndGo(target) {
         saveDraft();
         go(target);
     }
 
-    function saveAndGoHub() {
-        saveDraft();
-        go("hub", "left");
-    }
-
     function updateNav() {
-        const homeBtn = document.getElementById("nav-home");
+        const backBtn = document.getElementById("nav-back");
         const progContainer = document.getElementById("progress-container");
         const progFill = document.getElementById("progressFill");
         
         if (state.current === "home") {
-            homeBtn.style.visibility = "hidden";
+            backBtn.style.visibility = "hidden";
             progContainer.style.visibility = "hidden";
             return;
         }
         
-        homeBtn.style.visibility = "visible";
+        backBtn.style.visibility = "visible";
         progContainer.style.visibility = "visible";
         progFill.style.width = calculateProgress() + "%";
+    }
+
+    async function finishAndCopy() {
+        vibrate([20, 50, 20, 50, 30]); // Big dopamine vibration
+        state.report.status = "complete";
+        saveDraft();
+        
+        const btn = document.getElementById("finishBtn");
+        
+        try {
+            await navigator.clipboard.writeText(buildReportText());
+            if (btn) {
+                btn.innerText = "✓ Copied! Returning home...";
+                btn.classList.add("copy-success");
+                btn.style.transform = "scale(1.02)";
+            }
+        } catch(e) {
+            if (btn) btn.innerText = "✓ Finalized! (Clipboard blocked)";
+        }
+
+        // Auto-route back to home after a brief success delay
+        setTimeout(() => {
+            goHome();
+        }, 1500);
     }
 
     function render() {
@@ -519,7 +592,6 @@
                 <div class="list-selector">${listItems}</div>
             </div>
             <div class="bottom-bar">
-                <button class="btn btn-secondary" onclick="saveAndGoHub()">Save & View Dashboard</button>
                 <button class="btn" ${state.report.cutters.length === 0 ? "disabled" : ""} onclick="saveAndGo('old')">Next: Old IDs</button>
             </div>
         `;
@@ -556,27 +628,40 @@
                     </div>
                 </div>
             </div>
-            <div class="bottom-bar">
-                <button class="btn btn-secondary" onclick="saveAndReturn()">Save & Exit to Home</button>
-                <button id="generateBtn" class="btn" ${!(oldDone && newDone) ? "disabled" : ""} onclick="generateReport()">Generate Final Report</button>
-            </div>
         `;
     }
 
     function idsHTML(type) {
-        const key = type === "old" ? "oldIDs" : "newIDs";
-        const title = type === "old" ? "Enter Old IDs (Removed)" : "Enter New IDs (Installed)";
-        const nextScreen = type === "old" ? "newer" : "checklist";
-        const nextText = type === "old" ? "Next: New IDs" : "Next: Checklist";
+        const isOld = type === "old";
+        const key = isOld ? "oldIDs" : "newIDs";
         
-        let html = `<div class="scrollable-body"><h2>${title}</h2><p class="subtitle">Enter exactly 4 digits per field.</p>`;
+        // Contextual variables
+        const title = isOld ? "Remove Old Cutters" : "Install New Cutters";
+        const bannerClass = isOld ? "banner-old" : "banner-new";
+        const bannerIcon = isOld ? "📤" : "📥";
+        const bannerText = isOld ? "Scan or enter the IDs of the cutters you are REMOVING." : "Scan or enter the IDs of the NEW cutters being installed.";
+        const contextLabel = isOld ? "(Removing)" : "(Installing)";
+        
+        const nextScreen = isOld ? "newer" : "checklist";
+        const nextText = isOld ? "Next: New IDs" : "Next: Checklist";
+        const isComplete = checkIdsComplete(key); 
+        
+        let html = `
+            <div class="scrollable-body">
+                <h2>${title}</h2>
+                <div class="status-banner ${bannerClass}">
+                    <span class="banner-icon">${bannerIcon}</span>
+                    <span>${bannerText}</span>
+                </div>
+        `;
         
         const sortedCutters = [...state.report.cutters].sort((a, b) => CUTTER_SORT_ORDER.indexOf(a) - CUTTER_SORT_ORDER.indexOf(b));
 
         let inputIndex = 0;
         sortedCutters.forEach(c => {
             const format = FORMATS[c];
-            html += `<h3>${c} Cutter</h3><div class="card cutter-group-card" style="padding:16px;">`;
+            html += `<h3>${c} Cutter <span style="font-weight:500; color:var(--text-muted); font-size:13px;">${contextLabel}</span></h3>
+                     <div class="card cutter-group-card" style="padding:16px;">`;
             
             for(let i = 0; i < 2; i++) {
                 const val = state.report[key][c]?.[i] || "";
@@ -585,7 +670,7 @@
                     <div class="id-input-wrapper ${isCompleteClass}">
                         <span>${format.prefix}</span>
                         <input class="id-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="____"
-                               data-key="${key}" data-cutter="${c}" data-index="${i}" data-focusindex="${inputIndex}" value="${val}">
+                                data-key="${key}" data-cutter="${c}" data-index="${i}" data-focusindex="${inputIndex}" value="${val}">
                         <span>${format.suffixes[i]}</span>
                     </div>`;
                 inputIndex++;
@@ -596,8 +681,11 @@
 
         html += `
             <div class="bottom-bar">
-                <button class="btn btn-secondary" onclick="saveAndGoHub()">Save & View Dashboard</button>
-                <button class="btn" onclick="saveAndGo('${nextScreen}')">${nextText}</button>
+                <button id="stepNextBtn" class="btn ${isComplete ? 'btn-ready' : ''}" 
+                        ${!isComplete ? "disabled" : ""} 
+                        onclick="saveAndGo('${nextScreen}')">
+                    ${isComplete ? '✓ Ready - ' + nextText : nextText}
+                </button>
             </div>
         `;
         return html;
@@ -639,8 +727,7 @@
                 </div>
             </div>
             <div class="bottom-bar">
-                <button class="btn btn-secondary" onclick="saveAndGoHub()">Save & View Dashboard</button>
-                <button class="btn" onclick="saveAndGoHub()">Done & View Dashboard</button>
+                <button id="finishBtn" class="btn btn-ready" onclick="finishAndCopy()">✓ Done & Copy Report</button>
             </div>
         `;
     }
@@ -648,7 +735,7 @@
     function reportHTML() {
         return `
             <div class="scrollable-body">
-                <h2>Review & Copy Report</h2>
+                <h2>Review Final Report</h2>
                 <p class="subtitle">Review your data and copy to clipboard to share.</p>
                 <div class="report-preview" id="reportText">${buildReportText()}</div>
             </div>
@@ -695,11 +782,6 @@
         render();
     }
 
-    function saveAndReturn() {
-        saveDraft();
-        goHome();
-    }
-
     function resumeReport(id) {
         vibrate();
         state.report = state.reports.find(r => r.id === id);
@@ -729,24 +811,6 @@
             saveToStorage();
             render();
         }
-    }
-
-    function generateReport() {
-        vibrate([20, 50, 20, 50, 30]); // More ceremonial vibration
-
-        const btn = document.getElementById("generateBtn");
-        if (btn) {
-            btn.innerText = "✓ Report Finalized!";
-            btn.style.backgroundColor = "var(--accent-green)";
-            btn.style.boxShadow = "0 8px 24px rgba(34, 197, 94, 0.3)";
-            btn.style.transform = "scale(1.02)";
-        }
-
-        setTimeout(() => {
-            state.report.status = "complete";
-            saveDraft();
-            go("report");
-        }, 1000);
     }
 
     // --- Helpers ---
@@ -837,7 +901,6 @@
         const checklist = getChecklistItems();
         if (checklist.length > 0) {
             txt += "Tasks Checklist:\n";
-            // Removed the dash from the output here
             checklist.forEach(item => { txt += `${item} ${r.checklist[item] ? "done" : "not done"}\n`; });
             txt += "\n";
         }
@@ -875,17 +938,46 @@
                 wrapper.classList.add('is-complete');
                 vibrate([15, 30]);
 
+                // Verify section completion and awaken Next button
+                const key = e.target.dataset.key;
+                if (checkIdsComplete(key)) {
+                    const nextBtn = document.getElementById('stepNextBtn');
+                    if (nextBtn) {
+                        nextBtn.disabled = false;
+                        nextBtn.classList.add('btn-ready');
+                        const targetText = key === "oldIDs" ? "New IDs" : "Checklist";
+                        nextBtn.innerText = `✓ Ready - Next: ${targetText}`;
+                    }
+                }
+
                 // Auto-focus next and smoothly scroll to keep it in center view
                 const focusIdx = Number(e.target.dataset.focusindex);
                 const nextInput = document.querySelector(`.id-input[data-focusindex="${focusIdx + 1}"]`);
+                
                 if (nextInput) {
                     nextInput.focus();
                     setTimeout(() => nextInput.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
                 } else {
-                    e.target.blur();
+                    // Leaving the keyboard open and scrolling to the pulsing button
+                    const nextBtn = document.getElementById('stepNextBtn');
+                    if (nextBtn) {
+                        setTimeout(() => {
+                            nextBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 150);
+                    }
                 }
             } else {
                 wrapper.classList.remove('is-complete');
+                
+                // Dim Next button if user backspaces an entry
+                const nextBtn = document.getElementById('stepNextBtn');
+                if (nextBtn) {
+                    nextBtn.disabled = true;
+                    nextBtn.classList.remove('btn-ready');
+                    const key = e.target.dataset.key;
+                    const targetText = key === "oldIDs" ? "New IDs" : "Checklist";
+                    nextBtn.innerText = `Next: ${targetText}`;
+                }
             }
         }
     });
@@ -909,6 +1001,18 @@
                     triggerInputStateUpdate(nextInput, part2);
                     nextInput.closest('.id-input-wrapper').classList.add('is-complete');
                     vibrate([15, 50, 15]); 
+                    
+                    const key = nextInput.dataset.key;
+                    if (checkIdsComplete(key)) {
+                        const nextBtn = document.getElementById('stepNextBtn');
+                        if (nextBtn) {
+                            nextBtn.disabled = false;
+                            nextBtn.classList.add('btn-ready');
+                            const targetText = key === "oldIDs" ? "New IDs" : "Checklist";
+                            nextBtn.innerText = `✓ Ready - Next: ${targetText}`;
+                        }
+                    }
+
                     nextInput.focus();
                     setTimeout(() => nextInput.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
                 }
