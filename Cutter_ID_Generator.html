@@ -1,2203 +1,898 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Cutter ID Generator">
-    <meta name="format-detection" content="telephone=no">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Cutter ID Generator</title>
     <style>
+        /* =========================================
+           1. PREMIUM DESIGN SYSTEM & VARIABLES
+           ========================================= */
         :root {
-            --primary: #2563eb;
-            --bg: #f1f5f9;
-            --card: #ffffff;
-            --text: #0f172a;
-            --text4: #383f49;
-            --border: #cbd5e1;
-            --success: #37ab87;
-            --danger: #dc2626;
+            /* Minimalist Palette */
+            --bg-color: #FAFAFA; 
+            --card-bg: #FFFFFF;
+            --text-main: #111111; 
+            --text-muted: #888888; 
+            --accent-color: #111111; /* Pure Black Accent */
+            --accent-hover: #000000;
+            --accent-green: #22C55E; 
+            --accent-red: #EF4444; 
+            --border: #EAEAEA; 
+            
+            /* Radius */
+            --radius-sm: 12px;
+            --radius-md: 20px;
+            --radius-lg: 28px;
+            --radius-pill: 9999px;
+
+            /* Soft, modern shadows */
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.03);
+            --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.06);
+            --shadow-btn: 0 8px 24px rgba(0, 0, 0, 0.12);
+            
+            /* Typography */
+            --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-sans);
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            padding: 10px;
-            margin: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             display: flex;
             justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            letter-spacing: -0.02em;
         }
 
-        .container {
+        /* App Container */
+        #app-container {
             width: 100%;
-            max-width: 600px;
-            background: var(--card);
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
-        }
-
-        /* Mobile optimizations */
-        @media (max-width: 640px) {
-            body { 
-                padding: 5px;
-                padding-top: env(safe-area-inset-top);
-                padding-bottom: env(safe-area-inset-bottom);
-            }
-            .container { 
-                padding: 15px; 
-                border-radius: 12px;
-                max-width: 100%;
-            }
-            h1 { font-size: 1.5rem; margin-bottom: 20px; }
-            h3 { font-size: 1rem; margin: 20px 0 12px 0; }
-            
-            .cutter-type-card { padding: 16px; min-height: 70px; }
-            .cutter-card-left { gap: 12px; }
-            .cutter-card-icon { width: 50px; height: 50px; font-size: 1.5rem; }
-            .cutter-card-title { font-size: 1rem; }
-            .cutter-card-description { font-size: 0.82rem; }
-            
-            .cutter-card-expanded { max-height: 500px; margin-top: 16px; padding-top: 16px; }
-            .cutter-fields-grid { grid-template-columns: 1fr; gap: 12px; }
-            .cutter-pair-title { font-size: 1rem; margin-bottom: 6px; }
-            
-            .cutter-num-input { 
-                padding: 10px 14px; 
-                font-size: 16px; 
-                min-height: 44px;
-                -webkit-appearance: none;
-                appearance: none;
-                border-radius: 8px;
-            }
-            
-            .cutter-card-add-btn, .cutter-card-remove-btn { 
-                padding: 10px 14px; 
-                font-size: 0.82rem; 
-                min-width: 90px;
-                min-height: 44px;
-            }
-            
-            /* iPhone-specific button adjustments */
-            .btn-main, .btn-submit {
-                min-height: 44px;
-                font-size: 16px;
-                -webkit-appearance: none;
-                appearance: none;
-                -webkit-user-select: none;
-                user-select: none;
-            }
-            
-            .btn-back {
-                min-height: 44px;
-                font-size: 16px;
-            }
-            
-            /* Task checklist iPhone optimizations */
-            .task-checkbox {
-                padding: 12px;
-                min-height: 44px;
-            }
-            
-            .checkmark {
-                width: 24px;
-                height: 24px;
-            }
-            
-            /* Safe area for notched iPhones */
-            @supports (padding: max(0px)) {
-                .container {
-                    padding-left: max(15px, env(safe-area-inset-left));
-                    padding-right: max(15px, env(safe-area-inset-right));
-                }
-            }
-        }
-
-        /* iPhone landscape optimizations */
-        @media (max-width: 896px) and (orientation: landscape) {
-            .container {
-                margin: 10px;
-                padding: 12px;
-            }
-            
-            h1 {
-                font-size: 1.3rem;
-                margin-bottom: 15px;
-            }
-            
-            .cutter-type-card {
-                padding: 12px;
-                min-height: 60px;
-            }
-            
-            .cutter-card-icon {
-                width: 40px;
-                height: 40px;
-                font-size: 1.2rem;
-            }
-            
-            .cutter-card-title {
-                font-size: 0.9rem;
-            }
-            
-            .cutter-card-description {
-                font-size: 0.75rem;
-            }
-        }
-
-        /* iOS Safari specific fixes */
-        @supports (-webkit-touch-callout: none) {
-            /* Prevent zoom on input focus */
-            .cutter-num-input {
-                font-size: 16px !important;
-                transform: scale(1);
-            }
-            
-            /* Smooth scrolling for iOS */
-            body {
-                -webkit-overflow-scrolling: touch;
-                overscroll-behavior: contain;
-            }
-            
-            /* Prevent rubber band effect */
-            .container {
-                overscroll-behavior: contain;
-            }
-            
-            /* Better checkbox rendering on iOS */
-            .checkmark {
-                -webkit-appearance: none;
-                appearance: none;
-                border: 2px solid #cbd5e1;
-                border-radius: 4px;
-            }
-        }
-
-        /* iPhone notch and home indicator support */
-        @supports (padding: max(0px)) {
-            body {
-                padding-top: max(5px, env(safe-area-inset-top));
-                padding-bottom: max(5px, env(safe-area-inset-bottom));
-            }
-        }
-
-        h1 { text-align: center; color: var(--primary); margin: 0 0 25px 0; font-size: 1.8rem; }
-        h3 { border-left: 4px solid var(--primary); padding-left: 10px; margin: 25px 0 15px 0; font-size: 1.1rem; }
-
-        /* Dashboard */
-        #reportsList { display: flex; flex-direction: column; gap: 16px; margin-top: 10px; }
-
-        .report-card {
-            background: #ffffff;
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 20px;
+            max-width: 414px;
+            background-color: var(--bg-color);
+            position: relative;
+            height: 100%;
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .report-info { border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; }
-
-        .report-title { font-size: 1.1rem; font-weight: 600; color: var(--text4); line-height: 1.3; margin-bottom: 6px; }
-
-        .report-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 0.85rem; color: #7f8c8d; }
-
-        .cutter-badge {
-            padding: 3px 9px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.02em;
-        }
-
-        .badge-upper { background: #dbeafe; color: #1e40af; }
-        .badge-center { background: #dcfce7; color: #166534; }
-        .badge-final { background: #fef3c7; color: #92400e; }
-
-        .btn-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-        .btn-edit {
-            background: #e9effd; color: #2563eb; border: 1px solid #92b1f5;
-            padding: 12px; border-radius: 8px; cursor: pointer;
-            transition: background 0.2s; font-size: 0.9rem; font-weight: 600;
-        }
-
-        .btn-delete {
-            background: #fff1f2; color: #e11d48; border: 1px solid #fecdd3;
-            padding: 12px; border-radius: 8px; cursor: pointer;
-            transition: all 0.2s; font-size: 0.9rem; font-weight: 600;
-        }
-
-        .btn-main {
-            display: block; width: 100%; background: var(--primary); color: white;
-            padding: 16px; border: none; border-radius: 8px; font-size: 1.1rem;
-            font-weight: bold; cursor: pointer; margin-bottom: 20px;
-        }
-
-        .btn-back {
-            width: 100%; margin-bottom: 20px; padding: 10px 20px;
-            background: transparent; color: #475569; border: 1px solid #e2e8f0;
-            border-radius: 8px; font-family: 'Segoe UI', sans-serif;
-            font-size: 14px; font-weight: 500; cursor: pointer;
-            transition: all 0.2s ease-in-out; display: flex;
-            align-items: center; justify-content: center; gap: 8px; box-sizing: border-box;
-        }
-        .btn-back:hover { background: #f8fafc; }
-
-        /* Form */
-        .form-group { margin-bottom: 18px; }
-
-        label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #475569; }
-
-        .block-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px; }
-
-        .block-options label {
-            border: 1px solid var(--border); padding: 12px 5px;
-            text-align: center; border-radius: 8px; cursor: pointer;
-            background: white; transition: all 0.2s; font-weight: 500; margin: 0;
-        }
-        .block-options input[type="radio"] { display: none; }
-        .block-options label:has(input:checked) {
-            border-color: var(--primary); background-color: #eff6ff;
-            color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary);
-        }
-
-        input[type="text"], input[type="date"], input[type="time"], select {
-            width: 100%; padding: 12px; border: 1px solid var(--border);
-            border-radius: 8px; font-size: 1rem; box-sizing: border-box; background: #fcfcfc;
-        }
-
-        .btn-import-dash {
-            background: #f1f5f9;
-            color: #374151;
-            border: 1px solid var(--border);
-            padding: 16px 20px;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: background 0.2s;
-        }
-        .btn-import-dash:hover { background: #e2e8f0; }
-
-
-
-        .btn-submit {
-            width: 100%; background: var(--primary); color: white; padding: 16px;
-            border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold;
-            cursor: pointer; margin-top: 20px;
-        }
-
-        .btn-copy {
-            background: var(--success); color: white; padding: 14px 20px;
-            border: none; border-radius: 6px; font-size: 14px; font-weight: 600;
-            cursor: pointer; margin-bottom: 10px; width: 100%;
-        }
-
-        #summaryContainer { margin-top: 30px; display: none; }
-
-        #summaryOutput {
-            background: #f8fafc; padding: 20px; border-radius: 8px;
-            white-space: pre-wrap; font-family: 'Courier New', Courier, monospace;
-            border: 1px solid var(--border); font-size: 0.95rem; line-height: 1.6;
-        }
-
-        .zero-state-container {
-            display: flex; flex-direction: column; align-items: center;
-            justify-content: center; text-align: center; padding: 10px 20px; min-height: 350px;
-        }
-        .zero-state-icon { font-size: 4rem; margin-bottom: 20px; opacity: 0.4; }
-        .zero-state-text { font-size: 1rem; color: #475569; margin-bottom: 30px; line-height: 1.5; max-width: 300px; }
-        .zero-state-container .btn-main { max-width: 300px; }
-
-        .hidden { display: none !important; }
-
-        .error-msg { color: var(--danger); font-size: 0.88rem; margin-top: 8px; display: none; }
-
-        #summaryContainer { margin-top: 30px; display: none; }
-
-        .input-hint { font-size: 0.78rem; color: #94a3b8; margin-top: 4px; font-weight: 400; }
-
-        /* Cutter type expandable cards */
-        .cutter-type-cards { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
-
-        .cutter-type-card {
-            border: 2px solid var(--border);
-            border-radius: 16px;
-            background: white;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            transition: border-color 0.25s, box-shadow 0.25s;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.05); 
         }
 
-        .cutter-type-card.selected {
-            border-color: var(--primary);
-            box-shadow: 0 4px 16px rgba(37,99,235,0.18);
-        }
-
-        /* Clickable header row only — not the expanded body */
-        .cutter-card-main {
+        /* =========================================
+           2. NAVIGATION & PROGRESS
+           ========================================= */
+        header {
+            padding: env(safe-area-inset-top) 20px 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 18px 20px;
-            cursor: pointer;
-            min-height: 76px;
-            user-select: none;
-        }
-
-        .cutter-card-left { display: flex; align-items: center; flex: 1; gap: 16px; }
-
-        .cutter-card-icon {
-            font-size: 1.8rem; width: 56px; height: 56px;
-            display: flex; align-items: center; justify-content: center;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border-radius: 12px; flex-shrink: 0; border: 1px solid #e2e8f0;
-        }
-
-        .cutter-card-content { flex: 1; }
-        .cutter-card-title { font-weight: 600; font-size: 1.1rem; color: var(--text); margin-bottom: 2px; }
-        .cutter-card-description { font-size: 0.85rem; color: #64748b; line-height: 1.4; }
-
-        .cutter-card-add-btn {
-            background: var(--primary); color: white; border: none;
-            border-radius: 10px; padding: 10px 18px; font-size: 0.85rem;
-            font-weight: 600; cursor: pointer; min-width: 110px; min-height: 40px;
-            box-shadow: 0 2px 4px rgba(37,99,235,0.2);
-            transition: background 0.2s, transform 0.15s, box-shadow 0.15s;
-        }
-        .cutter-card-add-btn:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(37,99,235,0.3); }
-
-        .cutter-card-remove-btn {
-            background: var(--danger); color: white; border: none;
-            border-radius: 10px; padding: 10px 18px; font-size: 0.85rem;
-            font-weight: 600; cursor: pointer; min-width: 110px; min-height: 40px;
-            box-shadow: 0 2px 4px rgba(220,38,38,0.2);
-            transition: background 0.2s, transform 0.15s, box-shadow 0.15s;
-        }
-        .cutter-card-remove-btn:hover { background: #b91c1c; transform: translateY(-1px); }
-
-        /* Expandable body */
-        .cutter-card-expandable {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.35s ease;
-            background: #fafbfc;
-            border-top: 0px solid var(--border);
-        }
-        .cutter-card-expandable.open {
-            max-height: 700px;
-            border-top: 1px solid var(--border);
-        }
-
-        .cutter-card-body { padding: 20px; }
-
-        .cutter-pair { background: #f1f5f9; border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
-        .cutter-pair:last-child { margin-bottom: 0; }
-        .cutter-pair-title { font-weight: 700; font-size: 0.85rem; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
-
-        .cutter-fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        @media (max-width: 420px) { .cutter-fields-grid { grid-template-columns: 1fr; } }
-
-        .cutter-num-input {
-            width: 100%; padding: 11px 14px; border: 2px solid var(--border);
-            border-radius: 8px; font-size: 1rem; font-family: 'Courier New', monospace;
-            letter-spacing: 0.08em; box-sizing: border-box; background: white;
-            transition: border-color 0.2s;
-        }
-        .cutter-num-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-        .cutter-num-input::placeholder { color: #94a3b8; letter-spacing: 0.05em; }
-
-        .cutter-next-btn {
-            margin-top: 14px; background: var(--primary); color: white;
-            border: none; border-radius: 8px; padding: 9px 18px;
-            font-size: 0.85rem; font-weight: 600; cursor: pointer;
-            transition: background 0.2s;
-        }
-        .cutter-next-btn:hover { background: #1d4ed8; }
-
-        /* Selected cutter summary badges */
-        #selectedCutterSummary { margin-bottom: 4px; }
-
-        /* Tasks Checklist */
-        .tasks-container {
-            background: #f8fafc;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px;
-            margin-top: 8px;
-        }
-
-        .task-item {
-            margin-bottom: 12px;
-            transition: all 0.2s ease;
-        }
-
-        .task-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .task-item[data-types="center"] {
-            display: none;
-        }
-
-        .task-item[data-types="final"] {
-            display: none;
-        }
-
-        .task-item.show-center {
-            display: block;
-        }
-
-        .task-item.show-final {
-            display: block;
-        }
-
-        .task-checkbox {
-            display: flex;
-            align-items: flex-start;
-            cursor: pointer;
-            padding: 8px 12px;
-            border-radius: 8px;
-            transition: background-color 0.2s ease;
-            user-select: none;
-        }
-
-        .task-checkbox:hover {
-            background-color: #f1f5f9;
-        }
-
-        .task-checkbox input[type="checkbox"] {
-            display: none;
-        }
-
-        .checkmark {
-            width: 20px;
-            height: 20px;
-            border: 2px solid #cbd5e1;
-            border-radius: 4px;
-            margin-right: 12px;
-            flex-shrink: 0;
-            margin-top: 2px;
             position: relative;
-            transition: all 0.2s ease;
+            z-index: 100;
+            background: rgba(250, 250, 250, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            min-height: 70px;
+            flex-shrink: 0;
         }
 
-        .task-checkbox input[type="checkbox"]:checked + .checkmark {
-            background-color: var(--primary);
-            border-color: var(--primary);
-        }
-
-        .task-checkbox input[type="checkbox"]:checked + .checkmark::after {
-            content: '';
-            position: absolute;
-            left: 6px;
-            top: 2px;
-            width: 6px;
-            height: 10px;
-            border: solid white;
-            border-width: 0 2px 2px 0;
-            transform: rotate(45deg);
-        }
-
-        .task-text {
-            font-size: 0.95rem;
-            color: var(--text);
-            line-height: 1.4;
-            font-weight: 500;
-        }
-
-        .task-checkbox input[type="checkbox"]:checked ~ .task-text {
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        /* Task completion progress */
-        .tasks-progress {
-            margin-bottom: 12px;
-            padding: 8px 12px;
-            background: #f1f5f9;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            color: #64748b;
-            text-align: center;
-        }
-
-        .tasks-progress.has-tasks {
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        /* OCR Preview Styles */
-        .ids-preview-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
-            margin-top: 8px;
-        }
-
-        .id-preview-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px;
-            background: #f8fafc;
+        .home-btn {
+            background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 6px;
-        }
-
-        .id-preview-label {
-            font-weight: 600;
-            color: var(--text);
-            min-width: 60px;
-        }
-
-        .id-preview-input {
-            flex: 1;
-            padding: 6px 8px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
             font-size: 14px;
-            text-align: center;
+            font-weight: 700;
+            color: var(--text-main);
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: var(--radius-pill);
+            box-shadow: var(--shadow-sm);
+            visibility: hidden;
+            transition: transform 0.15s;
+        }
+        .home-btn:active { transform: scale(0.95); }
+
+        .progress-container {
+            flex-grow: 1;
+            height: 6px;
+            background-color: #EFEFEF;
+            border-radius: var(--radius-pill);
+            margin: 0 20px;
+            visibility: hidden;
+            overflow: hidden;
         }
 
-        .id-preview-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--accent-color);
+            border-radius: var(--radius-pill);
+            transition: width 0.7s cubic-bezier(0.34, 1.56, 0.64, 1); 
         }
+
+        /* =========================================
+           3. LAYOUT & SCREENS
+           ========================================= */
+        #content {
+            flex-grow: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screen-content {
+            padding: 24px 20px 140px;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Slide Animations */
+        .slide-in-right { animation: slideInRight 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+        .slide-in-left { animation: slideInLeft 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideInLeft { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* Typography */
+        h1, h2, h3 { font-weight: 800; margin-bottom: 8px; color: var(--text-main); }
+        h1 { font-size: 32px; text-align: center; letter-spacing: -0.04em; }
+        h2 { font-size: 24px; text-align: center; margin-bottom: 24px; letter-spacing: -0.03em; }
+        h3 { font-size: 15px; margin-bottom: 16px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
+        
+        p.subtitle { color: var(--text-muted); text-align: center; margin-bottom: 32px; font-size: 15px; line-height: 1.4; }
+        .editable-subtitle { cursor: pointer; transition: opacity 0.2s; padding: 12px; background: #F4F4F4; border-radius: var(--radius-sm); }
+        .editable-subtitle:active { opacity: 0.5; }
+
+        /* =========================================
+           4. COMPONENTS
+           ========================================= */
+        .card { 
+            background-color: var(--card-bg); 
+            border-radius: var(--radius-lg); 
+            padding: 24px; 
+            margin-bottom: 16px; 
+            box-shadow: var(--shadow-sm); 
+            display: flex; 
+            flex-direction: column; 
+            border: 1px solid var(--border);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .cutter-group-card:focus-within {
+            border-color: var(--accent-color);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        }
+
+        /* Sticky Bottom Bar */
+        .bottom-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 24px 20px calc(20px + env(safe-area-inset-bottom));
+            background: linear-gradient(to top, rgba(250,250,250,1) 50%, rgba(250,250,250,0.9) 70%, rgba(250,250,250,0));
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none; 
+        }
+        .bottom-bar > * { pointer-events: auto; } 
+
+        /* Buttons */
+        .btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius-pill);
+            padding: 18px 24px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            box-shadow: var(--shadow-btn);
+            text-align: center;
+        }
+        .btn:active { transform: scale(0.97); box-shadow: none; }
+        .btn:disabled { background-color: #E0E0E0; color: #999999; box-shadow: none; cursor: not-allowed; transform: none; }
+        
+        .btn-secondary { background-color: var(--card-bg); color: var(--text-main); border: 2px solid var(--border); box-shadow: var(--shadow-sm); }
+        .btn-small { padding: 10px 16px; font-size: 13px; width: auto; margin: 0; border-radius: var(--radius-pill); font-weight: 700; }
+        .btn-outline { background-color: transparent; color: var(--text-main); border: none; font-size: 14px; font-weight: 600; cursor: pointer; padding: 8px; }
+        .btn-danger { background-color: #FFF0F0; color: var(--accent-red); border: 1px solid #FFE5E5; }
+        .btn-grey { background-color: #F4F4F4; color: var(--text-main); border: 1px solid var(--border); box-shadow: none; }
+        .btn-grey:active { background-color: #EAEAEA; }
+
+        /* Report Lists */
+        .report-list { display: flex; flex-direction: column; gap: 16px; padding-bottom: 20px;}
+        .report-item { background-color: var(--card-bg); border-radius: var(--radius-md); padding: 20px; display: flex; flex-direction: column; gap: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+        .report-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .report-actions { display: flex; gap: 8px; align-items: center; justify-content: flex-end; border-top: 1px solid #F4F4F4; padding-top: 16px; }
+        .report-info h4 { font-size: 18px; margin-bottom: 4px; }
+        .report-info p { font-size: 13px; color: var(--text-muted); font-weight: 500;}
+
+        /* Status Tags */
+        .status-tag { padding: 6px 12px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;}
+        .status-draft { background: #F4F4F4; color: var(--text-muted); }
+        .status-complete { background: #E8F5E9; color: #2E7D32; }
+
+        /* Grids & Selectors */
+        .grid-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 30px; }
+        .grid-item { background-color: var(--card-bg); border: 2px solid var(--border); border-radius: var(--radius-md); padding: 18px 0; text-align: center; font-weight: 700; box-shadow: var(--shadow-sm); cursor: pointer; transition: all 0.15s; font-size: 16px;}
+        .grid-item.selected { border-color: var(--accent-color); color: var(--accent-color); box-shadow: 0 0 0 1px var(--accent-color); }
+
+        .list-selector { display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px; }
+        .list-item { background-color: var(--card-bg); border: 2px solid var(--border); border-radius: var(--radius-md); padding: 20px; font-weight: 600; box-shadow: var(--shadow-sm); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; }
+        .list-item.selected { border-color: var(--accent-color); box-shadow: 0 0 0 1px var(--accent-color); }
+        
+        .task-item { padding: 20px; border-radius: var(--radius-md); margin-bottom: 12px; }
+        .task-item h4 { font-size: 16px; margin: 0; }
+        .task-item .status { font-size: 13px; font-weight: 600; margin-top: 6px; color: var(--text-muted); }
+        .task-item.completed { border-color: var(--accent-color); background-color: #F8F8F8; }
+        .task-item.completed h4 { color: var(--text-main); }
+        .task-item.completed .status { color: var(--text-main); }
+
+        .checkmark { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; background: #F8F8F8; transition: 0.2s; }
+        .list-item.selected .checkmark { border-color: var(--accent-color); background-color: var(--accent-color); }
+        .list-item.selected .checkmark::after { content: "✓"; color: white; font-size: 16px; font-weight: bold; }
+
+        /* =========================================
+           5. FORMS & FRICTIONLESS INPUTS
+           ========================================= */
+        .id-input-wrapper { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; background-color: #FAFAFA; border-radius: var(--radius-sm); padding: 8px 16px; border: 2px solid var(--border); transition: 0.2s;}
+        .id-input-wrapper:focus-within { border-color: var(--accent-color); background-color: var(--card-bg); box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05); }
+        .id-input-wrapper span { color: var(--text-muted); font-family: ui-monospace, monospace; font-size: 14px; font-weight: 600; letter-spacing: 1px;}
+        
+        .id-input { border: none; background: transparent; font-size: 22px; font-weight: 800; width: 70px; text-align: center; outline: none; font-family: ui-monospace, monospace; color: var(--accent-color); letter-spacing: 2px; padding: 8px 0;}
+        .id-input::placeholder { color: #DDDDDD; }
+        
+        .form-group { margin-bottom: 20px; flex: 1; }
+        .form-group label { display: block; font-weight: 700; margin-bottom: 8px; font-size: 14px; color: var(--text-muted); }
+        .form-input { width: 100%; padding: 16px; background-color: #FAFAFA; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 16px; color: var(--text-main); font-weight: 600; outline: none; transition: 0.2s;}
+        .form-input:focus { border-color: var(--accent-color); background-color: var(--card-bg); }
+        
+        select.form-input { appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23111%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 16px center; background-size: 16px; }
+        
+        textarea { width: 100%; height: 120px; resize: vertical; text-align: left; font-family: inherit; color: var(--text-main); background-color: #FAFAFA; border-radius: var(--radius-sm); padding: 16px; border: 2px solid var(--border); font-weight: 500; font-size: 15px; outline: none; transition: 0.2s;}
+        textarea:focus { border-color: var(--accent-color); background-color: var(--card-bg); }
+
+        /* Custom Checkboxes */
+        .check-container { display: flex; align-items: center; position: relative; padding: 16px 0; border-bottom: 1px solid var(--border); cursor: pointer; font-size: 15px; font-weight: 600; user-select: none; gap: 16px;}
+        .check-container:last-child { border-bottom: none; }
+        .check-container input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+        .custom-checkbox { width: 24px; height: 24px; background: #FAFAFA; border: 2px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0;}
+        .check-container:hover input ~ .custom-checkbox { background: #EAEAEA; }
+        .check-container input:checked ~ .custom-checkbox { background: var(--accent-color); border-color: var(--accent-color); }
+        .custom-checkbox svg { width: 14px; height: 14px; fill: none; stroke: white; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 16; stroke-dashoffset: 16; transition: stroke-dashoffset 0.3s ease-in-out; }
+        .check-container input:checked ~ .custom-checkbox svg { stroke-dashoffset: 0; }
+
+        /* Report Code Block */
+        .report-preview { background-color: #FAFAFA; color: #111111; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 24px; font-family: ui-monospace, monospace; font-size: 13px; white-space: pre-wrap; line-height: 1.6; margin-bottom: 24px;}
+        .copy-success { background-color: var(--accent-green) !important; color: white !important; border-color: var(--accent-green) !important; box-shadow: 0 8px 16px -4px rgba(34, 197, 94, 0.4) !important;}
+
+        /* Empty State */
+        .empty-state { text-align: center; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;}
+        .empty-state img { width: 180px; margin-bottom: 24px; opacity: 0.9; }
+        .empty-state p { font-size: 15px; color: var(--text-muted); line-height: 1.5;}
+
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>✂️ Cutter ID Generator</h1>
 
-    <!-- DASHBOARD VIEW -->
-    <div id="dashboardView">
-        <div id="dashBtnRow" style="display:none; gap:10px; margin-bottom:20px; flex-direction:row;">
-            <button class="btn-main" style="margin-bottom:0; flex:1;" onclick="createNewRecord()">New Cutter Change</button>
-            <button class="btn-import-dash" onclick="showImport()">📋 Import IDs</button>
+<div id="app-container">
+    <header>
+        <button class="home-btn" id="nav-home" onclick="goHome()">Back</button>
+        <div class="progress-container" id="progress-container">
+            <div class="progress-bar" id="progressFill"></div>
         </div>
-        <div id="reportsList">
-            <div class="zero-state-container">
-                <div class="zero-state-icon">🔧</div>
-                <div class="zero-state-text">No cutter change records yet. Create one to generate and save your cutter IDs.</div>
-                <button class="btn-main" onclick="createNewRecord()">New Cutter Change</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- IMPORT VIEW -->
-    <div id="importView" class="hidden">
-        <button class="btn-back" onclick="showDashboard()">← Back to Dashboard</button>
-        <h3>📋 Import Cutter IDs</h3>
-        <p style="color:#475569; font-size:0.9rem; margin-bottom:16px; line-height:1.5;">
-            Import cutter IDs from text or HMI screenshots.
-        </p>
-        
-        <div class="form-group">
-            <label>Import Mode</label>
-            <div class="block-options">
-                <label>
-                    <input type="radio" name="importMode" value="text" checked>
-                    Text Input
-                </label>
-                <label>
-                    <input type="radio" name="importMode" value="image">
-                    HMI Image
-                </label>
-            </div>
-        </div>
-
-        <!-- TEXT INPUT -->
-        <div id="textInputArea">
-            <div class="form-group">
-                <textarea id="importText" rows="14" placeholder="Paste IDs here, e.g.:
-New IDs
-Upper
-LCAGHY1005CU656X1.8
-LCAGHY2002CL718X0.0
-Old IDs
-Upper
-LCAGHY0013CU656X1.8
-LCAGHY2007CL718X0.0" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-family:'Courier New',monospace;font-size:0.88rem;box-sizing:border-box;background:#fcfcfc;resize:vertical;line-height:1.6;"></textarea>
-            </div>
-        </div>
-
-        <!-- IMAGE INPUT -->
-        <div id="imageInputArea" style="display:none;">
-            <div class="form-group">
-                <label>OLD Image</label>
-                <input type="file" id="oldImage" accept="image/*" class="cutter-num-input" style="padding: 10px 14px; font-size: 0.9rem;">
-            </div>
-            
-            <div class="form-group">
-                <label>NEW Image</label>
-                <input type="file" id="newImage" accept="image/*" class="cutter-num-input" style="padding: 10px 14px; font-size: 0.9rem;">
-            </div>
-            
-            <button class="btn-submit" onclick="processImages()">🔍 Extract IDs</button>
-        </div>
-        
-        <div id="importError" class="error-msg"></div>
-        <button class="btn-submit" id="textImportBtn" onclick="parseAndImport()">⚡ Parse &amp; Import</button>
-    </div>
-    <!-- OCR PREVIEW VIEW -->
-    <div id="ocrPreviewView" class="hidden">
-        <button class="btn-back" onclick="showImport()">← Back to Import</button>
-        <h3>🔍 Review Detected IDs</h3>
-        <p style="color:#475569; font-size:0.9rem; margin-bottom:16px; line-height:1.5;">
-            Please review and edit any incorrect digits before generating the report.
-        </p>
-        
-        <div class="form-group">
-            <label>OLD IDs</label>
-            <div id="oldIdsPreview" class="ids-preview-container"></div>
-        </div>
-        
-        <div class="form-group">
-            <label>NEW IDs</label>
-            <div id="newIdsPreview" class="ids-preview-container"></div>
-        </div>
-        
-        <div id="previewError" class="error-msg"></div>
-        <div style="display: flex; gap: 10px;">
-            <button class="btn-back" onclick="showImport()">← Back</button>
-            <button class="btn-submit" onclick="generateReportFromPreview()">✅ Generate Report</button>
-        </div>
-    </div>
-
-    <div id="formView" class="hidden">
-        <button class="btn-back" onclick="showDashboard()">← Back to Dashboard</button>
-        <input type="hidden" id="editingId" value="">
-
-        <h3>1. Date &amp; Time</h3>
-        <div class="form-group">
-            <label>Date</label>
-            <input type="date" id="dateInput" required>
-        </div>
-        <div class="form-group">
-            <label>Time</label>
-            <select id="timeInput" required>
-                <option value="">Select time</option>
-                <option value="00:00">12:00 AM</option>
-                <option value="00:30">12:30 AM</option>
-                <option value="01:00">1:00 AM</option>
-                <option value="01:30">1:30 AM</option>
-                <option value="02:00">2:00 AM</option>
-                <option value="02:30">2:30 AM</option>
-                <option value="03:00">3:00 AM</option>
-                <option value="03:30">3:30 AM</option>
-                <option value="04:00">4:00 AM</option>
-                <option value="04:30">4:30 AM</option>
-                <option value="05:00">5:00 AM</option>
-                <option value="05:30">5:30 AM</option>
-                <option value="06:00">6:00 AM</option>
-                <option value="06:30">6:30 AM</option>
-                <option value="07:00">7:00 AM</option>
-                <option value="07:30">7:30 AM</option>
-                <option value="08:00">8:00 AM</option>
-                <option value="08:30">8:30 AM</option>
-                <option value="09:00">9:00 AM</option>
-                <option value="09:30">9:30 AM</option>
-                <option value="10:00">10:00 AM</option>
-                <option value="10:30">10:30 AM</option>
-                <option value="11:00">11:00 AM</option>
-                <option value="11:30">11:30 AM</option>
-                <option value="12:00">12:00 PM</option>
-                <option value="12:30">12:30 PM</option>
-                <option value="13:00">1:00 PM</option>
-                <option value="13:30">1:30 PM</option>
-                <option value="14:00">2:00 PM</option>
-                <option value="14:30">2:30 PM</option>
-                <option value="15:00">3:00 PM</option>
-                <option value="15:30">3:30 PM</option>
-                <option value="16:00">4:00 PM</option>
-                <option value="16:30">4:30 PM</option>
-                <option value="17:00">5:00 PM</option>
-                <option value="17:30">5:30 PM</option>
-                <option value="18:00">6:00 PM</option>
-                <option value="18:30">6:30 PM</option>
-                <option value="19:00">7:00 PM</option>
-                <option value="19:30">7:30 PM</option>
-                <option value="20:00">8:00 PM</option>
-                <option value="20:30">8:30 PM</option>
-                <option value="21:00">9:00 PM</option>
-                <option value="21:30">9:30 PM</option>
-                <option value="22:00">10:00 PM</option>
-                <option value="22:30">10:30 PM</option>
-                <option value="23:00">11:00 PM</option>
-                <option value="23:30">11:30 PM</option>
-            </select>
-        </div>
-
-        <h3>2. Line</h3>
-        <div class="form-group">
-            <div class="block-options">
-                <label><input type="radio" name="line" value="1-1"> 1-1</label>
-                <label><input type="radio" name="line" value="1-2"> 1-2</label>
-                <label><input type="radio" name="line" value="1-3"> 1-3</label>
-                <label><input type="radio" name="line" value="1-4"> 1-4</label>
-                <label><input type="radio" name="line" value="1-5"> 1-5</label>
-                <label><input type="radio" name="line" value="1-H"> 1-H</label>
-                <label><input type="radio" name="line" value="2-1"> 2-1</label>
-                <label><input type="radio" name="line" value="2-2"> 2-2</label>
-                <label><input type="radio" name="line" value="2-3"> 2-3</label>
-                <label><input type="radio" name="line" value="2-4"> 2-4</label>
-                <label><input type="radio" name="line" value="2-5"> 2-5</label>
-                <label><input type="radio" name="line" value="3-1"> 3-1</label>
-            </div>
-        </div>
-
-        <h3>3. Cutter Type</h3>
-        <div id="selectedCutterSummary"></div>
-        <div class="cutter-type-cards">
-
-            <!-- Upper Card -->
-            <div class="cutter-type-card" id="card-upper">
-                <div class="cutter-card-main" onclick="toggleCard('upper')">
-                    <div class="cutter-card-left">
-                        <div class="cutter-card-icon">⬆️</div>
-                        <div class="cutter-card-content">
-                            <div class="cutter-card-title">Upper</div>
-                            <div class="cutter-card-description">CU / CL — upper blade cutter pair</div>
-                        </div>
-                    </div>
-                    <button class="cutter-card-add-btn" id="btn-upper"
-                            onclick="event.stopPropagation(); toggleCutterType('upper')">Add</button>
-                </div>
-                <div class="cutter-card-expandable" id="expand-upper">
-                    <div class="cutter-card-body" id="body-upper"></div>
-                </div>
-            </div>
-
-            <!-- Center Card -->
-            <div class="cutter-type-card" id="card-center">
-                <div class="cutter-card-main" onclick="toggleCard('center')">
-                    <div class="cutter-card-left">
-                        <div class="cutter-card-icon">🎯</div>
-                        <div class="cutter-card-content">
-                            <div class="cutter-card-title">Center</div>
-                            <div class="cutter-card-description">CU / CL — center blade cutter pair</div>
-                        </div>
-                    </div>
-                    <button class="cutter-card-add-btn" id="btn-center"
-                            onclick="event.stopPropagation(); toggleCutterType('center')">Add</button>
-                </div>
-                <div class="cutter-card-expandable" id="expand-center">
-                    <div class="cutter-card-body" id="body-center"></div>
-                </div>
-            </div>
-
-            <!-- Final Card -->
-            <div class="cutter-type-card" id="card-final">
-                <div class="cutter-card-main" onclick="toggleCard('final')">
-                    <div class="cutter-card-left">
-                        <div class="cutter-card-icon">✨</div>
-                        <div class="cutter-card-content">
-                            <div class="cutter-card-title">Final</div>
-                            <div class="cutter-card-description">FU / FL — final blade cutter pair</div>
-                        </div>
-                    </div>
-                    <button class="cutter-card-add-btn" id="btn-final"
-                            onclick="event.stopPropagation(); toggleCutterType('final')">Add</button>
-                </div>
-                <div class="cutter-card-expandable" id="expand-final">
-                    <div class="cutter-card-body" id="body-final"></div>
-                </div>
-            </div>
-
-        </div>
-
-        <h3>4. Tasks Checklist</h3>
-        <div id="tasksSection" class="form-group" style="display: none;">
-            <div class="tasks-container">
-                <!-- Always visible tasks -->
-                <div class="task-item" data-types="all">
-                    <label class="task-checkbox">
-                        <input type="checkbox" id="task_linear_greasing" name="tasks" value="linear_greasing">
-                        <span class="checkmark"></span>
-                        <span class="task-text">Linear greasing</span>
-                    </label>
-                </div>
-                
-                <div class="task-item" data-types="all">
-                    <label class="task-checkbox">
-                        <input type="checkbox" id="task_guide_master_bolt" name="tasks" value="guide_master_bolt">
-                        <span class="checkmark"></span>
-                        <span class="task-text">Guide master bolt check</span>
-                    </label>
-                </div>
-
-                <!-- Center-only tasks -->
-                <div class="task-item" data-types="center">
-                    <label class="task-checkbox">
-                        <input type="checkbox" id="task_esp_lami_purging" name="tasks" value="esp_lami_purging">
-                        <span class="checkmark"></span>
-                        <span class="task-text">ESP Lami purging</span>
-                    </label>
-                </div>
-                
-                <div class="task-item" data-types="center">
-                    <label class="task-checkbox">
-                        <input type="checkbox" id="task_ring_blower_filter" name="tasks" value="ring_blower_filter">
-                        <span class="checkmark"></span>
-                        <span class="task-text">Ring Blower, Turtle Pump Filter cleaning</span>
-                    </label>
-                </div>
-
-                <!-- Final-only tasks -->
-                <div class="task-item" data-types="final">
-                    <label class="task-checkbox">
-                        <input type="checkbox" id="task_stk_purging" name="tasks" value="stk_purging">
-                        <span class="checkmark"></span>
-                        <span class="task-text">STK purging</span>
-                    </label>
-                </div>
-                
-                <div class="task-item" data-types="final">
-                    <label class="task-checkbox">
-                        <input type="checkbox" id="task_vulkollan_replacement" name="tasks" value="vulkollan_replacement">
-                        <span class="checkmark"></span>
-                        <span class="task-text">Vulkollan Replacement</span>
-                    </label>
-                </div>
-                
-                <div class="task-item" data-types="final">
-                    <label class="task-checkbox">
-                        <input type="checkbox" id="task_ssss_greasing" name="tasks" value="ssss_greasing">
-                        <span class="checkmark"></span>
-                        <span class="task-text">SSSS, Short checker, Vision gripper linear greasing</span>
-                    </label>
-                </div>
-            </div>
-        </div>
-
-        <div id="errorMessage" class="error-msg"></div>
-        <button class="btn-submit" onclick="saveRecord()">💾 Save &amp; Generate IDs</button>
-
-        <!-- Summary -->
-        <div id="summaryContainer">
-            <h3>Generated IDs</h3>
-            <button class="btn-copy" onclick="copyToClipboard()">Copy to Clipboard</button>
-            <div id="summaryOutput"></div>
-            <button class="btn-back" onclick="showDashboard()" style="margin-top: 20px;">← Back to Dashboard</button>
-        </div>
-    </div>
+    </header>
+    <div id="content"></div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
-    // ── Constants ──────────────────────────────────────────────────────────
-    const STORAGE_KEY = 'cutter_ids_v1';
-
-    const SUFFIX_CONFIG = {
-        CU: { tail: '656X1.8' },
-        CL: { tail: '718X0.0' },
-        FU: { tail: '656X1.2' },
-        FL: { tail: '718X0.0' }
+    // --- Data & Config ---
+    const STORAGE_KEY = "cutter_reports_v4_final";
+    const LINES = ["1-1", "1-2", "1-3", "1-4", "1-5", "1-H", "2-1", "2-2", "2-3", "2-4", "2-5", "3-1"];
+    const CUTTERS = ["Upper", "Center", "Final"];
+    // Explicit sort order requirement
+    const CUTTER_SORT_ORDER = ["Upper", "Center", "Final"]; 
+    const FORMATS = {
+        'Upper': { prefix: 'LCAGHY', suffixes: ['CU656X1.8', 'CL718X0.0'] },
+        'Center': { prefix: 'LCAGHY', suffixes: ['CU656X1.8', 'CL718X0.0'] },
+        'Final': { prefix: 'LCAGHY', suffixes: ['FU656X1.2', 'FL718X0.0'] } 
     };
 
-    // Fields per type: [suffix, oldKey, newKey]
-    const TYPE_FIELDS = {
-        upper:  [['CU', 'cu_old', 'cu_new'], ['CL', 'cl_old', 'cl_new']],
-        center: [['CU', 'cu_old', 'cu_new'], ['CL', 'cl_old', 'cl_new']],
-        final:  [['FU', 'fu_old', 'fu_new'], ['FL', 'fl_old', 'fl_new']]
+    // --- State Management ---
+    let state = {
+        current: "home",
+        direction: "right",
+        reports: [],
+        report: null
     };
 
-    const TYPE_PLACEHOLDERS = {
-        cu_old: '0013', cu_new: '1005',
-        cl_old: '2007', cl_new: '2002',
-        fu_old: '5023', fu_new: '5010',
-        fl_old: '0233', fl_new: '6037'
-    };
-
-    function buildID(num4, suffix) {
-        return `LCAGHY${String(num4).padStart(4,'0')}${suffix}${SUFFIX_CONFIG[suffix].tail}`;
+    try {
+        state.reports = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    } catch(e) {
+        console.error("Failed to load local storage", e);
+        state.reports = [];
     }
 
-    // ── State ──────────────────────────────────────────────────────────────
-    let records = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    // selectedCutterTypes: ordered array, e.g. ['upper','final']
-    let selectedCutterTypes = [];
+    // --- Core Logic & Storage ---
+    function vibrate(pattern = 10) {
+        if (navigator.vibrate) navigator.vibrate(pattern);
+    }
 
-    // ── Init ───────────────────────────────────────────────────────────────
-    renderDashboard();
+    function saveToStorage() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.reports));
+    }
 
-    // ── Import Mode Toggle ───────────────────────────────────────────────
-    document.querySelectorAll('input[name="importMode"]').forEach(radio => {
-        radio.addEventListener('change', () => {
-            const mode = document.querySelector('input[name="importMode"]:checked').value;
+    function saveDraft() {
+        if (!state.report) return;
+        state.report.updatedAt = Date.now();
+        const idx = state.reports.findIndex(r => r.id === state.report.id);
+        if (idx > -1) {
+            state.reports[idx] = state.report;
+        } else {
+            state.reports.unshift(state.report);
+        }
+        saveToStorage();
+        updateNav(); 
+    }
 
-            document.getElementById('textInputArea').style.display =
-                mode === 'text' ? 'block' : 'none';
+    // --- Intelligence: Completeness Progress ---
+    function calculateProgress() {
+        if (!state.report || state.current === "home") return 0;
+        let progress = 0;
+        
+        if (state.report.line) progress += 20;
+        if (state.report.cutters && state.report.cutters.length > 0) progress += 20;
+        if (checkIdsComplete("oldIDs")) progress += 20;
+        if (checkIdsComplete("newIDs")) progress += 20;
+        
+        const hasRemarks = state.report.remarks || Object.keys(state.report.checklist).length > 0;
+        if (hasRemarks) progress += 20;
 
-            document.getElementById('imageInputArea').style.display =
-                mode === 'image' ? 'block' : 'none';
-                
-            document.getElementById('textImportBtn').style.display =
-                mode === 'text' ? 'block' : 'none';
-        });
-    });
+        return progress;
+    }
 
-    // ── OCR Processing Function ───────────────────────────────────────────
-    async function processImages() {
-        const oldFile = document.getElementById('oldImage').files[0];
-        const newFile = document.getElementById('newImage').files[0];
+    // --- Routing & Rendering ---
+    function go(screenName, dir = "right") {
+        vibrate();
+        state.current = screenName;
+        state.direction = dir;
+        render();
 
-        if (!oldFile || !newFile) {
-            document.getElementById('importError').innerText = "Please upload both OLD and NEW images.";
-            document.getElementById('importError').style.display = 'block';
+        // Frictionless UX: Auto-focus first empty input
+        if (screenName === 'old' || screenName === 'newer') {
+            setTimeout(() => {
+                const emptyInputs = Array.from(document.querySelectorAll('.id-input')).filter(i => !i.value);
+                if (emptyInputs.length > 0) {
+                    emptyInputs[0].focus();
+                } else {
+                    const allInputs = document.querySelectorAll('.id-input');
+                    if (allInputs.length > 0) allInputs[0].focus();
+                }
+            }, 300); 
+        }
+    }
+
+    function goHome() { go("home", "left"); }
+
+    function updateNav() {
+        const homeBtn = document.getElementById("nav-home");
+        const progContainer = document.getElementById("progress-container");
+        const progFill = document.getElementById("progressFill");
+        
+        if (state.current === "home") {
+            homeBtn.style.visibility = "hidden";
+            progContainer.style.visibility = "hidden";
             return;
         }
-
-        // Show processing status
-        document.getElementById('importError').innerText = "Processing images... This may take a moment.";
-        document.getElementById('importError').style.display = 'block';
-
-        try {
-            const oldText = await runOCR(oldFile, (progress) => {
-                document.getElementById('importError').innerText = `Processing OLD image... ${progress}`;
-            });
-            
-            const newText = await runOCR(newFile, (progress) => {
-                document.getElementById('importError').innerText = `Processing NEW image... ${progress}`;
-            });
-
-            console.log("OLD OCR:", oldText);
-            console.log("NEW OCR:", newText);
-
-            const oldData = extractCutterIDs(oldText);
-            const newData = extractCutterIDs(newText);
-
-            // Clear error message
-            document.getElementById('importError').style.display = 'none';
-
-            // 🔥 Show preview screen instead of directly generating report
-            showOCRPreview(oldData, newData);
-        } catch (error) {
-            document.getElementById('importError').innerText = "OCR processing failed: " + error.message;
-            document.getElementById('importError').style.display = 'block';
-        }
+        
+        homeBtn.style.visibility = "visible";
+        progContainer.style.visibility = "visible";
+        progFill.style.width = calculateProgress() + "%";
     }
 
-    // ── Improved OCR Engine with Preprocessing ───────────────────────────────
-    async function runOCR(file, onProgress) {
-        const preprocessedImages = await preprocessForOCR(file);
+    function render() {
+        const c = document.getElementById("content");
+        let html = "";
 
-        let bestText = "";
-        let bestScore = -1;
-
-        for (const img of preprocessedImages) {
-            const result = await Tesseract.recognize(img, "eng", {
-                logger: m => {
-                    if (m.status === "recognizing text" && onProgress) {
-                        onProgress(Math.round(m.progress * 100) + "%");
-                    }
-                },
-                tessedit_char_whitelist: "LCAGHYCUF0123456789",
-                tessedit_pageseg_mode: "11",
-                preserve_interword_spaces: "1"
-            });
-
-            const text = result.data.text || "";
-            const score = scoreOCRText(text);
-
-            if (score > bestScore) {
-                bestScore = score;
-                bestText = text;
-            }
+        switch (state.current) {
+            case "home": html = homeHTML(); break;
+            case "line": html = lineHTML(); break;
+            case "cutters": html = cuttersHTML(); break;
+            case "hub": html = hubHTML(); break;
+            case "old": html = idsHTML("old"); break;
+            case "newer": html = idsHTML("new"); break;
+            case "checklist": html = checklistHTML(); break;
+            case "report": html = reportHTML(); break;
         }
 
-        return normalizeOCRText(bestText);
+        c.innerHTML = `<div class="screen-content slide-in-${state.direction}">${html}</div>`;
+        updateNav();
     }
 
-    // ── Advanced Image Preprocessing ───────────────────────────────────────
-    async function preprocessForOCR(file) {
-        const img = await loadImage(file);
+    // --- Screen Templates ---
+    function homeHTML() {
+        let listHTML = "";
 
-        return [
-            makeOCRCanvas(img, {
-                maxWidth: 1600,
-                threshold: 150,
-                invert: false
-            }),
-            makeOCRCanvas(img, {
-                maxWidth: 1600,
-                threshold: 180,
-                invert: false
-            })
-        ];
-    }
-
-    function loadImage(file) {
-        return new Promise((resolve, reject) => {
-            const url = URL.createObjectURL(file);
-            const img = new Image();
-
-            img.onload = () => {
-                URL.revokeObjectURL(url);
-                resolve(img);
-            };
-
-            img.onerror = reject;
-            img.src = url;
-        });
-    }
-
-    function makeOCRCanvas(img, options) {
-        const maxWidth = options.maxWidth || 1600;
-
-        const ratio = Math.min(maxWidth / img.width, 1);
-        const width = Math.round(img.width * ratio);
-        const height = Math.round(img.height * ratio);
-
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d", { willReadFrequently: true });
-
-        canvas.width = width;
-        canvas.height = height;
-
-        ctx.imageSmoothingEnabled = true;
-        ctx.drawImage(img, 0, 0, width, height);
-
-        const imageData = ctx.getImageData(0, 0, width, height);
-        const data = imageData.data;
-
-        for (let i = 0; i < data.length; i += 4) {
-            const r = data[i];
-            const g = data[i + 1];
-            const b = data[i + 2];
-
-            const gray = 0.299 * r + 0.587 * g + 0.114 * b;
-            let value = gray > options.threshold ? 255 : 0;
-
-            if (options.invert) {
-                value = 255 - value;
-            }
-
-            data[i] = value;
-            data[i + 1] = value;
-            data[i + 2] = value;
-        }
-
-        ctx.putImageData(imageData, 0, 0);
-
-        return canvas;
-    }
-
-    // ── OCR Text Normalization and Cleanup ─────────────────────────────────
-    function normalizeOCRText(text) {
-        return text
-            .toUpperCase()
-
-            // Common OCR mistakes
-            .replace(/LCA6HY/g, "LCAGHY")
-            .replace(/LC4GHY/g, "LCAGHY")
-            .replace(/LCAGH¥/g, "LCAGHY")
-            .replace(/LCAGHV/g, "LCAGHY")
-            .replace(/LCAGH/g, "LCAGHY")
-
-            // Fix suffix mistakes
-            .replace(/C0/g, "CU")
-            .replace(/CI/g, "CL")
-            .replace(/F1/g, "FL")
-            .replace(/F0/g, "FU")
-
-            // Fix digit-like letters only after LCAGHY
-            .replace(/LCAGHY([O0-9ILSB]{3,5})/g, function (_, digits) {
-                const fixed = digits
-                    .replace(/O/g, "0")
-                    .replace(/I/g, "1")
-                    .replace(/L/g, "1")
-                    .replace(/S/g, "5")
-                    .replace(/B/g, "8");
-
-                return "LCAGHY" + fixed;
-            });
-    }
-
-    function scoreOCRText(text) {
-        const normalized = normalizeOCRText(text);
-        const matches = normalized.match(/LCAGHY\d{3,4}(CU|CL|FU|FL)/g);
-        return matches ? matches.length : 0;
-    }
-
-    // ── Cutter ID Extraction (HMI-specific) ───────────────────────────────
-    function extractCutterIDs(text) {
-        const lines = text.split(/\n|\r/).map(line => line.trim()).filter(line => line.length > 0);
-        let result = {
-            upper: { cu_old: '', cl_old: '' },
-            center: { cu_old: '', cl_old: '' },
-            final: { fu_old: '', fl_old: '' }
-        };
-
-        // Expected HMI format: 6 rows
-        // 1. Upper CU
-        // 2. Upper CL  
-        // 3. Center CU
-        // 4. Center CL
-        // 5. Final FU
-        // 6. Final FL
-        
-        const cutterMapping = [
-            { type: 'upper', field: 'cu_old', patterns: ['upper cu', 'cu upper'] },
-            { type: 'upper', field: 'cl_old', patterns: ['upper cl', 'cl upper'] },
-            { type: 'center', field: 'cu_old', patterns: ['center cu', 'cu center'] },
-            { type: 'center', field: 'cl_old', patterns: ['center cl', 'cl center'] },
-            { type: 'final', field: 'fu_old', patterns: ['final fu', 'fu final'] },
-            { type: 'final', field: 'fl_old', patterns: ['final fl', 'fl final'] }
-        ];
-
-        // More forgiving regex for OCR mistakes
-        const ID_RE = /L\s*C\s*A\s*G\s*H\s*Y\s*([0-9OILSB]{3,5})\s*(CU|CL|FU|FL|C0|CI|F0|F1)/gi;
-
-        lines.forEach((line, index) => {
-            // Look for LCAGHY patterns with forgiving regex
-            let match;
-            while ((match = ID_RE.exec(line)) !== null) {
-                const num = match[1]
-                    .toUpperCase()
-                    .replace(/O/g, "0")
-                    .replace(/I/g, "1")
-                    .replace(/L/g, "1")
-                    .replace(/S/g, "5")
-                    .replace(/B/g, "8")
-                    .slice(-4)
-                    .padStart(4, "0");
-
-                let suffix = match[2].toUpperCase()
-                    .replace("C0", "CU")
-                    .replace("CI", "CL")
-                    .replace("F0", "FU")
-                    .replace("F1", "FL");
-
-                // Map to cutter types
-                if (suffix === 'CU' || suffix === 'CL') {
-                    const type = index < 2 ? 'upper' : (index < 4 ? 'center' : 'final');
-                    const field = suffix === 'CU' ? 'cu_old' : 'cl_old';
-                    if (!result[type][field]) {
-                        result[type][field] = num;
-                    }
-                } else if (suffix === 'FU' || suffix === 'FL') {
-                    if (!result.final.fu_old && suffix === 'FU') {
-                        result.final.fu_old = num;
-                    } else if (!result.final.fl_old && suffix === 'FL') {
-                        result.final.fl_old = num;
-                    }
-                }
-            }
-            
-            // Fallback: position-based assignment if no matches found
-            if (index < cutterMapping.length) {
-                const mapping = cutterMapping[index];
-                
-                // Look for standalone 3-5 digit numbers
-                const numberMatch = line.match(/\b(\d{3,5})\b/);
-                if (numberMatch) {
-                    const cutterID = numberMatch[1].padStart(4, '0');
-                    if (!result[mapping.type][mapping.field]) {
-                        result[mapping.type][mapping.field] = cutterID;
-                    }
-                }
-            }
-        });
-
-        console.log('HMI Extraction Result:', result);
-        return result;
-    }
-
-    // ── OCR Preview Functions ───────────────────────────────────────────────
-    let previewOldData = {};
-    let previewNewData = {};
-
-    function showOCRPreview(oldData, newData) {
-        previewOldData = oldData;
-        previewNewData = newData;
-        
-        // Hide other views and show preview
-        document.getElementById('importView').classList.add('hidden');
-        document.getElementById('ocrPreviewView').classList.remove('hidden');
-        
-        // Generate preview HTML
-        generatePreviewHTML('oldIdsPreview', oldData, 'old');
-        generatePreviewHTML('newIdsPreview', newData, 'new');
-    }
-
-    function generatePreviewHTML(containerId, data, side) {
-        const container = document.getElementById(containerId);
-        let html = '';
-        
-        ['upper', 'center', 'final'].forEach(type => {
-            const typeData = data[type];
-            const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
-            
-            if (typeData.cu_old) {
-                html += `
-                    <div class="id-preview-item">
-                        <span class="id-preview-label">${typeLabel} CU:</span>
-                        <input type="text" class="id-preview-input" 
-                               id="preview_${side}_${type}_cu_old" 
-                               value="${typeData.cu_old}" 
-                               maxlength="4" 
-                               pattern="[0-9]*"
-                               oninput="this.value=this.value.replace(/\\D/g,'')">
-                    </div>
-                `;
-            }
-            
-            if (typeData.cl_old) {
-                html += `
-                    <div class="id-preview-item">
-                        <span class="id-preview-label">${typeLabel} CL:</span>
-                        <input type="text" class="id-preview-input" 
-                               id="preview_${side}_${type}_cl_old" 
-                               value="${typeData.cl_old}" 
-                               maxlength="4" 
-                               pattern="[0-9]*"
-                               oninput="this.value=this.value.replace(/\\D/g,'')">
-                    </div>
-                `;
-            }
-            
-            if (typeData.fu_old) {
-                html += `
-                    <div class="id-preview-item">
-                        <span class="id-preview-label">${typeLabel} FU:</span>
-                        <input type="text" class="id-preview-input" 
-                               id="preview_${side}_${type}_fu_old" 
-                               value="${typeData.fu_old}" 
-                               maxlength="4" 
-                               pattern="[0-9]*"
-                               oninput="this.value=this.value.replace(/\\D/g,'')">
-                    </div>
-                `;
-            }
-            
-            if (typeData.fl_old) {
-                html += `
-                    <div class="id-preview-item">
-                        <span class="id-preview-label">${typeLabel} FL:</span>
-                        <input type="text" class="id-preview-input" 
-                               id="preview_${side}_${type}_fl_old" 
-                               value="${typeData.fl_old}" 
-                               maxlength="4" 
-                               pattern="[0-9]*"
-                               oninput="this.value=this.value.replace(/\\D/g,'')">
-                    </div>
-                `;
-            }
-        });
-        
-        container.innerHTML = html || '<p style="color: #64748b; font-style: italic;">No IDs detected</p>';
-    }
-
-    function generateReportFromPreview() {
-        // Collect edited values from preview
-        const editedOldData = {};
-        const editedNewData = {};
-        
-        ['upper', 'center', 'final'].forEach(type => {
-            editedOldData[type] = {};
-            editedNewData[type] = {};
-            
-            // Collect old data
-            ['cu_old', 'cl_old', 'fu_old', 'fl_old'].forEach(field => {
-                const input = document.getElementById(`preview_old_${type}_${field}`);
-                if (input) {
-                    editedOldData[type][field] = input.value.padStart(4, '0');
-                }
-            });
-            
-            // Collect new data
-            ['cu_old', 'cl_old', 'fu_old', 'fl_old'].forEach(field => {
-                const input = document.getElementById(`preview_new_${type}_${field}`);
-                if (input) {
-                    editedNewData[type][field] = input.value.padStart(4, '0');
-                }
-            });
-        });
-        
-        // Generate report from edited data
-        generateReportFromHMI(editedOldData, editedNewData);
-    }
-
-    // ── Hook Into Existing Report Generator (HMI-specific) ───────────────────
-    function generateReportFromHMI(oldData, newData) {
-        // Create formatted text that matches the expected import format
-        let oldTextLines = ['OLD IDs'];
-        let newTextLines = ['NEW IDs'];
-        
-        // Process each cutter type
-        ['upper', 'center', 'final'].forEach(type => {
-            const oldTypeData = oldData[type];
-            const newTypeData = newData[type];
-            
-            // Check if we have data for this cutter type
-            const hasOldData = Object.values(oldTypeData).some(val => val !== '');
-            const hasNewData = Object.values(newTypeData).some(val => val !== '');
-            
-            if (hasOldData) {
-                oldTextLines.push(type.charAt(0).toUpperCase() + type.slice(1));
-                if (oldTypeData.cu_old) oldTextLines.push(`LCAGHY${oldTypeData.cu_old}CU${SUFFIX_CONFIG.CU.tail}`);
-                if (oldTypeData.cl_old) oldTextLines.push(`LCAGHY${oldTypeData.cl_old}CL${SUFFIX_CONFIG.CL.tail}`);
-                if (oldTypeData.fu_old) oldTextLines.push(`LCAGHY${oldTypeData.fu_old}FU${SUFFIX_CONFIG.FU.tail}`);
-                if (oldTypeData.fl_old) oldTextLines.push(`LCAGHY${oldTypeData.fl_old}FL${SUFFIX_CONFIG.FL.tail}`);
-            }
-            
-            if (hasNewData) {
-                newTextLines.push(type.charAt(0).toUpperCase() + type.slice(1));
-                if (newTypeData.cu_old) newTextLines.push(`LCAGHY${newTypeData.cu_old}CU${SUFFIX_CONFIG.CU.tail}`);
-                if (newTypeData.cl_old) newTextLines.push(`LCAGHY${newTypeData.cl_old}CL${SUFFIX_CONFIG.CL.tail}`);
-                if (newTypeData.fu_old) newTextLines.push(`LCAGHY${newTypeData.fu_old}FU${SUFFIX_CONFIG.FU.tail}`);
-                if (newTypeData.fl_old) newTextLines.push(`LCAGHY${newTypeData.fl_old}FL${SUFFIX_CONFIG.FL.tail}`);
-            }
-        });
-        
-        // Combine into final text
-        const combinedText = oldTextLines.join('\n') + '\n' + newTextLines.join('\n');
-
-        // Put this text into the text area and trigger the existing parser
-        document.getElementById('importText').value = combinedText;
-        
-        // Switch to text mode and parse
-        document.querySelector('input[name="importMode"][value="text"]').checked = true;
-        document.getElementById('textInputArea').style.display = 'block';
-        document.getElementById('imageInputArea').style.display = 'none';
-        document.getElementById('textImportBtn').style.display = 'block';
-        
-        // Trigger the existing import logic
-        parseAndImport();
-    }
-
-    // ── Hook Into Existing Report Generator (Legacy) ───────────────────────
-    function generateReportFromArrays(oldIDs, newIDs) {
-        // Trim / normalize if needed
-        oldIDs = oldIDs.map(id => id.padStart(4, '0'));
-        newIDs = newIDs.map(id => id.padStart(4, '0'));
-
-        // Create a combined text that mimics the original text input format
-        const combinedText = `OLD IDs
-${oldIDs.map(id => `LCAGHY${id}`).join('\n')}
-NEW IDs
-${newIDs.map(id => `LCAGHY${id}`).join('\n')}`;
-
-        // Put this text into the text area and trigger the existing parser
-        document.getElementById('importText').value = combinedText;
-        
-        // Switch to text mode and parse
-        document.querySelector('input[name="importMode"][value="text"]').checked = true;
-        document.getElementById('textInputArea').style.display = 'block';
-        document.getElementById('imageInputArea').style.display = 'none';
-        document.getElementById('textImportBtn').style.display = 'block';
-        
-        // Trigger the existing import logic
-        parseAndImport();
-    }
-
-    // ── Auto-jump functionality ─────────────────────────────────────────────
-    function autoJumpToNext(currentInput) {
-        // Get all visible cutter number inputs in document order
-        const allInputs = Array.from(document.querySelectorAll('.cutter-num-input'))
-            .filter(input => {
-                // Only include inputs that are visible (not hidden by display:none)
-                const rect = input.getBoundingClientRect();
-                return rect.width > 0 && rect.height > 0;
-            });
-        
-        // Find the current input's index
-        const currentIndex = allInputs.indexOf(currentInput);
-        
-        if (currentIndex !== -1 && currentIndex < allInputs.length - 1) {
-            // Jump to the next input
-            const nextInput = allInputs[currentIndex + 1];
-            nextInput.focus();
-            
-            // Select all text in the next field for easy replacement
-            nextInput.select();
-            
-            // Add visual feedback on mobile
-            if (/iPhone|iPad|iPod|Android/.test(navigator.userAgent)) {
-                nextInput.style.backgroundColor = '#eff6ff';
-                setTimeout(() => {
-                    nextInput.style.backgroundColor = '';
-                }, 200);
-            }
-        }
-    }
-
-    // ── Error helper ──────────────────────────────────────────────────────
-    function showError(msg) {
-        const el = document.getElementById('errorMessage');
-        el.innerText = msg;
-        el.style.display = 'block';
-    }
-
-    function clearError() {
-        const el = document.getElementById('errorMessage');
-        el.style.display = 'none';
-    }
-
-    // ── Card toggle (header click = expand/collapse preview only) ─────────
-    // Clicking the card header just expands to show the fields if already added,
-    // or does nothing if not yet added (the Add button adds it).
-    function toggleCard(type) {
-        if (!selectedCutterTypes.includes(type)) return; // not selected yet — ignore
-        const expand = document.getElementById(`expand-${type}`);
-        expand.classList.toggle('open');
-    }
-
-    // ── Add / Remove cutter type ───────────────────────────────────────────
-    function toggleCutterType(type) {
-        clearError();
-        if (selectedCutterTypes.includes(type)) {
-            removeCutterType(type);
+        if (state.reports.length === 0) {
+            listHTML = `
+                <div class="empty-state">
+                    <img src="https://illustrations.popsy.co/white/page-under-construction.svg" alt="Under construction">
+                    <p>No reports saved yet.<br>Tap below to start a new cutter change.</p>
+                </div>`;
         } else {
-            addCutterType(type);
+            const sorted = [...state.reports].sort((a,b) => {
+                if(a.status !== b.status) return a.status === 'draft' ? -1 : 1;
+                return b.updatedAt - a.updatedAt;
+            });
+
+            listHTML = sorted.map(r => {
+                const dateStr = new Date(r.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+                const isComplete = r.status === "complete";
+                
+                const actions = isComplete 
+                    ? `<button class="btn-small btn-outline btn-danger" onclick="deleteReport(${r.id})">Delete</button>
+                       <button class="btn-small btn-outline" onclick="editReport(${r.id})">Edit</button>
+                       <button class="btn-small btn-grey" onclick="viewReport(${r.id})">View Report</button>`
+                    : `<button class="btn-small btn-outline btn-danger" onclick="deleteReport(${r.id})">Delete</button>
+                       <button class="btn-small btn-secondary" onclick="resumeReport(${r.id})" style="background:var(--text-main); color:white; border:none;">Resume Draft</button>`;
+
+                return `
+                <div class="report-item">
+                    <div class="report-header">
+                        <div class="report-info">
+                            <h4>Line ${r.line || 'Not Set'}</h4>
+                            <p>${dateStr}</p>
+                        </div>
+                        <div class="status-tag ${isComplete ? 'status-complete' : 'status-draft'}">${isComplete ? 'Complete' : 'Draft'}</div>
+                    </div>
+                    <div class="report-actions">${actions}</div>
+                </div>`;
+            }).join("");
         }
-    }
-
-    function addCutterType(type) {
-        selectedCutterTypes.push(type);
-        const idx = selectedCutterTypes.indexOf(type);
-
-        // Render fields into the card body
-        document.getElementById(`body-${type}`).innerHTML = renderCutterFields(type, idx);
-
-        // Open the expandable
-        document.getElementById(`expand-${type}`).classList.add('open');
-
-        // Style the card as selected
-        document.getElementById(`card-${type}`).classList.add('selected');
-
-        // Flip button to Remove
-        const btn = document.getElementById(`btn-${type}`);
-        btn.textContent = 'Remove';
-        btn.classList.remove('cutter-card-add-btn');
-        btn.classList.add('cutter-card-remove-btn');
-
-        updateSelectedSummary();
-    }
-
-    function removeCutterType(type) {
-        selectedCutterTypes = selectedCutterTypes.filter(t => t !== type);
-
-        // Clear and close
-        document.getElementById(`body-${type}`).innerHTML = '';
-        document.getElementById(`expand-${type}`).classList.remove('open');
-        document.getElementById(`card-${type}`).classList.remove('selected');
-
-        // Flip button back to Add
-        const btn = document.getElementById(`btn-${type}`);
-        btn.textContent = 'Add';
-        btn.classList.remove('cutter-card-remove-btn');
-        btn.classList.add('cutter-card-add-btn');
-
-        updateSelectedSummary();
-        // Re-index any remaining types so their field IDs stay correct
-        reIndexFields();
-    }
-
-    // After a removal, re-render fields for all remaining types to keep indices consistent
-    function reIndexFields() {
-        selectedCutterTypes.forEach((type, idx) => {
-            // Capture current values before re-render
-            const saved = {};
-            TYPE_FIELDS[type].forEach(([, oldKey, newKey]) => {
-                const oldEl = document.getElementById(`${oldKey}_${type}`);
-                const newEl = document.getElementById(`${newKey}_${type}`);
-                if (oldEl) saved[oldKey] = oldEl.value;
-                if (newEl) saved[newKey] = newEl.value;
-            });
-
-            document.getElementById(`body-${type}`).innerHTML = renderCutterFields(type, idx);
-
-            // Restore values
-            TYPE_FIELDS[type].forEach(([, oldKey, newKey]) => {
-                const oldEl = document.getElementById(`${oldKey}_${type}`);
-                const newEl = document.getElementById(`${newKey}_${type}`);
-                if (oldEl && saved[oldKey]) oldEl.value = saved[oldKey];
-                if (newEl && saved[newKey]) newEl.value = saved[newKey];
-            });
-        });
-    }
-
-    // ── Field ID scheme: keyed by type name, not index ────────────────────
-    // e.g. cu_old_upper, cl_new_center — avoids index-shift bugs entirely
-    function renderCutterFields(type, _idx) {
-        const pairs = TYPE_FIELDS[type];
-
-        // OLD section: all suffixes' old inputs
-        const oldRows = pairs.map(([suffix, oldKey]) => `
-            <div>
-                <label>${suffix} <span class="input-hint">4 digits</span></label>
-                <input type="tel" id="${oldKey}_${type}" class="cutter-num-input"
-                       maxlength="4" placeholder="${TYPE_PLACEHOLDERS[oldKey]}"
-                       inputmode="numeric" pattern="[0-9]*"
-                       oninput="this.value=this.value.replace(/\D/g,''); if(this.value.length===4) autoJumpToNext(this)"
-                       autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-            </div>
-        `).join('');
-
-        // NEW section: all suffixes' new inputs
-        const newRows = pairs.map(([suffix, , newKey]) => `
-            <div>
-                <label>${suffix} <span class="input-hint">4 digits</span></label>
-                <input type="tel" id="${newKey}_${type}" class="cutter-num-input"
-                       maxlength="4" placeholder="${TYPE_PLACEHOLDERS[newKey]}"
-                       inputmode="numeric" pattern="[0-9]*"
-                       oninput="this.value=this.value.replace(/\D/g,''); if(this.value.length===4) autoJumpToNext(this)"
-                       autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-            </div>
-        `).join('');
 
         return `
-            <div class="cutter-pair">
-                <div class="cutter-pair-title">OLD</div>
-                <div class="cutter-fields-grid">${oldRows}</div>
-            </div>
-            <div class="cutter-pair">
-                <div class="cutter-pair-title">NEW</div>
-                <div class="cutter-fields-grid">${newRows}</div>
+            <h1>Cutter Change Reports</h1>
+            <p class="subtitle">Manage and generate your production reports.</p>
+            <div class="report-list">${listHTML}</div>
+            <div class="bottom-bar">
+                <button class="btn" onclick="startNewReport()">New Cutter Change</button>
             </div>
         `;
     }
 
-    function updateSelectedSummary() {
-        const el = document.getElementById('selectedCutterSummary');
-        if (selectedCutterTypes.length === 0) { 
-            el.innerHTML = ''; 
-            document.getElementById('tasksSection').style.display = 'none';
-            return; 
-        }
-        const badges = selectedCutterTypes.map(t =>
-            `<span class="cutter-badge badge-${t}">${t.charAt(0).toUpperCase()+t.slice(1)}</span>`
-        ).join(' ');
-        el.innerHTML = `<div style="margin-bottom:12px;font-size:0.85rem;color:#475569;"><strong>Selected:</strong> ${badges}</div>`;
-        
-        // Show tasks section and update visibility
-        document.getElementById('tasksSection').style.display = 'block';
-        updateTasksVisibility();
+    function lineHTML() {
+        const gridItems = LINES.map(l => `
+            <div class="grid-item ${state.report.line === l ? 'selected' : ''}" onclick="selectLine('${l}')">${l}</div>
+        `).join("");
+
+        return `
+            <h2>Select Production Line</h2>
+            <p class="subtitle">Which line are you working on today?</p>
+            <div class="grid-selector">${gridItems}</div>
+        `;
     }
 
-    function updateTasksVisibility() {
-        const tasksContainer = document.querySelector('.tasks-container');
-        const allTaskItems = tasksContainer.querySelectorAll('.task-item');
+    function cuttersHTML() {
+        const listItems = CUTTERS.map(c => `
+            <div class="list-item ${state.report.cutters.includes(c) ? 'selected' : ''}" onclick="toggleCutter('${c}')">
+                <span>${c}</span><div class="checkmark"></div>
+            </div>
+        `).join("");
+
+        return `
+            <h2>Select Cutters to Change</h2>
+            <p class="subtitle">Which cutters are you replacing?</p>
+            <div class="list-selector">${listItems}</div>
+            <div class="bottom-bar">
+                <button class="btn btn-secondary" onclick="saveAndReturn()">Save & Exit</button>
+                <button class="btn" ${state.report.cutters.length === 0 ? "disabled" : ""} onclick="goHub()">Continue</button>
+            </div>
+        `;
+    }
+
+    function hubHTML() {
+        const oldDone = checkIdsComplete("oldIDs");
+        const newDone = checkIdsComplete("newIDs");
+        const hasRemarks = state.report.remarks || Object.keys(state.report.checklist).length > 0;
+
+        return `
+            <h2>Draft Dashboard</h2>
+            <p class="subtitle" style="margin-bottom:20px;">Review your progress and complete the missing data.</p>
+            
+            <div class="editable-subtitle" onclick="go('line', 'left')">
+                <p style="color:var(--text-main); font-weight:800; margin-bottom:4px; font-size:16px;">Line: ${state.report.line}</p>
+                <p style="color:var(--text-muted); font-size:14px; margin-bottom:0;">Cutters: ${state.report.cutters.join(', ')}</p>
+            </div>
+            <div style="height:24px;"></div>
+            
+            <div class="list-selector">
+                <div class="list-item task-item ${oldDone ? 'completed' : ''}" onclick="go('old')">
+                    <div><h4>Old Cutter IDs (Removed)</h4><p class="status">${oldDone ? 'Complete' : 'Pending Data'}</p></div>
+                    <div style="color: var(--border); font-weight: bold; font-size:20px;">></div>
+                </div>
+                <div class="list-item task-item ${newDone ? 'completed' : ''}" onclick="go('newer')">
+                    <div><h4>New Cutter IDs (Installed)</h4><p class="status">${newDone ? 'Complete' : 'Pending Data'}</p></div>
+                    <div style="color: var(--border); font-weight: bold; font-size:20px;">></div>
+                </div>
+                <div class="list-item task-item ${hasRemarks ? 'completed' : ''}" onclick="go('checklist')">
+                    <div><h4>Checklist & Remarks</h4><p class="status">${hasRemarks ? 'Updated' : 'Optional'}</p></div>
+                    <div style="color: var(--border); font-weight: bold; font-size:20px;">></div>
+                </div>
+            </div>
+
+            <div class="bottom-bar">
+                <button class="btn btn-secondary" onclick="saveAndReturn()">Save & Exit to Home</button>
+                <button class="btn" ${!(oldDone && newDone) ? "disabled" : ""} onclick="generateReport()">Generate Final Report</button>
+            </div>
+        `;
+    }
+
+    function idsHTML(type) {
+        const key = type === "old" ? "oldIDs" : "newIDs";
+        const title = type === "old" ? "Enter Old IDs (Removed Cutters)" : "Enter New IDs (Installed Cutters)";
         
-        // Hide all conditional tasks first
-        allTaskItems.forEach(item => {
-            if (item.dataset.types !== 'all') {
-                item.style.display = 'none';
-                item.classList.remove('show-center', 'show-final');
+        let html = `<h2>${title}</h2><p class="subtitle">Enter exactly 4 digits per field.</p>`;
+        
+        // Sort cutters array based on explicit requirement for UI flow as well
+        const sortedCutters = [...state.report.cutters].sort((a, b) => CUTTER_SORT_ORDER.indexOf(a) - CUTTER_SORT_ORDER.indexOf(b));
+
+        let inputIndex = 0;
+        sortedCutters.forEach(c => {
+            const format = FORMATS[c];
+            html += `<h3>${c} Cutter</h3><div class="card cutter-group-card" style="padding:16px;">`;
+            
+            for(let i = 0; i < 2; i++) {
+                const val = state.report[key][c]?.[i] || "";
+                html += `
+                    <div class="id-input-wrapper">
+                        <span>${format.prefix}</span>
+                        <input class="id-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="____"
+                               data-key="${key}" data-cutter="${c}" data-index="${i}" data-focusindex="${inputIndex}" value="${val}">
+                        <span>${format.suffixes[i]}</span>
+                    </div>`;
+                inputIndex++;
             }
+            html += `</div>`;
         });
-        
-        // Show tasks based on selected cutter types
-        selectedCutterTypes.forEach(type => {
-            const conditionalTasks = tasksContainer.querySelectorAll(`.task-item[data-types="${type}"]`);
-            conditionalTasks.forEach(task => {
-                task.style.display = 'block';
-                task.classList.add(`show-${type}`);
-            });
-        });
-        
-        updateTasksProgress();
+
+        html += `
+            <div class="bottom-bar">
+                <button class="btn btn-secondary" onclick="saveAndReturn()">Save Draft</button>
+                <button class="btn" onclick="goHub()">Save & Continue</button>
+            </div>
+        `;
+        return html;
     }
 
-    function updateTasksProgress() {
-        const visibleTasks = document.querySelectorAll('.task-item:not([style*="display: none"])');
-        const checkedTasks = document.querySelectorAll('.task-item:not([style*="display: none"]) input[type="checkbox"]:checked');
-        
-        if (visibleTasks.length === 0) return;
-        
-        const progress = Math.round((checkedTasks.length / visibleTasks.length) * 100);
-        
-        // Add or update progress indicator
-        let progressEl = document.querySelector('.tasks-progress');
-        if (!progressEl) {
-            progressEl = document.createElement('div');
-            progressEl.className = 'tasks-progress';
-            document.querySelector('.tasks-container').insertBefore(progressEl, document.querySelector('.tasks-container').firstChild);
+    function checklistHTML() {
+        const items = getChecklistItems();
+        const checkHTML = items.map(item => `
+            <label class="check-container">
+                <input class="check-input" type="checkbox" data-check="${item}" ${state.report.checklist[item] ? "checked" : ""}>
+                <div class="custom-checkbox">
+                    <svg viewBox="0 0 12 10"><polyline points="1.5 6 4.5 9 10.5 1"></polyline></svg>
+                </div>
+                <span>${item}</span>
+            </label>
+        `).join("");
+
+        return `
+            <h2>Maintenance Checklist & Remarks</h2>
+            <p class="subtitle">Log completed maintenance tasks and additional notes.</p>
+            
+            <div style="display: flex; gap: 16px; margin-bottom: 24px;">
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" class="form-input" id="dateInput" value="${state.report.date}">
+                </div>
+                <div class="form-group">
+                    <label>Time</label>
+                    <select class="form-input" id="timeInput">${buildTimeOptions(state.report.time)}</select>
+                </div>
+            </div>
+
+            <div class="card" style="padding: 8px 20px;">${checkHTML}</div>
+
+            <div class="form-group">
+                <label>Remarks</label>
+                <textarea id="remarksInput" placeholder="Type any additional remarks here...">${state.report.remarks || ""}</textarea>
+            </div>
+
+            <div class="bottom-bar">
+                <button class="btn btn-secondary" onclick="saveAndReturn()">Save Draft</button>
+                <button class="btn" onclick="saveChecklist()">Save & Continue</button>
+            </div>
+        `;
+    }
+
+    function reportHTML() {
+        return `
+            <h2>Review & Copy Report</h2>
+            <p class="subtitle">Review your data and copy to clipboard to share.</p>
+            <div class="report-preview" id="reportText">${buildReportText()}</div>
+            <div class="bottom-bar">
+                <button class="btn btn-secondary" onclick="goHome()">Done</button>
+                <button class="btn" id="copyBtn" onclick="copyReport()">Copy to Clipboard</button>
+            </div>
+        `;
+    }
+
+    // --- Interactions ---
+    function startNewReport() {
+        vibrate();
+        state.report = {
+            id: Date.now(),
+            status: "draft",
+            line: "",
+            cutters: [],
+            oldIDs: {},
+            newIDs: {},
+            checklist: {},
+            remarks: "",
+            date: getToday(),
+            time: getNearestTime()
+        };
+        go("line");
+    }
+
+    function selectLine(line) {
+        vibrate();
+        state.report.line = line;
+        saveDraft();
+        setTimeout(() => go("cutters"), 150);
+    }
+
+    function toggleCutter(c) {
+        vibrate();
+        if (state.report.cutters.includes(c)) {
+            state.report.cutters = state.report.cutters.filter(x => x !== c);
+        } else {
+            state.report.cutters.push(c);
         }
-        
-        progressEl.textContent = `${checkedTasks.length} of ${visibleTasks.length} tasks completed (${progress}%)`;
-        progressEl.classList.toggle('has-tasks', checkedTasks.length > 0);
+        saveDraft();
+        render();
     }
 
-    // Add event listeners for task checkboxes
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('input[name="tasks"]').forEach(checkbox => {
-            checkbox.addEventListener('change', updateTasksProgress);
-        });
+    function goHub() {
+        saveDraft();
+        go("hub");
+    }
+
+    function saveAndReturn() {
+        saveDraft();
+        goHome();
+    }
+
+    function saveChecklist() {
+        saveDraft();
+        goHub();
+    }
+
+    function resumeReport(id) {
+        vibrate();
+        state.report = state.reports.find(r => r.id === id);
+        if (!state.report.line) go("line");
+        else if (state.report.cutters.length === 0) go("cutters");
+        else go("hub");
+    }
+
+    function editReport(id) {
+        vibrate();
+        state.report = state.reports.find(r => r.id === id);
+        state.report.status = "draft";
+        saveDraft();
+        go("hub");
+    }
+
+    function viewReport(id) {
+        vibrate();
+        state.report = state.reports.find(r => r.id === id);
+        go("report");
+    }
+
+    function deleteReport(id) {
+        vibrate();
+        if (confirm("Are you sure you want to delete this report?")) {
+            state.reports = state.reports.filter(r => r.id !== id);
+            saveToStorage();
+            render();
+        }
+    }
+
+    function generateReport() {
+        vibrate([15, 50, 15]);
+        state.report.status = "complete";
+        saveDraft();
+        go("report");
+    }
+
+    // --- Helpers ---
+    function triggerInputStateUpdate(element, val) {
+        const key = element.dataset.key;
+        const cutter = element.dataset.cutter;
+        const index = Number(element.dataset.index);
+
+        if (!state.report[key][cutter]) state.report[key][cutter] = ["", ""];
+        state.report[key][cutter][index] = val;
+        saveDraft(); 
+    }
+
+    function checkIdsComplete(key) {
+        if (state.report.cutters.length === 0) return false;
+        for (const c of state.report.cutters) {
+            if (!state.report[key][c]) return false;
+            if (state.report[key][c].length !== 2) return false;
+            if (state.report[key][c].some(v => !v || v.length !== 4)) return false;
+        }
+        return true;
+    }
+
+    function getChecklistItems() {
+        let items = [];
+        if (state.report.cutters.includes("Upper") || state.report.cutters.includes("Center")) items.push("Cutter Linear greasing");
+        if (state.report.cutters.includes("Final")) {
+            items.push("All Linear greasing");
+            items.push("Vulkollan tape replacement");
+            items.push("STK purging");
+        }
+        if (state.report.cutters.includes("Center")) {
+            items.push("ESP & LAMI purging");
+            items.push("Ring blower and turtle pump filter cleaning");
+        }
+        items.push("Guide master bolt check");
+        return [...new Set(items)];
+    }
+
+    function getToday() { return new Date().toISOString().split("T")[0]; }
+
+    function getNearestTime() {
+        const d = new Date();
+        let h = d.getHours(), m = d.getMinutes();
+        m = m < 15 ? "00" : m < 45 ? "30" : "00";
+        if (m === "00" && d.getMinutes() >= 45) h = (h + 1) % 24;
+        const ampm = h >= 12 ? "PM" : "AM";
+        let hour = h % 12; hour = hour ? hour : 12;
+        return `${hour}:${m}${ampm}`;
+    }
+
+    function buildTimeOptions(selected) {
+        let out = "";
+        for (let h = 0; h < 24; h++) {
+            for (let m of ["00", "30"]) {
+                const ampm = h >= 12 ? "PM" : "AM";
+                let hour = h % 12; hour = hour ? hour : 12;
+                const val = `${hour}:${m}${ampm}`;
+                out += `<option value="${val}" ${val === selected ? "selected" : ""}>${val}</option>`;
+            }
+        }
+        return out;
+    }
+
+    function buildReportText() {
+        const r = state.report;
+        const dateObj = new Date(r.date + "T00:00:00");
+        const month = dateObj.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
         
-        // iPhone-specific optimizations
-        if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-            // Prevent double-tap zoom on buttons
-            document.querySelectorAll('button, .task-checkbox').forEach(element => {
-                element.addEventListener('touchend', function(e) {
-                    e.preventDefault();
-                    this.click();
-                });
+        let txt = `${month} ${dateObj.getDate()} | ${r.time}\nLine: ${r.line}\n\n`;
+
+        // Strict Sorting requirement: Upper, Center, Final
+        const sortedCutters = [...r.cutters].sort((a, b) => CUTTER_SORT_ORDER.indexOf(a) - CUTTER_SORT_ORDER.indexOf(b));
+
+        const formatIDs = (key) => {
+            let sec = "";
+            sortedCutters.forEach(c => {
+                sec += c + "\n";
+                const ids = r[key][c] || ["____", "____"];
+                sec += `${FORMATS[c].prefix}${ids[0]}${FORMATS[c].suffixes[0]}\n`;
+                sec += `${FORMATS[c].prefix}${ids[1]}${FORMATS[c].suffixes[1]}\n`;
             });
+            return sec;
+        };
+
+        txt += `New Cutter IDs:\n\n${formatIDs("newIDs")}\n`;
+        txt += `OLD Cutter IDs:\n\n${formatIDs("oldIDs")}\n`;
+
+        const checklist = getChecklistItems();
+        if (checklist.length > 0) {
+            txt += "Tasks Checklist:\n";
+            checklist.forEach(item => { txt += `- ${item} ${r.checklist[item] ? "done" : "not done"}\n`; });
+            txt += "\n";
+        }
+
+        if (r.remarks && r.remarks.trim() !== "") { txt += `Remarks:\n${r.remarks}\n`; }
+        return txt.trim();
+    }
+
+    async function copyReport() {
+        try {
+            await navigator.clipboard.writeText(buildReportText());
+            vibrate([15, 50, 15]);
+            const btn = document.getElementById("copyBtn");
+            btn.innerText = "Copied to Clipboard!";
+            btn.classList.add("copy-success");
+            setTimeout(() => {
+                btn.innerText = "Copy to Clipboard";
+                btn.classList.remove("copy-success");
+            }, 2000);
+        } catch(e) { alert("Failed to copy text."); }
+    }
+
+    // --- Frictionless Inputs (Delegation) ---
+    document.getElementById("app-container").addEventListener("input", e => {
+        if (e.target.classList.contains("id-input")) {
+            let val = e.target.value.replace(/\D/g, "").slice(0, 4);
+            e.target.value = val;
+
+            triggerInputStateUpdate(e.target, val);
             
-            // Add swipe gestures for navigation
-            let touchStartX = 0;
-            let touchStartY = 0;
-            
-            document.addEventListener('touchstart', function(e) {
-                touchStartX = e.touches[0].clientX;
-                touchStartY = e.touches[0].clientY;
-            }, { passive: true });
-            
-            document.addEventListener('touchend', function(e) {
-                const touchEndX = e.changedTouches[0].clientX;
-                const touchEndY = e.changedTouches[0].clientY;
-                const deltaX = touchEndX - touchStartX;
-                const deltaY = touchEndY - touchStartY;
-                
-                // Horizontal swipe detection
-                if (Math.abs(deltaX) > 50 && Math.abs(deltaY) < 30) {
-                    if (deltaX > 0 && touchStartX < 50) {
-                        // Swipe right from left edge - go back
-                        if (document.getElementById('formView').classList.contains('hidden') === false) {
-                            showDashboard();
-                        }
-                    }
-                }
-            });
-            
-            // Add haptic feedback for actions
-            const addHapticFeedback = function() {
-                if (window.navigator && window.navigator.vibrate) {
-                    window.navigator.vibrate(10);
-                }
-            };
-            
-            // Add haptic feedback to buttons
-            document.querySelectorAll('button, .task-checkbox').forEach(element => {
-                element.addEventListener('click', addHapticFeedback);
-            });
+            // Auto-focus next
+            if (val.length === 4) {
+                const focusIdx = Number(e.target.dataset.focusindex);
+                const nextInput = document.querySelector(`.id-input[data-focusindex="${focusIdx + 1}"]`);
+                if (nextInput) nextInput.focus();
+                else e.target.blur();
+            }
         }
     });
 
-    function getCompletedTasks() {
-        const checkedTasks = document.querySelectorAll('input[name="tasks"]:checked');
-        return Array.from(checkedTasks).map(task => task.value);
-    }
+    // Auto-split on Paste
+    document.getElementById("app-container").addEventListener("paste", e => {
+        if (e.target.classList.contains("id-input")) {
+            const pasteData = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, "");
+            if (pasteData.length === 8) {
+                e.preventDefault();
+                const focusIdx = Number(e.target.dataset.focusindex);
+                const part1 = pasteData.slice(0, 4);
+                const part2 = pasteData.slice(4, 8);
 
-    function setCompletedTasks(taskValues) {
-        // Clear all checkboxes first
-        document.querySelectorAll('input[name="tasks"]').forEach(task => {
-            task.checked = false;
-        });
-        
-        // Set checked state for provided task values
-        taskValues.forEach(taskValue => {
-            const task = document.querySelector(`input[name="tasks"][value="${taskValue}"]`);
-            if (task) {
-                task.checked = true;
-            }
-        });
-        
-        updateTasksProgress();
-    }
+                e.target.value = part1;
+                triggerInputStateUpdate(e.target, part1);
 
-    // ── Dashboard ──────────────────────────────────────────────────────────
-    function renderDashboard() {
-        records = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-        const list = document.getElementById('reportsList');
-        const btnRow = document.getElementById('dashBtnRow');
-
-        if (records.length === 0) {
-            btnRow.style.display = 'none';
-            list.innerHTML = `
-                <div class="zero-state-container">
-                    <div class="zero-state-icon">🔧</div>
-                    <div class="zero-state-text">No cutter change records yet. Create one or import existing IDs.</div>
-                    <button class="btn-main" onclick="createNewRecord()">New Cutter Change</button>
-                    <button class="btn-import-dash" style="width:100%;max-width:300px;" onclick="showImport()">📋 Import IDs</button>
-                </div>`;
-            return;
-        }
-
-        btnRow.style.display = 'flex';
-
-        list.innerHTML = records.slice().reverse().map(r => {
-            const types = Array.isArray(r.cutterTypes) ? r.cutterTypes : [r.cutterType].filter(Boolean);
-            const badges = types.map(t =>
-                `<span class="cutter-badge badge-${t}">${t.charAt(0).toUpperCase()+t.slice(1)}</span>`
-            ).join(' ');
-
-            // Preview IDs
-            let previewHtml = '';
-            types.forEach(type => {
-                const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
-                previewHtml += `<div style="margin-bottom:10px;"><strong style="font-size:0.85rem;">${typeLabel}</strong><br>`;
-                previewHtml += `<div style="font-size:0.8rem;font-family:'Courier New',monospace;color:#374151;line-height:1.8;">`;
-                TYPE_FIELDS[type].forEach(([suffix, oldKey, newKey]) => {
-                    const oldVal = r[`${oldKey}_${type}`];
-                    const newVal = r[`${newKey}_${type}`];
-                    if (oldVal) previewHtml += `OLD: ${buildID(oldVal, suffix)}<br>`;
-                    if (newVal) previewHtml += `NEW: ${buildID(newVal, suffix)}<br>`;
-                });
-                previewHtml += `</div></div>`;
-            });
-
-            return `
-            <div class="report-card">
-                <div class="report-info">
-                    <div class="report-title">${r.dateLabel} &nbsp;·&nbsp; Line ${r.line}</div>
-                    <div class="report-meta">${badges}<span>${r.timeLabel}</span></div>
-                </div>
-                <div style="background:#f8fafc;padding:12px;border-radius:8px;border:1px solid var(--border);">
-                    ${previewHtml}
-                </div>
-                <div class="btn-actions">
-                    <button class="btn-edit" onclick="editRecord(${r.id})">✏️ Edit / View</button>
-                    <button class="btn-delete" onclick="deleteRecord(${r.id})">🗑️ Delete</button>
-                </div>
-            </div>`;
-        }).join('');
-    }
-
-    // ── Create / Edit / Navigation ─────────────────────────────────────────
-    function createNewRecord() {
-        clearError();
-        selectedCutterTypes = [];
-        document.getElementById('editingId').value = '';
-
-        // Reset form fields
-        document.querySelectorAll('input[name="line"]').forEach(r => r.checked = false);
-        document.getElementById('summaryContainer').style.display = 'none';
-        document.getElementById('selectedCutterSummary').innerHTML = '';
-        document.getElementById('tasksSection').style.display = 'none';
-
-        // Reset all 3 cards to clean state
-        ['upper','center','final'].forEach(type => {
-            document.getElementById(`body-${type}`).innerHTML = '';
-            document.getElementById(`expand-${type}`).classList.remove('open');
-            document.getElementById(`card-${type}`).classList.remove('selected');
-            const btn = document.getElementById(`btn-${type}`);
-            btn.textContent = 'Add';
-            btn.classList.remove('cutter-card-remove-btn');
-            btn.classList.add('cutter-card-add-btn');
-        });
-
-        // Clear all task checkboxes
-        document.querySelectorAll('input[name="tasks"]').forEach(task => {
-            task.checked = false;
-        });
-
-        // Remove progress indicator if it exists
-        const progressEl = document.querySelector('.tasks-progress');
-        if (progressEl) {
-            progressEl.remove();
-        }
-
-        const now = new Date();
-        document.getElementById('dateInput').value = now.toISOString().slice(0,10);
-        
-        // Set default time to current 30-minute interval
-        const currentHours = now.getHours();
-        const currentMinutes = now.getMinutes();
-        const roundedMinutes = currentMinutes >= 30 ? 30 : 0;
-        const timeValue = `${currentHours.toString().padStart(2, '0')}:${roundedMinutes.toString().padStart(2, '0')}`;
-        document.getElementById('timeInput').value = timeValue;
-
-        showForm();
-    }
-
-    function editRecord(id) {
-        const r = records.find(x => x.id === id);
-        if (!r) return;
-
-        clearError();
-        selectedCutterTypes = [];
-        document.getElementById('editingId').value = id;
-
-        // First reset all cards
-        ['upper','center','final'].forEach(type => {
-            document.getElementById(`body-${type}`).innerHTML = '';
-            document.getElementById(`expand-${type}`).classList.remove('open');
-            document.getElementById(`card-${type}`).classList.remove('selected');
-            const btn = document.getElementById(`btn-${type}`);
-            btn.textContent = 'Add';
-            btn.classList.remove('cutter-card-remove-btn');
-            btn.classList.add('cutter-card-add-btn');
-        });
-
-        document.getElementById('dateInput').value = r.dateRaw;
-        document.getElementById('timeInput').value = r.timeRaw;
-
-        document.querySelectorAll('input[name="line"]').forEach(radio => {
-            radio.checked = (radio.value === r.line);
-        });
-
-        // Re-add each cutter type and populate its saved values
-        const types = Array.isArray(r.cutterTypes) ? r.cutterTypes : [r.cutterType].filter(Boolean);
-        types.forEach(type => {
-            addCutterType(type); // renders fields and opens card
-
-            // Populate saved values (fields are keyed by type name)
-            TYPE_FIELDS[type].forEach(([, oldKey, newKey]) => {
-                const oldEl = document.getElementById(`${oldKey}_${type}`);
-                const newEl = document.getElementById(`${newKey}_${type}`);
-                // Support both new key scheme (_type) and legacy scheme (no suffix)
-                if (oldEl) oldEl.value = r[`${oldKey}_${type}`] || r[oldKey] || '';
-                if (newEl) newEl.value = r[`${newKey}_${type}`] || r[newKey] || '';
-            });
-        });
-
-        showForm();
-        // Show saved summary
-        document.getElementById('summaryOutput').innerText = buildSummaryText(r);
-        document.getElementById('summaryContainer').style.display = 'block';
-        
-        // Restore completed tasks
-        if (r.completedTasks && Array.isArray(r.completedTasks)) {
-            setCompletedTasks(r.completedTasks);
-        }
-    }
-
-    function showForm() {
-        document.getElementById('dashboardView').classList.add('hidden');
-        document.getElementById('formView').classList.remove('hidden');
-    }
-
-    function showDashboard() {
-        document.getElementById('dashboardView').classList.remove('hidden');
-        document.getElementById('formView').classList.add('hidden');
-        document.getElementById('importView').classList.add('hidden');
-        renderDashboard();
-    }
-
-    // ── Format helpers ─────────────────────────────────────────────────────
-    function formatDateLabel(dateStr) {
-        if (!dateStr) return '';
-        const d = new Date(dateStr + 'T12:00:00');
-        const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-        return `${months[d.getMonth()]} ${d.getDate()}`;
-    }
-
-    function formatTimeLabel(timeStr) {
-        if (!timeStr) return '';
-        let [h, m] = timeStr.split(':');
-        let hNum = parseInt(h);
-        const ampm = hNum >= 12 ? 'PM' : 'AM';
-        hNum = hNum % 12 || 12;
-        return `${hNum}:${m}${ampm}`;
-    }
-
-    // ── Summary text builder (matches spec format exactly) ─────────────────
-    function buildSummaryText(r) {
-        const types = Array.isArray(r.cutterTypes) ? r.cutterTypes : [r.cutterType].filter(Boolean);
-        let text = `${r.dateLabel} ${r.timeLabel}\nLine: ${r.line}\n`;
-
-        types.forEach((type, i) => {
-            const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
-            text += `${typeLabel}\n`;
-            text += `OLD\n`;
-            TYPE_FIELDS[type].forEach(([suffix, oldKey]) => {
-                text += `${buildID(r[`${oldKey}_${type}`] || r[oldKey], suffix)}\n`;
-            });
-            text += `NEW\n`;
-            TYPE_FIELDS[type].forEach(([suffix, , newKey]) => {
-                text += `${buildID(r[`${newKey}_${type}`] || r[newKey], suffix)}\n`;
-            });
-            // Blank line between sections (not after last)
-            if (i < types.length - 1) text += '\n';
-        });
-
-        // Add task completion status
-        if (r.completedTasks && r.completedTasks.length > 0) {
-            text += `\nTASKS COMPLETED\n`;
-            
-            const allTasks = {
-                'linear_greasing': 'Linear greasing',
-                'guide_master_bolt': 'Guide master bolt check',
-                'esp_lami_purging': 'ESP Lami purging',
-                'ring_blower_filter': 'Ring Blower, Turtle Pump Filter cleaning',
-                'stk_purging': 'STK purging',
-                'vulkollan_replacement': 'Vulkollan Replacement',
-                'ssss_greasing': 'SSSS, Short checker, Vision gripper linear greasing'
-            };
-
-            // Determine which tasks should be visible based on cutter types
-            const visibleTasks = [];
-            
-            // Always visible tasks
-            visibleTasks.push('linear_greasing', 'guide_master_bolt');
-            
-            // Center-only tasks
-            if (types.includes('center')) {
-                visibleTasks.push('esp_lami_purging', 'ring_blower_filter');
-            }
-            
-            // Final-only tasks
-            if (types.includes('final')) {
-                visibleTasks.push('stk_purging', 'vulkollan_replacement', 'ssss_greasing');
-            }
-
-            // Separate completed and incomplete tasks
-            const completedTasks = [];
-            const incompleteTasks = [];
-
-            visibleTasks.forEach(taskKey => {
-                if (r.completedTasks.includes(taskKey)) {
-                    completedTasks.push(allTasks[taskKey]);
-                } else {
-                    incompleteTasks.push(allTasks[taskKey]);
+                const nextInput = document.querySelector(`.id-input[data-focusindex="${focusIdx + 1}"]`);
+                if (nextInput) {
+                    nextInput.value = part2;
+                    triggerInputStateUpdate(nextInput, part2);
+                    nextInput.focus();
                 }
-            });
-
-            // Show completed tasks
-            if (completedTasks.length > 0) {
-                text += `✅ Done:\n`;
-                completedTasks.forEach(task => {
-                    text += `   ${task}\n`;
-                });
-            }
-
-            // Show incomplete tasks
-            if (incompleteTasks.length > 0) {
-                text += `❌ Not Done:\n`;
-                incompleteTasks.forEach(task => {
-                    text += `   ${task}\n`;
-                });
             }
         }
+    });
 
-        return text.trimEnd();
-    }
-
-    // ── Save ───────────────────────────────────────────────────────────────
-    function saveRecord() {
-        clearError();
-
-        const line = document.querySelector('input[name="line"]:checked')?.value;
-        const dateRaw = document.getElementById('dateInput').value;
-        const timeRaw = document.getElementById('timeInput').value;
-
-        if (!line)                          { showError('Please select a Line.'); return; }
-        if (selectedCutterTypes.length === 0) { showError('Please select at least one Cutter Type.'); return; }
-        if (!dateRaw)                       { showError('Please enter a Date.'); return; }
-        if (!timeRaw)                       { showError('Please enter a Time.'); return; }
-
-        let recordData = {
-            line,
-            cutterTypes: [...selectedCutterTypes],
-            dateRaw,
-            timeRaw,
-            dateLabel: formatDateLabel(dateRaw),
-            timeLabel: formatTimeLabel(timeRaw),
-            completedTasks: getCompletedTasks(), // Add completed tasks
-        };
-
-        // Validate & collect cutter numbers — keyed as e.g. cu_old_upper
-        for (const type of selectedCutterTypes) {
-            for (const [, oldKey, newKey] of TYPE_FIELDS[type]) {
-                const oldVal = document.getElementById(`${oldKey}_${type}`)?.value.trim();
-                const newVal = document.getElementById(`${newKey}_${type}`)?.value.trim();
-
-                if (!oldVal || oldVal.length !== 4) { showError(`${type.toUpperCase()} — ${oldKey.replace('_',' ').toUpperCase()}: enter exactly 4 digits.`); return; }
-                if (!newVal || newVal.length !== 4) { showError(`${type.toUpperCase()} — ${newKey.replace('_',' ').toUpperCase()}: enter exactly 4 digits.`); return; }
-
-                recordData[`${oldKey}_${type}`] = oldVal;
-                recordData[`${newKey}_${type}`] = newVal;
+    // Backspace jump to previous
+    document.getElementById("app-container").addEventListener("keydown", e => {
+        if (e.target.classList.contains("id-input") && e.key === "Backspace" && e.target.value === "") {
+            e.preventDefault();
+            const focusIdx = Number(e.target.dataset.focusindex);
+            if (focusIdx > 0) {
+                const prevInput = document.querySelector(`.id-input[data-focusindex="${focusIdx - 1}"]`);
+                if (prevInput) prevInput.focus();
             }
         }
+    });
 
-        const editingIdRaw = document.getElementById('editingId').value;
-        const editingId = editingIdRaw ? parseInt(editingIdRaw) : null;
+    document.getElementById("app-container").addEventListener("change", e => {
+        if (e.target.id === "remarksInput") { state.report.remarks = e.target.value; saveDraft(); }
+        if (e.target.id === "dateInput") { state.report.date = e.target.value; saveDraft(); }
+        if (e.target.id === "timeInput") { state.report.time = e.target.value; saveDraft(); }
+        if (e.target.classList.contains("check-input")) { state.report.checklist[e.target.dataset.check] = e.target.checked; saveDraft(); }
+    });
 
-        if (editingId) {
-            recordData.id = editingId;
-            const idx = records.findIndex(r => r.id === editingId);
-            if (idx > -1) records[idx] = recordData;
-            else records.push(recordData);
-        } else {
-            recordData.id = Date.now();
-            records.push(recordData);
-        }
-
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-
-        // Show summary
-        document.getElementById('summaryOutput').innerText = buildSummaryText(recordData);
-        const container = document.getElementById('summaryContainer');
-        container.style.display = 'block';
-        setTimeout(() => container.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
-    }
-
-    // ── Delete ─────────────────────────────────────────────────────────────
-    function deleteRecord(id) {
-        if (!confirm('Delete this cutter change record?')) return;
-        records = records.filter(r => r.id !== id);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-        renderDashboard();
-    }
-
-    // ── Import ─────────────────────────────────────────────────────────────
-    function showImport() {
-        document.getElementById('dashboardView').classList.add('hidden');
-        document.getElementById('importView').classList.remove('hidden');
-        document.getElementById('importText').value = '';
-        document.getElementById('importError').style.display = 'none';
-        
-        // Reset to text mode
-        document.querySelector('input[name="importMode"][value="text"]').checked = true;
-        document.getElementById('textInputArea').style.display = 'block';
-        document.getElementById('imageInputArea').style.display = 'none';
-        document.getElementById('textImportBtn').style.display = 'block';
-    }
-
-    function parseAndImport() {
-        const raw = document.getElementById('importText').value.trim();
-        const errEl = document.getElementById('importError');
-        errEl.style.display = 'none';
-
-        if (!raw) {
-            errEl.innerText = 'Please paste some IDs first.';
-            errEl.style.display = 'block';
-            return;
-        }
-
-        // ── Parser ──────────────────────────────────────────────────────
-        // Position-based lookback: scan the full raw text for every LCAGHY ID,
-        // then look back up to 400 chars for the nearest age + type keyword.
-        // Suffix drives type — FU/FL always = final; CU/CL = upper unless center keyword is nearer than upper keyword.
-
-        const data = {};  // data[type][age][suffix] = '####'
-
-        const AGE_OLD  = /\b(old|before|prev|previous|original|orig|current|remov(ed)?|taken\s*out|pulled|discarded)\b/gi;
-        const AGE_NEW  = /\b(new|after|install(ed)?|replacing|next|added)\b/gi;
-        const T_UPPER  = /\bupp(er)?\b/gi;
-        const T_CENTER = /\bcen(ter|tre)?\b/gi;
-        const ID_RE    = /LCAGHY(\d{3,4})(CU|CL|FU|FL)/gi;
-
-        function lastMatchPos(text, re) {
-            re.lastIndex = 0;
-            let pos = -1, m;
-            while ((m = re.exec(text)) !== null) pos = m.index;
-            return pos;
-        }
-
-        const LOOKBACK = 400;
-        let m;
-        ID_RE.lastIndex = 0;
-        while ((m = ID_RE.exec(raw)) !== null) {
-            const num    = m[1].padStart(4, '0');
-            const suffix = m[2].toUpperCase();
-            const window = raw.slice(Math.max(0, m.index - LOOKBACK), m.index);
-
-            // Nearest age keyword before this ID
-            const oldPos = lastMatchPos(window, AGE_OLD);
-            const newPos = lastMatchPos(window, AGE_NEW);
-            const age = (oldPos === -1 && newPos === -1) ? null
-                      : newPos > oldPos ? 'new' : 'old';
-
-            // Type: FU/FL always = final; CU/CL = center if center keyword is nearer, else upper
-            let type;
-            if (suffix === 'FU' || suffix === 'FL') {
-                type = 'final';
-            } else {
-                const uPos = lastMatchPos(window, T_UPPER);
-                const cPos = lastMatchPos(window, T_CENTER);
-                type = cPos > uPos ? 'center' : 'upper';
-            }
-
-            if (!age) continue;
-
-            if (!data[type])      data[type]      = {};
-            if (!data[type][age]) data[type][age] = {};
-            if (!data[type][age][suffix]) data[type][age][suffix] = num;
-        }
-
-        // Validate: each found type must have all required suffixes for both old/new
-        const REQUIRED = {
-            upper:  { suffixes: ['CU', 'CL'], oldKeys: ['cu_old','cl_old'], newKeys: ['cu_new','cl_new'] },
-            center: { suffixes: ['CU', 'CL'], oldKeys: ['cu_old','cl_old'], newKeys: ['cu_new','cl_new'] },
-            final:  { suffixes: ['FU', 'FL'], oldKeys: ['fu_old','fl_old'], newKeys: ['fu_new','fl_new'] },
-        };
-
-        const foundTypes = Object.keys(data);
-        if (foundTypes.length === 0) {
-            errEl.innerText = 'No valid LCAGHY IDs found. Make sure the text includes cutter IDs like LCAGHY0013CU656X1.8.';
-            errEl.style.display = 'block';
-            return;
-        }
-
-        const errors = [];
-        foundTypes.forEach(type => {
-            const req = REQUIRED[type];
-            req.suffixes.forEach(suf => {
-                if (!data[type]?.old?.[suf]) errors.push(`Missing OLD ${suf} for ${type}`);
-                if (!data[type]?.new?.[suf]) errors.push(`Missing NEW ${suf} for ${type}`);
-            });
-        });
-
-        if (errors.length) {
-            errEl.innerText = 'Incomplete data: ' + errors.join(', ') + '.';
-            errEl.style.display = 'block';
-            return;
-        }
-
-        // ── Build record ────────────────────────────────────────────────
-        const now = new Date();
-        const dateRaw = now.toISOString().slice(0, 10);
-        const timeRaw = now.toTimeString().slice(0, 5);
-
-        let recordData = {
-            id: Date.now(),
-            line: '',               // user will pick line after import
-            cutterTypes: foundTypes,
-            dateRaw,
-            timeRaw,
-            dateLabel: formatDateLabel(dateRaw),
-            timeLabel: formatTimeLabel(timeRaw),
-        };
-
-        foundTypes.forEach(type => {
-            const req = REQUIRED[type];
-            req.suffixes.forEach((suf, i) => {
-                recordData[`${req.oldKeys[i]}_${type}`] = data[type].old[suf];
-                recordData[`${req.newKeys[i]}_${type}`] = data[type].new[suf];
-            });
-        });
-
-        // Push to records and open as edit so user can set line + date/time
-        records.push(recordData);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-
-        // Open edit view — user confirms line & datetime then saves
-        document.getElementById('importView').classList.add('hidden');
-        editRecord(recordData.id);
-
-        // Show a notice at the top of the form
-        const notice = document.createElement('div');
-        notice.style.cssText = 'background:#dcfce7;border:1px solid #86efac;color:#166534;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:0.9rem;font-weight:500;';
-        notice.innerHTML = `✅ Imported ${foundTypes.map(t=>t.charAt(0).toUpperCase()+t.slice(1)).join(', ')} IDs — confirm the line and date/time below, then save.`;
-        const form = document.getElementById('formView');
-        form.insertBefore(notice, form.children[1]); // after Back button
-        setTimeout(() => notice.remove(), 8000);
-    }
-
-
-    function copyToClipboard() {
-        const text = document.getElementById('summaryOutput').innerText;
-        navigator.clipboard.writeText(text).then(() => {
-            const btn = document.querySelector('.btn-copy');
-            btn.innerText = '✓ Copied!';
-            setTimeout(() => { btn.innerText = 'Copy to Clipboard'; }, 2000);
-        });
-    }
+    // Boot
+    render();
 </script>
 </body>
 </html>
