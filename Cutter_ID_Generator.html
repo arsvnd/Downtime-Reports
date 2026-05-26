@@ -30,248 +30,64 @@
             --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: var(--font-sans);
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-sans); -webkit-tap-highlight-color: transparent; }
 
-        /* STRICT iOS APP LAYOUT */
-        html, body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            width: 100%;
-            height: 100dvh; 
-            overflow: hidden; 
-            display: flex;
-            justify-content: center;
-            letter-spacing: -0.02em;
-        }
+        html, body { background-color: var(--bg-color); color: var(--text-main); width: 100%; height: 100dvh; overflow: hidden; display: flex; justify-content: center; letter-spacing: -0.02em; }
 
-        #app-container {
-            width: 100%;
-            max-width: 414px;
-            background-color: var(--bg-color);
-            position: relative;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.05); 
-        }
+        #app-container { width: 100%; max-width: 414px; background-color: var(--bg-color); position: relative; height: 100%; display: flex; flex-direction: column; box-shadow: 0 0 40px rgba(0, 0, 0, 0.05); }
 
         /* =========================================
-           2. NAVIGATION & PROGRESS
+           2. HEADER & LAYOUT
            ========================================= */
-        header {
-            padding: env(safe-area-inset-top) 20px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: relative;
-            z-index: 100;
-            background: rgba(250, 250, 250, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            min-height: 70px;
-            flex-shrink: 0;
-        }
+        header { padding: env(safe-area-inset-top) 20px 16px; position: relative; z-index: 100; background: rgba(250, 250, 250, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); min-height: 70px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+        
+        .header-btn { background: var(--card-bg); border: 1px solid var(--border); font-size: 14px; font-weight: 700; color: var(--text-main); cursor: pointer; padding: 8px 16px; border-radius: var(--radius-pill); box-shadow: var(--shadow-sm); transition: transform 0.15s; visibility: hidden;}
+        .header-btn:active { transform: scale(0.95); }
 
-        .home-btn {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--text-main);
-            cursor: pointer;
-            padding: 8px 16px;
-            border-radius: var(--radius-pill);
-            box-shadow: var(--shadow-sm);
-            visibility: hidden;
-            transition: transform 0.15s;
-        }
-        .home-btn:active { transform: scale(0.95); }
+        #content { flex-grow: 1; position: relative; overflow: hidden; }
 
-        .progress-container {
-            flex-grow: 1;
-            height: 6px;
-            background-color: #EFEFEF;
-            border-radius: var(--radius-pill);
-            margin: 0 20px;
-            visibility: hidden;
-            overflow: hidden;
-        }
+        .screen { display: none; flex-direction: column; width: 100%; height: 100%; position: absolute; top: 0; left: 0; background: var(--bg-color); }
+        .screen.active { display: flex; z-index: 10; animation: fade-in 0.2s ease-out; }
+        @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background-color: var(--accent-color);
-            border-radius: var(--radius-pill);
-            transition: width 0.7s cubic-bezier(0.34, 1.56, 0.64, 1); 
-        }
+        .scrollable-body { flex-grow: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 24px 20px; display: flex; flex-direction: column; }
+
+        h1, h2, h3, h4 { font-weight: 800; color: var(--text-main); }
+        h1 { font-size: 20px; text-align: center; letter-spacing: -0.02em; user-select: none; margin: 0; flex-grow: 1;}
+        h2 { font-size: 20px; margin-bottom: 16px; letter-spacing: -0.03em; }
+        h3 { font-size: 14px; margin-bottom: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
 
         /* =========================================
-           3. LAYOUT & SCREENS
+           3. COMPONENTS
            ========================================= */
-        #content {
-            flex-grow: 1;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .screen-content {
-            height: 100%;
-            width: 100%;
-            position: absolute;
-            top: 0; left: 0;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .scrollable-body {
-            flex-grow: 1;
-            padding: 24px 20px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Slide Animations */
-        .slide-in-right { animation: slideInRight 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
-        .slide-in-left { animation: slideInLeft 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
-        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes slideInLeft { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-
-        /* Typography */
-        h1, h2, h3 { font-weight: 800; margin-bottom: 8px; color: var(--text-main); }
-        h1 { font-size: 32px; text-align: center; letter-spacing: -0.04em; user-select: none; }
-        h2 { font-size: 24px; text-align: center; margin-bottom: 24px; letter-spacing: -0.03em; }
-        h3 { font-size: 15px; margin-bottom: 16px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
-        p.subtitle { color: var(--text-muted); text-align: center; margin-bottom: 32px; font-size: 15px; line-height: 1.4; }
-        .editable-subtitle { cursor: pointer; transition: opacity 0.2s; padding: 12px; background: #F4F4F4; border-radius: var(--radius-sm); }
-        .editable-subtitle:active { opacity: 0.5; }
-
-        /* =========================================
-           4. COMPONENTS
-           ========================================= */
-        .card { 
-            background-color: var(--card-bg); 
-            border-radius: var(--radius-lg); 
-            padding: 24px; 
-            margin-bottom: 16px; 
-            box-shadow: var(--shadow-sm); 
-            display: flex; 
-            flex-direction: column; 
-            border: 1px solid var(--border);
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-
-        .bottom-bar {
-            position: sticky;
-            bottom: 0;
-            margin-top: auto; 
-            padding: 16px 20px calc(20px + env(safe-area-inset-bottom));
-            background: var(--bg-color);
-            border-top: 1px solid var(--border);
-            box-shadow: var(--shadow-sticky);
-            z-index: 50;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+        .card { background-color: var(--card-bg); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 24px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+        .bottom-bar { position: sticky; bottom: 0; padding: 16px 20px calc(16px + env(safe-area-inset-bottom)); background: var(--bg-color); border-top: 1px solid var(--border); box-shadow: var(--shadow-sticky); z-index: 50; display: flex; gap: 12px;}
 
         /* Buttons */
-        .btn {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            border-radius: var(--radius-pill);
-            padding: 18px 24px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-            width: 100%;
-            box-shadow: var(--shadow-btn);
-            text-align: center;
-        }
+        .btn { background-color: var(--accent-color); color: white; border: none; border-radius: var(--radius-pill); padding: 18px 24px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); width: 100%; box-shadow: var(--shadow-btn); text-align: center; }
         .btn:active { transform: scale(0.97); box-shadow: none; }
-        .btn:disabled { background-color: #E0E0E0; color: #999999; box-shadow: none; cursor: not-allowed; transform: none; }
         .btn-secondary { background-color: var(--card-bg); color: var(--text-main); border: 2px solid var(--border); box-shadow: var(--shadow-sm); }
-        .btn-small { padding: 10px 16px; font-size: 13px; width: auto; margin: 0; border-radius: var(--radius-pill); font-weight: 700; }
-        .btn-outline { background-color: transparent; color: var(--text-main); border: none; font-size: 14px; font-weight: 600; cursor: pointer; padding: 8px; }
+        .btn-small { padding: 8px 16px; font-size: 13px; width: auto; margin: 0; border-radius: var(--radius-pill); font-weight: 700; border: none; cursor: pointer;}
+        .btn-small:active { transform: scale(0.95); }
+        .btn-grey { background-color: #F4F4F4; color: var(--text-main); border: 1px solid var(--border); }
         .btn-danger { background-color: #FFF0F0; color: var(--accent-red); border: 1px solid #FFE5E5; }
-        .btn-grey { background-color: #F4F4F4; color: var(--text-main); border: 1px solid var(--border); box-shadow: none; }
+        .copy-success { background-color: var(--accent-green) !important; color: white !important; border-color: var(--accent-green) !important; box-shadow: 0 8px 16px -4px rgba(34, 197, 94, 0.4) !important;}
 
-        /* Report Lists */
-        .report-list { display: flex; flex-direction: column; gap: 16px; }
-        .report-item { background-color: var(--card-bg); border-radius: var(--radius-md); padding: 20px; display: flex; flex-direction: column; gap: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
-        .report-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .report-actions { display: flex; gap: 8px; align-items: center; justify-content: flex-end; border-top: 1px solid #F4F4F4; padding-top: 16px; }
-        .report-info h4 { font-size: 18px; margin-bottom: 4px; }
-        .report-info p { font-size: 13px; color: var(--text-muted); font-weight: 500;}
+        /* Report History Items */
+        .report-item { background-color: var(--card-bg); border-radius: var(--radius-md); padding: 20px; display: flex; flex-direction: column; gap: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 12px; }
+        .report-header { display: flex; justify-content: space-between; align-items: center; }
+        .report-header h4 { font-size: 18px; margin-bottom: 4px; }
+        .report-header p { font-size: 13px; color: var(--text-muted); font-weight: 500;}
+        .empty-state { text-align: center; padding: 40px 20px; opacity: 0.7; }
 
-        /* Status Tags */
-        .status-tag { padding: 6px 12px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;}
-        .status-draft { background: #F4F4F4; color: var(--text-muted); }
-        .status-complete { background: #E8F5E9; color: #2E7D32; }
-
-        /* Grids & Selectors */
-        .grid-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-        .grid-item { background-color: var(--card-bg); border: 2px solid var(--border); border-radius: var(--radius-md); padding: 18px 0; text-align: center; font-weight: 700; box-shadow: var(--shadow-sm); cursor: pointer; transition: all 0.15s; font-size: 16px;}
-        .grid-item.selected { border-color: var(--accent-color); color: var(--accent-color); box-shadow: 0 0 0 1px var(--accent-color); }
-
-        .list-selector { display: flex; flex-direction: column; gap: 12px; }
-        .list-item { background-color: var(--card-bg); border: 2px solid var(--border); border-radius: var(--radius-md); padding: 20px; font-weight: 600; box-shadow: var(--shadow-sm); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; }
-        .list-item.selected { border-color: var(--accent-color); box-shadow: 0 0 0 1px var(--accent-color); }
-        
-        .task-item { padding: 20px; border-radius: var(--radius-md); margin-bottom: 12px; }
-        .task-item h4 { font-size: 16px; margin: 0; }
-        .task-item .status { font-size: 13px; font-weight: 600; margin-top: 6px; color: var(--text-muted); }
-        .task-item.completed { border-color: var(--accent-color); background-color: #F8F8F8; }
-        .task-item.completed h4 { color: var(--text-main); }
-        .task-item.completed .status { color: var(--text-main); }
-
-        .checkmark { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; background: #F8F8F8; transition: 0.2s; }
-        .list-item.selected .checkmark { border-color: var(--accent-color); background-color: var(--accent-color); }
-        .list-item.selected .checkmark::after { content: "✓"; color: white; font-size: 16px; font-weight: bold; }
-
-        /* =========================================
-           5. DOPAMINE HIT INPUTS (Micro-interactions)
-           ========================================= */
-        .id-input-wrapper { 
-            display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; 
-            background-color: #FAFAFA; border-radius: var(--radius-sm); padding: 8px 16px; 
-            border: 2px solid var(--border); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .id-input-wrapper:focus-within { border-color: var(--text-muted); background-color: var(--card-bg); }
-        .id-input-wrapper span { color: var(--text-muted); font-family: ui-monospace, monospace; font-size: 14px; font-weight: 600; letter-spacing: 1px; transition: color 0.3s;}
-        
-        .id-input { border: none; background: transparent; font-size: 22px; font-weight: 800; width: 70px; text-align: center; outline: none; font-family: ui-monospace, monospace; color: var(--accent-color); letter-spacing: 2px; padding: 8px 0; transition: color 0.3s;}
-        .id-input::placeholder { color: #DDDDDD; }
-        
-        @keyframes successPop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.04); border-color: var(--accent-green); background-color: #F0FDF4; }
-            100% { transform: scale(1); border-color: var(--accent-green); background-color: #F0FDF4; }
-        }
-        .id-input-wrapper.is-complete {
-            animation: successPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-        .id-input-wrapper.is-complete .id-input,
-        .id-input-wrapper.is-complete span {
-            color: #15803D; 
-        }
-        
         /* Forms */
-        .form-group { margin-bottom: 20px; flex: 1; }
+        .form-group { margin-bottom: 16px; }
         .form-group label { display: block; font-weight: 700; margin-bottom: 8px; font-size: 14px; color: var(--text-muted); }
         .form-input { width: 100%; padding: 16px; background-color: #FAFAFA; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 16px; color: var(--text-main); font-weight: 600; outline: none; transition: 0.2s;}
         .form-input:focus { border-color: var(--accent-color); background-color: var(--card-bg); }
         select.form-input { appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23111%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 16px center; background-size: 16px; }
-        textarea { width: 100%; height: 120px; resize: vertical; text-align: left; font-family: inherit; color: var(--text-main); background-color: #FAFAFA; border-radius: var(--radius-sm); padding: 16px; border: 2px solid var(--border); font-weight: 500; font-size: 15px; outline: none; transition: 0.2s;}
+        select.form-input:invalid { color: var(--text-muted); }
+        textarea { width: 100%; height: 100px; resize: vertical; font-family: inherit; color: var(--text-main); background-color: #FAFAFA; border-radius: var(--radius-sm); padding: 16px; border: 2px solid var(--border); font-weight: 500; font-size: 15px; outline: none;}
         textarea:focus { border-color: var(--accent-color); background-color: var(--card-bg); }
 
         /* Custom Checkboxes */
@@ -284,151 +100,41 @@
         .custom-checkbox svg { width: 14px; height: 14px; fill: none; stroke: white; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 16; stroke-dashoffset: 16; transition: stroke-dashoffset 0.3s ease-in-out; }
         .check-container input:checked ~ .custom-checkbox svg { stroke-dashoffset: 0; }
 
-        /* Report Code Block */
+        .flex-row { display: flex; gap: 16px; margin-bottom: 16px; }
+        .flex-row .form-group { flex: 1; margin-bottom: 0; }
+        
+        .cutter-checkboxes { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 8px;}
+        .cutter-btn { flex: 1; min-width: 80px; text-align: center; padding: 14px 8px; border: 2px solid var(--border); border-radius: var(--radius-md); font-weight: 700; color: var(--text-muted); transition: 0.2s; cursor: pointer; background: var(--card-bg); user-select: none;}
+        .cutter-btn.active { border-color: var(--accent-color); color: var(--accent-color); background: #FAFAFA; box-shadow: 0 0 0 1px var(--accent-color); }
+
+        /* =========================================
+           4. ID INPUTS (Micro-interactions)
+           ========================================= */
+        .id-input-wrapper { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; background-color: #FAFAFA; border-radius: var(--radius-sm); padding: 8px 16px; border: 2px solid var(--border); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .id-input-wrapper:focus-within { border-color: var(--text-muted); background-color: var(--card-bg); }
+        .id-input-wrapper span { color: var(--text-muted); font-family: ui-monospace, monospace; font-size: 14px; font-weight: 600; letter-spacing: 1px; transition: color 0.3s;}
+        .id-input { border: none; background: transparent; font-size: 22px; font-weight: 800; width: 70px; text-align: center; outline: none; font-family: ui-monospace, monospace; color: var(--accent-color); letter-spacing: 2px; padding: 8px 0; transition: color 0.3s;}
+        .id-input::placeholder { color: #DDDDDD; }
+        
+        @keyframes successPop { 0% { transform: scale(1); } 50% { transform: scale(1.04); border-color: var(--accent-green); background-color: #F0FDF4; } 100% { transform: scale(1); border-color: var(--accent-green); background-color: #F0FDF4; } }
+        .id-input-wrapper.is-complete { animation: successPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        .id-input-wrapper.is-complete .id-input, .id-input-wrapper.is-complete span { color: #15803D; }
+
         .report-preview { background-color: #FAFAFA; color: #111111; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 24px; font-family: ui-monospace, monospace; font-size: 13px; white-space: pre-wrap; line-height: 1.6;}
-        .copy-success { background-color: var(--accent-green) !important; color: white !important; border-color: var(--accent-green) !important; box-shadow: 0 8px 16px -4px rgba(34, 197, 94, 0.4) !important;}
-
-        /* Empty State */
-        .empty-state { text-align: center; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;}
-        .empty-state img { width: 180px; margin-bottom: 24px; opacity: 0.9; }
-        .empty-state p { font-size: 15px; color: var(--text-muted); line-height: 1.5;}
 
         /* =========================================
-           UX UPGRADES: Banners & Animations
+           5. EASTER EGG & MAGIC MODE
            ========================================= */
-        .status-banner {
-            padding: 12px 16px;
-            border-radius: var(--radius-sm);
-            margin-bottom: 24px;
-            font-weight: 700;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .status-banner.banner-old {
-            background-color: #FFF0F0;
-            color: var(--accent-red);
-            border: 1px solid #FFE5E5;
-        }
-        .status-banner.banner-new {
-            background-color: #F0FDF4;
-            color: #15803D;
-            border: 1px solid #DCFCE7;
-        }
-        .banner-icon { font-size: 20px; }
-
-        @keyframes pulse-btn {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
-            70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
-        }
-        .btn-ready {
-            animation: pulse-btn 1.5s infinite cubic-bezier(0.66, 0, 0, 1) !important;
-            background-color: var(--accent-green) !important;
-            color: white !important;
-        }
-
-        /* =========================================
-           EASTER EGG MODAL & GRADIENT BUTTON
-           ========================================= */
-        #easter-egg-modal {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 99999;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-        #easter-egg-modal.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .easter-egg-content {
-            background: white;
-            padding: 32px 24px;
-            border-radius: 28px;
-            width: 85%;
-            max-width: 340px;
-            text-align: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-            transform: scale(0.9);
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative;
-        }
-        #easter-egg-modal.show .easter-egg-content {
-            transform: scale(1);
-        }
-        .easter-egg-content img {
-            width: 100%;
-            max-width: 220px;
-            margin-bottom: 24px;
-        }
-        .easter-egg-content p {
-            font-size: 15px;
-            line-height: 1.5;
-            color: var(--text-muted);
-            margin-bottom: 32px;
-            font-weight: 500;
-        }
-        .easter-egg-close {
-            position: absolute;
-            top: 16px; right: 20px;
-            font-size: 28px;
-            color: #CCCCCC;
-            cursor: pointer;
-            background: none;
-            border: none;
-            line-height: 1;
-        }
-
-        /* Magic Gradient Button Style (image_484df6.png style but purplish) */
-        .btn-gradient-magic {
-            background: linear-gradient(90deg, #c084fc 0%, #9333ea 50%, #c084fc 100%);
-            background-size: 200% auto;
-            color: white;
-            border: 4px solid #f3e8ff;
-            border-radius: 9999px;
-            padding: 16px 24px;
-            font-size: 18px;
-            font-weight: 800;
-            cursor: pointer;
-            width: 100%;
-            box-shadow: 0 8px 24px rgba(147, 51, 234, 0.3);
-            transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            animation: gradient-shift 3s linear infinite;
-        }
-        @keyframes gradient-shift {
-            0% { background-position: 0% center; }
-            100% { background-position: 200% center; }
-        }
-        .btn-gradient-magic:active {
-            transform: scale(0.95);
-            box-shadow: 0 4px 12px rgba(147, 51, 234, 0.2);
-        }
-        .btn-gradient-magic svg {
-            width: 22px; height: 22px; fill: white;
-        }
-
-        /* Session-only Magic Theme Overrides */
-        body.magic-theme .btn:not(.btn-secondary):not(.btn-ready):not(.btn-danger):not(.btn-grey):not(.btn-small):not(.btn-outline) {
-            background: linear-gradient(90deg, #c084fc 0%, #9333ea 50%, #c084fc 100%);
-            background-size: 200% auto;
-            color: white;
-            border: none;
-            box-shadow: 0 8px 24px rgba(147, 51, 234, 0.3);
-            animation: gradient-shift 3s linear infinite;
-        }
+        #easter-egg-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 99999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        #easter-egg-modal.show { opacity: 1; pointer-events: auto; }
+        .easter-egg-content { background: white; padding: 32px 24px; border-radius: 28px; width: 85%; max-width: 340px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.15); transform: scale(0.9); transition: transform 0.3s; position: relative; }
+        #easter-egg-modal.show .easter-egg-content { transform: scale(1); }
+        .easter-egg-content img { width: 100%; max-width: 220px; margin-bottom: 24px; }
+        .easter-egg-content p { font-size: 15px; line-height: 1.5; color: var(--text-muted); margin-bottom: 32px; font-weight: 500; }
+        .easter-egg-close { position: absolute; top: 16px; right: 20px; font-size: 28px; color: #CCCCCC; cursor: pointer; background: none; border: none; line-height: 1; }
+        .btn-gradient-magic { background: linear-gradient(90deg, #c084fc 0%, #9333ea 50%, #c084fc 100%); background-size: 200% auto; color: white; border: 4px solid #f3e8ff; border-radius: 9999px; padding: 16px 24px; font-size: 18px; font-weight: 800; cursor: pointer; width: 100%; box-shadow: 0 8px 24px rgba(147, 51, 234, 0.3); transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; animation: gradient-shift 3s linear infinite; }
+        @keyframes gradient-shift { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
+        body.magic-theme .btn:not(.btn-secondary):not(.btn-grey):not(.btn-danger) { background: linear-gradient(90deg, #c084fc 0%, #9333ea 50%, #c084fc 100%); background-size: 200% auto; border: none; box-shadow: 0 8px 24px rgba(147, 51, 234, 0.3); animation: gradient-shift 3s linear infinite; }
     </style>
 </head>
 <body>
@@ -438,591 +144,139 @@
         <button class="easter-egg-close" onclick="closeEasterEgg()">&times;</button>
         <img src="https://illustrations.popsy.co/purple/remote-work.svg" alt="Remote Work">
         <p>This app has no budget, no team, no office, no sleep, and absolutely nobody asking for it. Just @arsvnd, a laptop, and too much free time. See what free time looks like.</p>
-        <button class="btn-gradient-magic" onclick="activateMagicMode()">
-            Don't tap this
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 0C12 6.627 17.373 12 24 12C17.373 12 12 17.373 12 24C12 17.373 6.627 12 0 12C6.627 12 12 6.627 12 0Z" />
-                <path d="M19 16C19 18.209 20.791 20 23 20C20.791 20 19 21.791 19 24C19 21.791 17.209 20 15 20C17.209 20 19 18.209 19 16Z" />
-            </svg>
-        </button>
+        <button class="btn-gradient-magic" onclick="activateMagicMode()">Don't tap this</button>
     </div>
 </div>
 
 <div id="app-container">
     <header>
-        <button class="home-btn" id="nav-back" onclick="goBack()">Back</button>
-        <div class="progress-container" id="progress-container">
-            <div class="progress-bar" id="progressFill"></div>
+        <button class="header-btn" id="nav-back" onclick="handleBack()">Back</button>
+        <h1 onclick="handleTitleTap()">Cutter ID</h1>
+        <div style="width: 65px;"></div> </header>
+
+    <div id="content">
+        <div id="screen-home" class="screen active">
+            <div class="scrollable-body" style="justify-content: center; align-items: center; text-align: center;">
+                <img src="https://illustrations.popsy.co/white/page-under-construction.svg" style="width: 200px; margin-bottom: 32px; opacity: 0.9;" alt="Under construction">
+                <button class="btn" style="margin-bottom: 16px;" onclick="openNewForm()">New Cutter Change</button>
+                <button class="btn btn-secondary" onclick="showHistory()">Previous Reports</button>
+            </div>
         </div>
-    </header>
-    <div id="content"></div>
+
+        <div id="screen-history" class="screen">
+            <div class="scrollable-body" id="history-list">
+                </div>
+        </div>
+
+        <div id="screen-form" class="screen">
+            <div class="scrollable-body">
+                <div class="card" style="padding-bottom: 16px;">
+                    <h2>Setup</h2>
+                    <div class="form-group">
+                        <label>Production Line</label>
+                        <select id="lineSelect" class="form-input" required></select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Cutters Being Replaced</label>
+                        <div class="cutter-checkboxes">
+                            <div class="cutter-btn" data-cutter="Upper" onclick="toggleCutter(this)">Upper</div>
+                            <div class="cutter-btn" data-cutter="Center" onclick="toggleCutter(this)">Center</div>
+                            <div class="cutter-btn" data-cutter="Final" onclick="toggleCutter(this)">Final</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="dynamic-ids-container">
+                    </div>
+
+                <div class="card">
+                    <h2>Details</h2>
+                    <div class="flex-row">
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" class="form-input" id="dateInput">
+                        </div>
+                        <div class="form-group">
+                            <label>Time</label>
+                            <select class="form-input" id="timeInput"></select>
+                        </div>
+                    </div>
+
+                    <label class="check-container" style="background:#FAFAFA; padding:16px; border-radius:var(--radius-sm); border:2px solid var(--border); margin-bottom:16px;">
+                        <input type="checkbox" id="includeChecklistToggle" onchange="toggleChecklist()">
+                        <div class="custom-checkbox"><svg viewBox="0 0 12 10"><polyline points="1.5 6 4.5 9 10.5 1"></polyline></svg></div>
+                        <span style="color:var(--text-main); font-weight:700;">Include Checklist in Report</span>
+                    </label>
+
+                    <div id="checklistItemsContainer" style="display: none; margin-bottom: 16px;">
+                        </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Remarks</label>
+                        <textarea id="remarksInput" placeholder="Optional notes..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="bottom-bar">
+                <button class="btn" onclick="goToReview()">Review Final Report</button>
+            </div>
+        </div>
+
+        <div id="screen-review" class="screen">
+            <div class="scrollable-body">
+                <h2>Review Report</h2>
+                <p style="color:var(--text-muted); text-align:center; margin-bottom:24px; font-size:14px;">Review your data before saving to history.</p>
+                <div class="report-preview" id="review-text"></div>
+            </div>
+            <div class="bottom-bar" id="review-buttons">
+                </div>
+        </div>
+    </div>
 </div>
 
 <script>
-    // --- Easter Egg Logic & Magic Mode ---
-    let titleTapCount = 0;
-    let titleTapTimer = null;
-    let magicModeActive = false; // Exists only for the session (refreshes clear it)
-
-    function handleTitleTap() {
-        titleTapCount++;
-        clearTimeout(titleTapTimer);
-        
-        if (titleTapCount >= 7) {
-            vibrate([30, 50, 30, 50, 50]);
-            document.getElementById('easter-egg-modal').classList.add('show');
-            titleTapCount = 0;
-        } else {
-            titleTapTimer = setTimeout(() => {
-                titleTapCount = 0;
-            }, 1500); // Resets if taps are more than 1.5s apart
-        }
-    }
-
-    function closeEasterEgg() {
-        document.getElementById('easter-egg-modal').classList.remove('show');
-    }
-
-    function activateMagicMode() {
-        alert("I told you not to tap it! The fancy button cannot be undone.");
-        magicModeActive = true;
-        document.body.classList.add('magic-theme');
-        closeEasterEgg();
-        vibrate([20, 50, 20]);
-    }
-
-    // --- Confetti Logic ---
-    function triggerConfetti() {
-        const colors = ['#9333ea', '#c084fc', '#22C55E', '#FBBF24', '#3B82F6', '#FF5287'];
-        for (let i = 0; i < 60; i++) {
-            const conf = document.createElement('div');
-            conf.style.position = 'fixed';
-            conf.style.width = (Math.random() * 8 + 6) + 'px';
-            conf.style.height = (Math.random() * 4 + 8) + 'px';
-            conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            conf.style.bottom = '15%';
-            conf.style.left = '50%';
-            conf.style.zIndex = '99999';
-            conf.style.pointerEvents = 'none';
-            conf.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
-            document.body.appendChild(conf);
-
-            const angle = (Math.random() * Math.PI) / 2 + Math.PI / 4; 
-            const velocity = 15 + Math.random() * 25;
-            const tx = Math.cos(angle) * velocity * 15;
-            const ty = -Math.sin(angle) * velocity * 25;
-            const rot = Math.random() * 720;
-
-            conf.animate([
-                { transform: `translate(-50%, 0) rotate(0deg) scale(1)`, opacity: 1 },
-                { transform: `translate(calc(-50% + ${tx}px), ${ty}px) rotate(${rot}deg) scale(0.5)`, opacity: 0 }
-            ], { 
-                duration: 1000 + Math.random() * 1500, 
-                easing: 'cubic-bezier(0.25, 1, 0.5, 1)', 
-                fill: 'forwards' 
-            });
-
-            setTimeout(() => conf.remove(), 3000);
-        }
-    }
-
-    // --- Data & Config ---
-    const STORAGE_KEY = "cutter_reports_v7_polished";
+    // --- Configuration & State ---
+    const STORAGE_KEY = "cutter_reports_v11";
     const LINES = ["1-1", "1-2", "1-3", "1-4", "1-5", "1-H", "2-1", "2-2", "2-3", "2-4", "2-5", "3-1"];
-    const CUTTERS = ["Upper", "Center", "Final"];
-    const CUTTER_SORT_ORDER = ["Upper", "Center", "Final"]; 
+    const CUTTER_ORDER = ["Upper", "Center", "Final"]; 
     const FORMATS = {
         'Upper': { prefix: 'LCAGHY', suffixes: ['CU656X1.8', 'CL718X0.0'] },
         'Center': { prefix: 'LCAGHY', suffixes: ['CU656X1.8', 'CL718X0.0'] },
         'Final': { prefix: 'LCAGHY', suffixes: ['FU656X1.2', 'FL718X0.0'] } 
     };
 
-    // --- State Management ---
-    let state = {
-        current: "home",
-        direction: "right",
-        reports: [],
-        report: null
-    };
+    let selectedCutters = [];
+    let savedReports = [];
+    let currentReviewText = "";
+    let currentReviewLine = "";
+    let reviewMode = 'edit'; 
+    let activeEditId = null; // Tracks if we are editing an existing report
 
-    try {
-        state.reports = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    } catch(e) {
-        console.error("Failed to load local storage", e);
-        state.reports = [];
-    }
+    // --- Initialization ---
+    function init() {
+        try { savedReports = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } 
+        catch(e) { savedReports = []; }
 
-    // --- Core Logic & Storage ---
-    function vibrate(pattern = 10) {
-        if (navigator.vibrate) navigator.vibrate(pattern);
-    }
+        const lineSelect = document.getElementById('lineSelect');
+        // Default "Select Line" option
+        lineSelect.add(new Option('Select Line', ''));
+        lineSelect.options[0].disabled = true;
+        lineSelect.options[0].selected = true;
 
-    function saveToStorage() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.reports));
-    }
-
-    function saveDraft() {
-        if (!state.report) return;
-        state.report.updatedAt = Date.now();
-        const idx = state.reports.findIndex(r => r.id === state.report.id);
-        if (idx > -1) {
-            state.reports[idx] = state.report;
-        } else {
-            state.reports.unshift(state.report);
-        }
-        saveToStorage();
-        updateNav(); 
-    }
-
-    function calculateProgress() {
-        if (!state.report || state.current === "home") return 0;
-        let progress = 0;
+        LINES.forEach(l => lineSelect.add(new Option(`Line ${l}`, l)));
         
-        if (state.report.line) progress += 20;
-        if (state.report.cutters && state.report.cutters.length > 0) progress += 20;
-        if (checkIdsComplete("oldIDs")) progress += 20;
-        if (checkIdsComplete("newIDs")) progress += 20;
-        
-        const hasRemarks = state.report.remarks || Object.keys(state.report.checklist).length > 0;
-        if (hasRemarks) progress += 20;
-
-        return progress;
-    }
-
-    // --- Routing & Navigation Flow ---
-    function go(screenName, dir = "right") {
-        vibrate();
-        state.current = screenName;
-        state.direction = dir;
-        render();
-
-        if (screenName === 'old' || screenName === 'newer') {
-            setTimeout(() => {
-                const emptyInputs = Array.from(document.querySelectorAll('.id-input')).filter(i => !i.value);
-                if (emptyInputs.length > 0) {
-                    emptyInputs[0].focus();
-                } else {
-                    const allInputs = document.querySelectorAll('.id-input');
-                    if (allInputs.length > 0) allInputs[0].focus();
-                }
-            }, 350); 
-        }
-    }
-
-    function goHome() { go("home", "left"); }
-    
-    function goBack() {
-        vibrate();
-        saveDraft(); 
-        
-        switch(state.current) {
-            case 'line': go('home', 'left'); break;
-            case 'cutters': go('line', 'left'); break;
-            case 'hub': go('home', 'left'); break;
-            case 'old': 
-            case 'newer': 
-            case 'checklist': 
-            case 'report':
-                go('hub', 'left'); break;
-            default: go('home', 'left');
-        }
-    }
-
-    function saveAndGo(target) {
-        saveDraft();
-        go(target);
-    }
-
-    function updateNav() {
-        const backBtn = document.getElementById("nav-back");
-        const progContainer = document.getElementById("progress-container");
-        const progFill = document.getElementById("progressFill");
-        
-        if (state.current === "home") {
-            backBtn.style.visibility = "hidden";
-            progContainer.style.visibility = "hidden";
-            return;
-        }
-        
-        backBtn.style.visibility = "visible";
-        progContainer.style.visibility = "visible";
-        progFill.style.width = calculateProgress() + "%";
-    }
-
-    function render() {
-        const c = document.getElementById("content");
-        let html = "";
-
-        switch (state.current) {
-            case "home": html = homeHTML(); break;
-            case "line": html = lineHTML(); break;
-            case "cutters": html = cuttersHTML(); break;
-            case "hub": html = hubHTML(); break;
-            case "old": html = idsHTML("old"); break;
-            case "newer": html = idsHTML("new"); break;
-            case "checklist": html = checklistHTML(); break;
-            case "report": html = reportHTML(); break;
-        }
-
-        c.innerHTML = `<div class="screen-content slide-in-${state.direction}">${html}</div>`;
-        updateNav();
-    }
-
-    // --- Screen Templates ---
-    function homeHTML() {
-        let listHTML = "";
-
-        if (state.reports.length === 0) {
-            listHTML = `
-                <div class="empty-state">
-                    <img src="https://illustrations.popsy.co/white/page-under-construction.svg" alt="Under construction">
-                    <p>No reports saved yet.<br>Tap below to start a new cutter change.</p>
-                </div>`;
-        } else {
-            const sorted = [...state.reports].sort((a,b) => {
-                if(a.status !== b.status) return a.status === 'draft' ? -1 : 1;
-                return b.updatedAt - a.updatedAt;
-            });
-
-            listHTML = sorted.map(r => {
-                const dateStr = new Date(r.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
-                const isComplete = r.status === "complete";
-                
-                const actions = isComplete 
-                    ? `<button class="btn-small btn-outline btn-danger" onclick="deleteReport(${r.id})">Delete</button>
-                       <button class="btn-small btn-outline" onclick="editReport(${r.id})">Edit</button>
-                       <button class="btn-small btn-grey" onclick="viewReport(${r.id})">View Report</button>`
-                    : `<button class="btn-small btn-outline btn-danger" onclick="deleteReport(${r.id})">Delete</button>
-                       <button class="btn-small btn-secondary" onclick="resumeReport(${r.id})" style="background:var(--text-main); color:white; border:none;">Resume Draft</button>`;
-
-                return `
-                <div class="report-item">
-                    <div class="report-header">
-                        <div class="report-info">
-                            <h4>Line ${r.line || 'Not Set'}</h4>
-                            <p>${dateStr}</p>
-                        </div>
-                        <div class="status-tag ${isComplete ? 'status-complete' : 'status-draft'}">${isComplete ? 'Complete' : 'Draft'}</div>
-                    </div>
-                    <div class="report-actions">${actions}</div>
-                </div>`;
-            }).join("");
-        }
-
-        return `
-            <div class="scrollable-body">
-                <h1 onclick="handleTitleTap()">Cutter Change Reports</h1>
-                <p class="subtitle">Manage and generate your cutter change reports.</p>
-                <div class="report-list">${listHTML}</div>
-            </div>
-            <div class="bottom-bar">
-                <button class="btn" onclick="startNewReport()">New Cutter Change</button>
-            </div>
-        `;
-    }
-
-    function lineHTML() {
-        const gridItems = LINES.map(l => `
-            <div class="grid-item ${state.report.line === l ? 'selected' : ''}" onclick="selectLine('${l}')">${l}</div>
-        `).join("");
-
-        return `
-            <div class="scrollable-body">
-                <h2>Select Production Line</h2>
-                <p class="subtitle">Which line are you working on today?</p>
-                <div class="grid-selector">${gridItems}</div>
-            </div>
-        `;
-    }
-
-    function cuttersHTML() {
-        const listItems = CUTTERS.map(c => `
-            <div class="list-item ${state.report.cutters.includes(c) ? 'selected' : ''}" onclick="toggleCutter('${c}')">
-                <span>${c}</span><div class="checkmark"></div>
-            </div>
-        `).join("");
-
-        return `
-            <div class="scrollable-body">
-                <h2>Select Cutters to Change</h2>
-                <p class="subtitle">Which cutters are you replacing?</p>
-                <div class="list-selector">${listItems}</div>
-            </div>
-            <div class="bottom-bar">
-                <button class="btn" ${state.report.cutters.length === 0 ? "disabled" : ""} onclick="saveAndGo('old')">Next: Old IDs</button>
-            </div>
-        `;
-    }
-
-    function hubHTML() {
-        const oldDone = checkIdsComplete("oldIDs");
-        const newDone = checkIdsComplete("newIDs");
-        const hasRemarks = state.report.remarks || Object.keys(state.report.checklist).length > 0;
-
-        return `
-            <div class="scrollable-body">
-                <h2>Your Progress</h2>
-                <p class="subtitle" style="margin-bottom:20px;">Review your progress and complete the missing data.</p>
-                
-                <div class="editable-subtitle" onclick="go('line', 'left')">
-                    <p style="color:var(--text-main); font-weight:800; margin-bottom:4px; font-size:16px;">Line: ${state.report.line}</p>
-                    <p style="color:var(--text-muted); font-size:14px; margin-bottom:0;">Cutters: ${state.report.cutters.join(', ')}</p>
-                </div>
-                <div style="height:24px;"></div>
-                
-                <div class="list-selector">
-                    <div class="list-item task-item ${oldDone ? 'completed' : ''}" onclick="go('old')">
-                        <div><h4>Old Cutter IDs (Removed)</h4><p class="status">${oldDone ? 'Complete' : 'Pending Data'}</p></div>
-                        <div style="color: var(--border); font-weight: bold; font-size:20px;">></div>
-                    </div>
-                    <div class="list-item task-item ${newDone ? 'completed' : ''}" onclick="go('newer')">
-                        <div><h4>New Cutter IDs (Installed)</h4><p class="status">${newDone ? 'Complete' : 'Pending Data'}</p></div>
-                        <div style="color: var(--border); font-weight: bold; font-size:20px;">></div>
-                    </div>
-                    <div class="list-item task-item ${hasRemarks ? 'completed' : ''}" onclick="go('checklist')">
-                        <div><h4>Checklist & Remarks</h4><p class="status">${hasRemarks ? 'Updated' : 'Optional'}</p></div>
-                        <div style="color: var(--border); font-weight: bold; font-size:20px;">></div>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    function idsHTML(type) {
-        const isOld = type === "old";
-        const key = isOld ? "oldIDs" : "newIDs";
-        
-        const title = isOld ? "Remove Old Cutters" : "Install New Cutters";
-        const bannerClass = isOld ? "banner-old" : "banner-new";
-        const bannerIcon = isOld ? "📤" : "📥";
-        const bannerText = isOld ? "Enter the IDs of the OLD cutters you are REMOVING." : "Enter the IDs of the NEW cutters being INSTALLED.";
-        const contextLabel = isOld ? "(Removing)" : "(Installing)";
-        
-        const nextScreen = isOld ? "newer" : "checklist";
-        const nextText = isOld ? "Record Removed Cutters" : "Record Installed Cutters";
-        const isComplete = checkIdsComplete(key); 
-        
-        let html = `
-            <div class="scrollable-body">
-                <h2>${title}</h2>
-                <div class="status-banner ${bannerClass}">
-                    <span class="banner-icon">${bannerIcon}</span>
-                    <span>${bannerText}</span>
-                </div>
-        `;
-        
-        const sortedCutters = [...state.report.cutters].sort((a, b) => CUTTER_SORT_ORDER.indexOf(a) - CUTTER_SORT_ORDER.indexOf(b));
-
-        let inputIndex = 0;
-        sortedCutters.forEach(c => {
-            const format = FORMATS[c];
-            html += `<h3>${c} Cutter <span style="font-weight:500; color:var(--text-muted); font-size:13px;">${contextLabel}</span></h3>
-                     <div class="card cutter-group-card" style="padding:16px;">`;
-            
-            for(let i = 0; i < 2; i++) {
-                const val = state.report[key][c]?.[i] || "";
-                const isCompleteClass = val.length === 4 ? "is-complete" : "";
-                html += `
-                    <div class="id-input-wrapper ${isCompleteClass}">
-                        <span>${format.prefix}</span>
-                        <input class="id-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="____"
-                                data-key="${key}" data-cutter="${c}" data-index="${i}" data-focusindex="${inputIndex}" value="${val}">
-                        <span>${format.suffixes[i]}</span>
-                    </div>`;
-                inputIndex++;
+        const timeSelect = document.getElementById('timeInput');
+        for (let h = 0; h < 24; h++) {
+            for (let m of ["00", "30"]) {
+                const ampm = h >= 12 ? "PM" : "AM";
+                let hour = h % 12; hour = hour || 12;
+                timeSelect.add(new Option(`${hour}:${m}${ampm}`, `${hour}:${m}${ampm}`));
             }
-            html += `</div>`;
-        });
-        html += `</div>`; 
-
-        html += `
-            <div class="bottom-bar">
-                <button id="stepNextBtn" class="btn ${isComplete ? 'btn-ready' : ''}" 
-                        ${!isComplete ? "disabled" : ""} 
-                        onclick="saveAndGo('${nextScreen}')">
-                    ${isComplete ? '✓ Ready - ' + nextText : nextText}
-                </button>
-            </div>
-        `;
-        return html;
-    }
-
-    function checklistHTML() {
-        const items = getChecklistItems();
-        const checkHTML = items.map(item => `
-            <label class="check-container">
-                <input class="check-input" type="checkbox" data-check="${item}" ${state.report.checklist[item] ? "checked" : ""}>
-                <div class="custom-checkbox">
-                    <svg viewBox="0 0 12 10"><polyline points="1.5 6 4.5 9 10.5 1"></polyline></svg>
-                </div>
-                <span>${item}</span>
-            </label>
-        `).join("");
-
-        return `
-            <div class="scrollable-body">
-                <h2>Confirm Tasks & Add Notes</h2>
-                <p class="subtitle">Log completed tasks and additional notes.</p>
-                
-                <div style="display: flex; gap: 16px; margin-bottom: 24px;">
-                    <div class="form-group">
-                        <label>Date</label>
-                        <input type="date" class="form-input" id="dateInput" value="${state.report.date}">
-                    </div>
-                    <div class="form-group">
-                        <label>Time</label>
-                        <select class="form-input" id="timeInput">${buildTimeOptions(state.report.time)}</select>
-                    </div>
-                </div>
-
-                <div class="card" style="padding: 8px 20px;">${checkHTML}</div>
-
-                <div class="form-group">
-                    <label>Remarks</label>
-                    <textarea id="remarksInput" placeholder="Type any additional remarks here...">${state.report.remarks || ""}</textarea>
-                </div>
-            </div>
-            <div class="bottom-bar">
-                <button id="reviewBtn" class="btn btn-ready" onclick="generateReport()">Review Final Report</button>
-            </div>
-        `;
-    }
-
-    function reportHTML() {
-        return `
-            <div class="scrollable-body">
-                <h2>Review Final Report</h2>
-                <p class="subtitle">Review your data and copy to clipboard to share.</p>
-                <div class="report-preview" id="reportText">${buildReportText()}</div>
-            </div>
-            <div class="bottom-bar">
-                <button class="btn btn-secondary" onclick="goHome()">Back to Home</button>
-                <button class="btn" id="copyBtn" onclick="copyReport()">Copy Report</button>
-            </div>
-        `;
-    }
-
-    // --- Interactions ---
-    function startNewReport() {
-        vibrate();
-        state.report = {
-            id: Date.now(),
-            status: "draft",
-            line: "",
-            cutters: [],
-            oldIDs: {},
-            newIDs: {},
-            checklist: {},
-            remarks: "",
-            date: getToday(),
-            time: getNearestTime()
-        };
-        go("line");
-    }
-
-    function selectLine(line) {
-        vibrate();
-        state.report.line = line;
-        saveDraft();
-        setTimeout(() => go("cutters"), 150);
-    }
-
-    function toggleCutter(c) {
-        vibrate();
-        if (state.report.cutters.includes(c)) {
-            state.report.cutters = state.report.cutters.filter(x => x !== c);
-        } else {
-            state.report.cutters.push(c);
-        }
-        saveDraft();
-        render();
-    }
-
-    function resumeReport(id) {
-        vibrate();
-        state.report = state.reports.find(r => r.id === id);
-        if (!state.report.line) go("line");
-        else if (state.report.cutters.length === 0) go("cutters");
-        else go("hub");
-    }
-
-    function editReport(id) {
-        vibrate();
-        state.report = state.reports.find(r => r.id === id);
-        state.report.status = "draft";
-        saveDraft();
-        go("hub");
-    }
-
-    function viewReport(id) {
-        vibrate();
-        state.report = state.reports.find(r => r.id === id);
-        go("report");
-    }
-
-    function deleteReport(id) {
-        vibrate();
-        if (confirm("Are you sure you want to delete this report?")) {
-            state.reports = state.reports.filter(r => r.id !== id);
-            saveToStorage();
-            render();
-        }
-    }
-
-    function generateReport() {
-        vibrate([20, 50, 20, 50, 30]);
-
-        const btn = document.getElementById("reviewBtn");
-        if (btn) {
-            btn.innerText = "Generating Report...";
-            btn.style.transform = "scale(1.02)";
         }
 
-        setTimeout(() => {
-            state.report.status = "complete";
-            saveDraft();
-            go("report");
-        }, 500); // Slight delay for the generation "feel"
+        buildInputContainers();
+        showScreen('screen-home');
     }
-
-    // --- Helpers ---
-    function triggerInputStateUpdate(element, val) {
-        const key = element.dataset.key;
-        const cutter = element.dataset.cutter;
-        const index = Number(element.dataset.index);
-
-        if (!state.report[key][cutter]) state.report[key][cutter] = ["", ""];
-        state.report[key][cutter][index] = val;
-        saveDraft(); 
-    }
-
-    function checkIdsComplete(key) {
-        if (state.report.cutters.length === 0) return false;
-        for (const c of state.report.cutters) {
-            if (!state.report[key][c]) return false;
-            if (state.report[key][c].length !== 2) return false;
-            if (state.report[key][c].some(v => !v || v.length !== 4)) return false;
-        }
-        return true;
-    }
-
-    function getChecklistItems() {
-        let items = [];
-        if (state.report.cutters.includes("Upper") || state.report.cutters.includes("Center")) items.push("Cutter Linear greasing");
-        if (state.report.cutters.includes("Final")) {
-            items.push("All Linear greasing");
-            items.push("Vulkollan tape replacement");
-            items.push("STK purging");
-        }
-        if (state.report.cutters.includes("Center")) {
-            items.push("ESP & LAMI purging");
-            items.push("Ring blower and turtle pump filter cleaning");
-        }
-        items.push("Guide master bolt check");
-        return [...new Set(items)];
-    }
-
-    function getToday() { return new Date().toISOString().split("T")[0]; }
 
     function getNearestTime() {
         const d = new Date();
@@ -1030,206 +284,481 @@
         m = m < 15 ? "00" : m < 45 ? "30" : "00";
         if (m === "00" && d.getMinutes() >= 45) h = (h + 1) % 24;
         const ampm = h >= 12 ? "PM" : "AM";
-        let hour = h % 12; hour = hour ? hour : 12;
+        let hour = h % 12; hour = hour || 12;
         return `${hour}:${m}${ampm}`;
     }
 
-    function buildTimeOptions(selected) {
-        let out = "";
-        for (let h = 0; h < 24; h++) {
-            for (let m of ["00", "30"]) {
-                const ampm = h >= 12 ? "PM" : "AM";
-                let hour = h % 12; hour = hour ? hour : 12;
-                const val = `${hour}:${m}${ampm}`;
-                out += `<option value="${val}" ${val === selected ? "selected" : ""}>${val}</option>`;
-            }
-        }
-        return out;
+    // --- Navigation Flow ---
+    function showScreen(screenId) {
+        if (navigator.vibrate) navigator.vibrate(10);
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+
+        const backBtn = document.getElementById('nav-back');
+        backBtn.style.visibility = (screenId === 'screen-home') ? 'hidden' : 'visible';
     }
 
-    function buildReportText() {
-        const r = state.report;
-        const dateObj = new Date(r.date + "T00:00:00");
-        const month = dateObj.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
+    function handleBack() {
+        const activeScreen = document.querySelector('.screen.active').id;
+        if (activeScreen === 'screen-review') {
+            showScreen(reviewMode === 'edit' ? 'screen-form' : 'screen-history');
+        } else if (activeScreen === 'screen-form') {
+            if (confirm("Discard this form and go back?")) {
+                showScreen('screen-home');
+            }
+        } else if (activeScreen === 'screen-history') {
+            showScreen('screen-home');
+        }
+    }
+
+    // --- Home / History Screen Logic ---
+    function showHistory() {
+        renderHistory();
+        showScreen('screen-history');
+    }
+
+    function renderHistory() {
+        const list = document.getElementById('history-list');
+        if (savedReports.length === 0) {
+            list.innerHTML = `<div class="empty-state"><img src="https://illustrations.popsy.co/white/page-under-construction.svg" style="width:180px; margin-bottom:16px; opacity:0.8;"><p>No previous reports found.</p></div>`;
+            return;
+        }
+
+        list.innerHTML = `<h2 style="margin-bottom: 24px;">History</h2>` + savedReports.map(r => `
+            <div class="report-item">
+                <div class="report-header">
+                    <div>
+                        <h4>Line ${r.line || 'Not Selected'}</h4>
+                        <p>${new Date(r.timestamp).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' })}</p>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn-small btn-danger" onclick="deleteReport(${r.id})">Del</button>
+                        <button class="btn-small btn-secondary" onclick="editReport(${r.id})">Edit</button>
+                        <button class="btn-small btn-grey" onclick="viewReport(${r.id})">View</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function openNewForm() {
+        activeEditId = null; // We are building a brand new report
+
+        document.getElementById('lineSelect').value = "";
+        document.getElementById('dateInput').value = new Date().toISOString().split("T")[0];
+        document.getElementById('timeInput').value = getNearestTime();
+        document.getElementById('remarksInput').value = "";
         
-        let txt = `${month} ${dateObj.getDate()} | ${r.time}\nLine: ${r.line}\n\n`;
+        document.getElementById('includeChecklistToggle').checked = false;
+        toggleChecklist();
+        
+        selectedCutters = [];
+        document.querySelectorAll('.cutter-btn').forEach(btn => btn.classList.remove('active'));
+        
+        // Hide all dynamic groups
+        document.getElementById('old-group').style.display = 'none';
+        document.getElementById('new-group').style.display = 'none';
+        document.querySelectorAll('.cutter-block').forEach(block => {
+            block.style.display = 'none';
+            block.classList.remove('visible');
+        });
+        
+        document.querySelectorAll('.id-input').forEach(input => {
+            input.value = '';
+            input.closest('.id-input-wrapper').classList.remove('is-complete');
+        });
+        updateChecklistUI();
+        
+        showScreen('screen-form');
+    }
 
-        const sortedCutters = [...r.cutters].sort((a, b) => CUTTER_SORT_ORDER.indexOf(a) - CUTTER_SORT_ORDER.indexOf(b));
+    function editReport(id) {
+        const report = savedReports.find(r => r.id === id);
+        if(!report) return;
 
-        const formatIDs = (key) => {
-            let sec = "";
-            sortedCutters.forEach(c => {
-                sec += c + "\n";
-                const ids = r[key][c] || ["____", "____"];
-                sec += `${FORMATS[c].prefix}${ids[0]}${FORMATS[c].suffixes[0]}\n`;
-                sec += `${FORMATS[c].prefix}${ids[1]}${FORMATS[c].suffixes[1]}\n`;
+        activeEditId = report.id; // Track that we are editing an existing report
+
+        // Populate Setup & Details
+        document.getElementById('lineSelect').value = report.line || "";
+        document.getElementById('dateInput').value = report.date || "";
+        document.getElementById('timeInput').value = report.time || "";
+        document.getElementById('remarksInput').value = report.remarks || "";
+        
+        document.getElementById('includeChecklistToggle').checked = report.includeChecklist || false;
+        toggleChecklist();
+
+        // Reset and trigger cutter selection
+        selectedCutters = report.cutters || [];
+        document.querySelectorAll('.cutter-btn').forEach(btn => {
+            btn.classList.toggle('active', selectedCutters.includes(btn.dataset.cutter));
+        });
+
+        // Toggle Group visibility
+        document.getElementById('old-group').style.display = selectedCutters.length > 0 ? 'block' : 'none';
+        document.getElementById('new-group').style.display = selectedCutters.length > 0 ? 'block' : 'none';
+
+        CUTTER_ORDER.forEach(cutter => {
+            const isVisible = selectedCutters.includes(cutter);
+            const oldBlock = document.getElementById(`old-block-${cutter}`);
+            const newBlock = document.getElementById(`new-block-${cutter}`);
+            
+            if (isVisible) {
+                oldBlock.style.display = 'block'; oldBlock.classList.add('visible');
+                newBlock.style.display = 'block'; newBlock.classList.add('visible');
+                
+                // Populate IDs safely
+                for(let idx=0; idx<=1; idx++) {
+                    const oldInput = document.querySelector(`input[data-type="old"][data-cutter="${cutter}"][data-idx="${idx}"]`);
+                    const newInput = document.querySelector(`input[data-type="new"][data-cutter="${cutter}"][data-idx="${idx}"]`);
+                    
+                    oldInput.value = report.ids?.old?.[cutter]?.[idx] || "";
+                    newInput.value = report.ids?.new?.[cutter]?.[idx] || "";
+                    
+                    oldInput.closest('.id-input-wrapper').classList.toggle('is-complete', oldInput.value.length === 4);
+                    newInput.closest('.id-input-wrapper').classList.toggle('is-complete', newInput.value.length === 4);
+                }
+            } else {
+                oldBlock.style.display = 'none'; oldBlock.classList.remove('visible');
+                newBlock.style.display = 'none'; newBlock.classList.remove('visible');
+            }
+        });
+
+        updateChecklistUI();
+        
+        // Apply checked state
+        if (report.checkedTasks) {
+            document.querySelectorAll('.check-input').forEach(chk => {
+                chk.checked = report.checkedTasks.includes(chk.dataset.task);
             });
-            return sec;
-        };
-
-        txt += `New Cutter IDs:\n\n${formatIDs("newIDs")}\n`;
-        txt += `OLD Cutter IDs:\n\n${formatIDs("oldIDs")}\n`;
-
-        const checklist = getChecklistItems();
-        if (checklist.length > 0) {
-            txt += "Tasks Checklist:\n";
-            checklist.forEach(item => { txt += `${item} ${r.checklist[item] ? "done" : "not done"}\n`; });
-            txt += "\n";
         }
 
-        if (r.remarks && r.remarks.trim() !== "") { txt += `Remarks:\n${r.remarks}\n`; }
-        return txt.trim();
+        showScreen('screen-form');
     }
 
-    async function copyReport() {
-        try {
-            await navigator.clipboard.writeText(buildReportText());
-            vibrate([15, 50, 15]);
-            const btn = document.getElementById("copyBtn");
-            btn.innerText = "Report Copied";
-            btn.classList.add("copy-success");
+    function deleteReport(id) {
+        if (navigator.vibrate) navigator.vibrate(10);
+        if (confirm("Delete this saved report?")) {
+            savedReports = savedReports.filter(r => r.id !== id);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(savedReports));
+            renderHistory();
+        }
+    }
+
+    // --- Form UI Interactions ---
+    function toggleCutter(element) {
+        if (navigator.vibrate) navigator.vibrate(10);
+        const c = element.dataset.cutter;
+        element.classList.toggle('active');
+        
+        if (selectedCutters.includes(c)) {
+            selectedCutters = selectedCutters.filter(x => x !== c);
+        } else { 
+            selectedCutters.push(c); 
+            selectedCutters.sort((a, b) => CUTTER_ORDER.indexOf(a) - CUTTER_ORDER.indexOf(b)); 
+        }
+
+        document.getElementById('old-group').style.display = selectedCutters.length > 0 ? 'block' : 'none';
+        document.getElementById('new-group').style.display = selectedCutters.length > 0 ? 'block' : 'none';
+
+        CUTTER_ORDER.forEach(cutter => {
+            const isVisible = selectedCutters.includes(cutter);
             
-            if (magicModeActive) {
-                triggerConfetti();
-            }
+            const oldBlock = document.getElementById(`old-block-${cutter}`);
+            if (isVisible) { oldBlock.style.display = 'block'; oldBlock.classList.add('visible'); } 
+            else { oldBlock.style.display = 'none'; oldBlock.classList.remove('visible'); }
 
-            setTimeout(() => {
-                btn.innerText = "Copy Report";
-                btn.classList.remove("copy-success");
-            }, 2000);
-        } catch(e) { alert("Failed to copy text."); }
+            const newBlock = document.getElementById(`new-block-${cutter}`);
+            if (isVisible) { newBlock.style.display = 'block'; newBlock.classList.add('visible'); } 
+            else { newBlock.style.display = 'none'; newBlock.classList.remove('visible'); }
+        });
+
+        updateChecklistUI();
     }
 
-    // --- Dynamic Scrolling on Focus ---
-    // This perfectly isolates scrolling so it ONLY happens when a field is focused
-    // naturally (either by a user tap or by our code shifting focus).
-    document.getElementById("app-container").addEventListener("focusin", e => {
+    function toggleChecklist() {
+        const isChecked = document.getElementById('includeChecklistToggle').checked;
+        const container = document.getElementById('checklistItemsContainer');
+        container.style.display = isChecked ? 'block' : 'none';
+    }
+
+    function buildInputContainers() {
+        const container = document.getElementById('dynamic-ids-container');
+        
+        let oldHtml = `<div id="old-group" style="display:none; margin-bottom: 24px;">`;
+        let newHtml = `<div id="new-group" style="display:none; margin-bottom: 24px;">`;
+
+        CUTTER_ORDER.forEach(c => {
+            const format = FORMATS[c];
+            const generateInputs = (type) => `
+                <div class="id-input-wrapper">
+                    <span>${format.prefix}</span>
+                    <input class="id-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="____" data-cutter="${c}" data-type="${type}" data-idx="0">
+                    <span>${format.suffixes[0]}</span>
+                </div>
+                <div class="id-input-wrapper" style="margin-bottom:0;">
+                    <span>${format.prefix}</span>
+                    <input class="id-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="____" data-cutter="${c}" data-type="${type}" data-idx="1">
+                    <span>${format.suffixes[1]}</span>
+                </div>`;
+            
+            oldHtml += `
+                <div id="old-block-${c}" class="cutter-block card" style="display:none; margin-bottom: 16px;">
+                    <h2 style="color:var(--text-main); font-size:18px; margin-bottom:16px;">📤 OLD ${c}</h2>
+                    ${generateInputs('old')}
+                </div>`;
+                
+            newHtml += `
+                <div id="new-block-${c}" class="cutter-block card" style="display:none; margin-bottom: 16px;">
+                    <h2 style="color:var(--text-main); font-size:18px; margin-bottom:16px;">📥 NEW ${c}</h2>
+                    ${generateInputs('new')}
+                </div>`;
+        });
+        
+        oldHtml += `</div>`;
+        newHtml += `</div>`;
+
+        container.innerHTML = oldHtml + newHtml;
+    }
+
+    function updateChecklistUI() {
+        let items = [];
+        if (selectedCutters.includes("Upper") || selectedCutters.includes("Center")) items.push("Cutter Linear greasing");
+        if (selectedCutters.includes("Final")) { items.push("All Linear greasing"); items.push("Vulkollan tape replacement"); items.push("STK purging"); }
+        if (selectedCutters.includes("Center")) { items.push("ESP & LAMI purging"); items.push("Ring blower and turtle pump filter cleaning"); }
+        items.push("Guide master bolt check");
+        items = [...new Set(items)]; 
+
+        const container = document.getElementById('checklistItemsContainer');
+        if (items.length === 0) { container.innerHTML = ""; return; }
+
+        container.innerHTML = `<div class="card" style="padding: 8px 20px; margin-bottom: 0;">` + items.map(item => `
+            <label class="check-container">
+                <input class="check-input" type="checkbox" data-task="${item}">
+                <div class="custom-checkbox"><svg viewBox="0 0 12 10"><polyline points="1.5 6 4.5 9 10.5 1"></polyline></svg></div>
+                <span>${item}</span>
+            </label>
+        `).join("") + `</div>`;
+    }
+
+    // --- Dopamine Inputs ---
+    document.getElementById("content").addEventListener("focusin", e => {
         if (e.target.classList.contains("id-input")) {
-            setTimeout(() => {
-                e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 150); // Small delay to let the mobile keyboard slide up
+            setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 150);
         }
     });
 
-    // --- Frictionless Inputs & Dopamine Logic ---
-    document.getElementById("app-container").addEventListener("input", e => {
+    document.getElementById("content").addEventListener("input", e => {
         if (e.target.classList.contains("id-input")) {
             let val = e.target.value.replace(/\D/g, "").slice(0, 4);
             e.target.value = val;
-            
             const wrapper = e.target.closest('.id-input-wrapper');
-
-            triggerInputStateUpdate(e.target, val);
             
             if (val.length === 4) {
                 wrapper.classList.add('is-complete');
-                vibrate([15, 30]);
+                if (navigator.vibrate) navigator.vibrate([15, 30]);
 
-                // Verify section completion and awaken Next button
-                const key = e.target.dataset.key;
-                if (checkIdsComplete(key)) {
-                    const nextBtn = document.getElementById('stepNextBtn');
-                    if (nextBtn) {
-                        nextBtn.disabled = false;
-                        nextBtn.classList.add('btn-ready');
-                        const targetText = key === "oldIDs" ? "Record Removed Cutters" : "Record Installed Cutters";
-                        nextBtn.innerText = `✓ Ready - ${targetText}`;
-                    }
-                }
-
-                // Auto-focus next field
-                const focusIdx = Number(e.target.dataset.focusindex);
-                const nextInput = document.querySelector(`.id-input[data-focusindex="${focusIdx + 1}"]`);
-                
-                if (nextInput) {
-                    nextInput.focus(); // Triggers the focusin event to handle scrolling natively
-                } else {
-                    // Leaving the keyboard open and scrolling to the pulsing button
-                    const nextBtn = document.getElementById('stepNextBtn');
-                    if (nextBtn) {
-                        setTimeout(() => {
-                            nextBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }, 150);
-                    }
+                const allVisibleInputs = Array.from(document.querySelectorAll('.cutter-block.visible .id-input'));
+                const currentIndex = allVisibleInputs.indexOf(e.target);
+                if (currentIndex >= 0 && currentIndex < allVisibleInputs.length - 1) {
+                    allVisibleInputs[currentIndex + 1].focus();
                 }
             } else {
                 wrapper.classList.remove('is-complete');
-                
-                // Dim Next button if user backspaces an entry
-                const nextBtn = document.getElementById('stepNextBtn');
-                if (nextBtn) {
-                    nextBtn.disabled = true;
-                    nextBtn.classList.remove('btn-ready');
-                    const key = e.target.dataset.key;
-                    const targetText = key === "oldIDs" ? "Record Removed Cutters" : "Record Installed Cutters";
-                    nextBtn.innerText = targetText;
-                }
             }
         }
     });
 
-    document.getElementById("app-container").addEventListener("paste", e => {
+    document.getElementById("content").addEventListener("paste", e => {
         if (e.target.classList.contains("id-input")) {
             const pasteData = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, "");
             if (pasteData.length === 8) {
                 e.preventDefault();
-                const focusIdx = Number(e.target.dataset.focusindex);
-                const part1 = pasteData.slice(0, 4);
-                const part2 = pasteData.slice(4, 8);
-
-                e.target.value = part1;
-                triggerInputStateUpdate(e.target, part1);
+                e.target.value = pasteData.slice(0, 4);
                 e.target.closest('.id-input-wrapper').classList.add('is-complete');
 
-                const nextInput = document.querySelector(`.id-input[data-focusindex="${focusIdx + 1}"]`);
-                if (nextInput) {
-                    nextInput.value = part2;
-                    triggerInputStateUpdate(nextInput, part2);
+                const allVisibleInputs = Array.from(document.querySelectorAll('.cutter-block.visible .id-input'));
+                const currentIndex = allVisibleInputs.indexOf(e.target);
+                
+                if (currentIndex >= 0 && currentIndex < allVisibleInputs.length - 1) {
+                    const nextInput = allVisibleInputs[currentIndex + 1];
+                    nextInput.value = pasteData.slice(4, 8);
                     nextInput.closest('.id-input-wrapper').classList.add('is-complete');
-                    vibrate([15, 50, 15]); 
-                    
-                    const key = nextInput.dataset.key;
-                    if (checkIdsComplete(key)) {
-                        const nextBtn = document.getElementById('stepNextBtn');
-                        if (nextBtn) {
-                            nextBtn.disabled = false;
-                            nextBtn.classList.add('btn-ready');
-                            const targetText = key === "oldIDs" ? "Record Removed Cutters" : "Record Installed Cutters";
-                            nextBtn.innerText = `✓ Ready - ${targetText}`;
-                        }
-                    }
-
-                    nextInput.focus(); // Triggers the focusin event to handle scrolling natively
+                    if (navigator.vibrate) navigator.vibrate([15, 50, 15]);
+                    nextInput.focus();
                 }
             }
         }
     });
 
-    document.getElementById("app-container").addEventListener("keydown", e => {
+    document.getElementById("content").addEventListener("keydown", e => {
         if (e.target.classList.contains("id-input") && e.key === "Backspace" && e.target.value === "") {
             e.preventDefault();
-            const focusIdx = Number(e.target.dataset.focusindex);
-            if (focusIdx > 0) {
-                const prevInput = document.querySelector(`.id-input[data-focusindex="${focusIdx - 1}"]`);
-                if (prevInput) {
-                    prevInput.focus(); // Triggers the focusin event to handle scrolling natively
-                    const val = prevInput.value;
-                    prevInput.value = '';
-                    prevInput.value = val;
-                }
+            const allVisibleInputs = Array.from(document.querySelectorAll('.cutter-block.visible .id-input'));
+            const currentIndex = allVisibleInputs.indexOf(e.target);
+            if (currentIndex > 0) {
+                const prevInput = allVisibleInputs[currentIndex - 1];
+                prevInput.focus();
+                const val = prevInput.value; prevInput.value = ''; prevInput.value = val; 
             }
         }
     });
 
-    document.getElementById("app-container").addEventListener("change", e => {
-        if (e.target.id === "remarksInput") { state.report.remarks = e.target.value; saveDraft(); }
-        if (e.target.id === "dateInput") { state.report.date = e.target.value; saveDraft(); }
-        if (e.target.id === "timeInput") { state.report.time = e.target.value; saveDraft(); }
-        if (e.target.classList.contains("check-input")) { state.report.checklist[e.target.dataset.check] = e.target.checked; saveDraft(); }
-    });
+    // --- Generation & Review Logic ---
+    function goToReview() {
+        const dateObj = new Date(document.getElementById('dateInput').value + "T00:00:00");
+        const month = dateObj.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
+        const time = document.getElementById('timeInput').value;
+        const line = document.getElementById('lineSelect').value || 'Not Selected';
+        const remarks = document.getElementById('remarksInput').value.trim();
+        const includeChecklist = document.getElementById('includeChecklistToggle').checked;
 
-    // Boot
-    render();
+        let txt = `${month} ${dateObj.getDate()} | ${time}\nLine: ${line}\n\n`;
+
+        const getIDs = (type) => {
+            let block = "";
+            selectedCutters.forEach(c => {
+                block += c + "\n";
+                const inputs = document.querySelectorAll(`input[data-type="${type}"][data-cutter="${c}"]`);
+                block += `${FORMATS[c].prefix}${inputs[0].value || "____"}${FORMATS[c].suffixes[0]}\n`;
+                block += `${FORMATS[c].prefix}${inputs[1].value || "____"}${FORMATS[c].suffixes[1]}\n`;
+            });
+            return block;
+        };
+
+        if (selectedCutters.length > 0) {
+            txt += `OLD Cutter IDs:\n\n${getIDs('old')}\n`;
+            txt += `New Cutter IDs:\n\n${getIDs('new')}\n`;
+        } else {
+            txt += "No cutters replaced.\n\n";
+        }
+
+        if (includeChecklist && selectedCutters.length > 0) {
+            txt += "Tasks Checklist:\n";
+            document.querySelectorAll('.check-input').forEach(box => {
+                txt += `${box.dataset.task} ${box.checked ? "done" : "not done"}\n`;
+            });
+            txt += "\n";
+        }
+
+        if (remarks) txt += `Remarks:\n${remarks}\n`;
+
+        currentReviewText = txt.trim();
+        currentReviewLine = line;
+        reviewMode = 'edit';
+        
+        document.getElementById('review-text').innerText = currentReviewText;
+        document.getElementById('review-buttons').innerHTML = `
+            <button class="btn btn-secondary" style="flex:1;" onclick="handleBack()">Edit Form</button>
+            <button class="btn" id="copyBtn" style="flex:2;" onclick="saveAndCopy()">Save & Copy</button>
+        `;
+        showScreen('screen-review');
+    }
+
+    function viewReport(id) {
+        const report = savedReports.find(r => r.id === id);
+        if(!report) return;
+
+        currentReviewText = report.text;
+        reviewMode = 'view';
+        
+        document.getElementById('review-text').innerText = currentReviewText;
+        document.getElementById('review-buttons').innerHTML = `
+            <button class="btn" id="copyBtn" onclick="justCopy()">Copy Text</button>
+        `;
+        showScreen('screen-review');
+    }
+
+    async function saveAndCopy() {
+        const stateToSave = {
+            id: activeEditId || Date.now(),
+            timestamp: Date.now(),
+            line: currentReviewLine,
+            text: currentReviewText,
+            
+            // Raw form data to allow re-editing later
+            date: document.getElementById('dateInput').value,
+            time: document.getElementById('timeInput').value,
+            remarks: document.getElementById('remarksInput').value,
+            includeChecklist: document.getElementById('includeChecklistToggle').checked,
+            cutters: [...selectedCutters],
+            ids: { old: {}, new: {} },
+            checkedTasks: Array.from(document.querySelectorAll('.check-input:checked')).map(el => el.dataset.task)
+        };
+
+        // Gather all inputs to save their state
+        selectedCutters.forEach(c => {
+            stateToSave.ids.old[c] = [
+                document.querySelector(`input[data-type="old"][data-cutter="${c}"][data-idx="0"]`).value,
+                document.querySelector(`input[data-type="old"][data-cutter="${c}"][data-idx="1"]`).value
+            ];
+            stateToSave.ids.new[c] = [
+                document.querySelector(`input[data-type="new"][data-cutter="${c}"][data-idx="0"]`).value,
+                document.querySelector(`input[data-type="new"][data-cutter="${c}"][data-idx="1"]`).value
+            ];
+        });
+
+        const existingIdx = savedReports.findIndex(r => r.id === activeEditId);
+        if (existingIdx >= 0) {
+            savedReports[existingIdx] = stateToSave;
+        } else {
+            savedReports.unshift(stateToSave);
+        }
+        
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(savedReports));
+
+        await executeCopy();
+        setTimeout(() => showScreen('screen-home'), 1200);
+    }
+
+    async function justCopy() {
+        await executeCopy();
+    }
+
+    async function executeCopy() {
+        try {
+            await navigator.clipboard.writeText(currentReviewText);
+            if (navigator.vibrate) navigator.vibrate([15, 50, 15]);
+            const btn = document.getElementById("copyBtn");
+            btn.innerText = "✓ Copied!";
+            btn.classList.add("copy-success");
+            if (magicModeActive) triggerConfetti();
+            
+            setTimeout(() => {
+                if(btn) { btn.innerText = reviewMode === 'edit' ? "Save & Copy" : "Copy Text"; btn.classList.remove("copy-success"); }
+            }, 2000);
+        } catch(e) { alert("Failed to copy. Please check browser permissions."); }
+    }
+
+    // --- Easter Egg ---
+    let titleTapCount = 0, titleTapTimer = null, magicModeActive = false;
+    function handleTitleTap() {
+        titleTapCount++; clearTimeout(titleTapTimer);
+        if (titleTapCount >= 7) {
+            if (navigator.vibrate) navigator.vibrate([30, 50, 30, 50, 50]);
+            document.getElementById('easter-egg-modal').classList.add('show'); titleTapCount = 0;
+        } else titleTapTimer = setTimeout(() => titleTapCount = 0, 1500);
+    }
+    function closeEasterEgg() { document.getElementById('easter-egg-modal').classList.remove('show'); }
+    function activateMagicMode() {
+        magicModeActive = true; document.body.classList.add('magic-theme'); closeEasterEgg();
+        if (navigator.vibrate) navigator.vibrate([20, 50, 20]);
+    }
+    function triggerConfetti() {
+        const colors = ['#9333ea', '#c084fc', '#22C55E', '#FBBF24', '#3B82F6', '#FF5287'];
+        for (let i = 0; i < 40; i++) {
+            const conf = document.createElement('div');
+            conf.style.cssText = `position:fixed; width:${Math.random()*8+6}px; height:${Math.random()*4+8}px; background:${colors[Math.floor(Math.random()*colors.length)]}; bottom:15%; left:50%; z-index:99999; pointer-events:none; border-radius:${Math.random()>0.5?'50%':'2px'};`;
+            document.body.appendChild(conf);
+            const angle = (Math.random()*Math.PI)/2 + Math.PI/4, velocity = 15+Math.random()*25;
+            conf.animate([
+                { transform: `translate(-50%, 0) rotate(0deg) scale(1)`, opacity: 1 },
+                { transform: `translate(calc(-50% + ${Math.cos(angle)*velocity*15}px), ${-Math.sin(angle)*velocity*25}px) rotate(${Math.random()*720}deg) scale(0.5)`, opacity: 0 }
+            ], { duration: 1000+Math.random()*1500, easing: 'cubic-bezier(0.25, 1, 0.5, 1)', fill: 'forwards' });
+            setTimeout(() => conf.remove(), 3000);
+        }
+    }
+
+    init();
 </script>
 </body>
 </html>
