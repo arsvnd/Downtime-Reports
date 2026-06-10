@@ -3,706 +3,562 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Major Downtime Report</title>
+    <title>Dashboard - Shift Logs</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
         :root {
-            --primary: #2563eb;
-            --bg: #f1f5f9;
-            --card: #ffffff;
-            --text: #0f172a;
-            --text4: #383f49;
-            --border: #cbd5e1;
-            --success: #37ab87;
-            --danger: #dc2626;
+            --bg: #f0f4f9;
+            --surface: #ffffff;
+            --surface-2: #f8fafc;
+            --primary: #1e293b;
+            --primary-hover: #334155;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --text-subtle: #94a3b8;
+            --border: #e2e8f0;
+            --border-strong: #cbd5e1;
+
+            --danger: #ef4444;
+            --danger-bg: #fef2f2;
+            --danger-text: #991b1b;
+            --success: #10b981;
+            --success-bg: #f0fdf4;
+            --success-text: #065f46;
+            --warning: #f59e0b;
+            --warning-bg: #fffbeb;
+            --warning-text: #92400e;
+
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+
+            --radius-sm: 8px;
+            --radius: 14px;
+            --radius-lg: 20px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow: 0 4px 12px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04);
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            padding: 15px;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text-main);
             margin: 0;
-            display: flex;
-            justify-content: center;
+            padding: 24px 20px 48px;
+            min-height: 100vh;
         }
 
-        .container {
-            width: 100%;
-            max-width: 600px;
-            background: var(--card);
-            padding: 25px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        .container { max-width: 1160px; margin: 0 auto; }
+        .hidden { display: none !important; }
+
+        /* ── HEADER ── */
+        .header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
+        .header-left h1 { margin: 0 0 4px; font-size: 24px; font-weight: 700; letter-spacing: -0.4px; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+        
+        .header-left h1 .logo-icon {
+            width: 36px; height: 36px; background: var(--accent); border-radius: 10px;
+            display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(99,102,241,0.3); cursor: pointer; user-select: none; transition: transform 0.1s;
         }
+        .header-left h1 .logo-icon:active { transform: scale(0.9); }
 
-        h1 { text-align: center; color: var(--primary); margin: 0 0 25px 0; font-size: 1.8rem; }
-        h3 { border-left: 4px solid var(--primary); padding-left: 10px; margin: 25px 0 15px 0; font-size: 1.1rem; }
+        .header-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--success-bg); color: var(--success-text); border: 1px solid #bbf7d0; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .header-badge::before { content: ''; width: 7px; height: 7px; background: var(--success); border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
-        /* Dashboard Styles */
-        #reportsList {
-    display: flex;
-    flex-direction: column;
-    gap: 16px; /* Spacing between cards */
-    margin-top: 10px;
-}
-        .report-card {
-    background: #ffffff;
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column; /* Stack vertically on mobile */
-    gap: 15px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
+        .header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 
-.report-info {
-    border-bottom: 1px solid #f1f5f9;
-    padding-bottom: 12px;
-}
-        .report-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text4);
-    line-height: 1.3;
-    margin-bottom: 6px;
-}
+        .btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s ease; white-space: nowrap; font-family: inherit; }
+        .btn-outline { background: var(--surface); color: var(--text-main); border: 1.5px solid var(--border-strong); box-shadow: var(--shadow-sm); }
+        .btn-outline:hover { border-color: var(--accent); color: var(--accent); background: #f5f3ff; }
+        .btn-accent { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(99,102,241,0.25); }
+        .btn-accent:hover { background: var(--accent-hover); box-shadow: 0 4px 12px rgba(99,102,241,0.35); transform: translateY(-1px); }
 
-.report-meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.85rem;
-    color: #7f8c8d;
-}
-        .status-badge {
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-}
-        .status-resolved { background: #dcfce7; color: #166534; }
-        .status-open { background: #fee2e2; color: #991b1b; }
+        /* ── CONTROLS ── */
+        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+        .tabs { display: flex; gap: 4px; background: var(--surface); border: 1.5px solid var(--border); padding: 4px; border-radius: var(--radius-sm); box-shadow: var(--shadow-sm); }
+        .tab-btn { padding: 8px 22px; border: none; border-radius: 6px; background: transparent; font-size: 14px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: all 0.15s ease; font-family: inherit; }
+        .tab-btn.active { background: var(--accent); color: white; box-shadow: 0 2px 6px rgba(99,102,241,0.25); }
+        .tab-btn:not(.active):hover { color: var(--text-main); background: var(--bg); }
 
-        .btn-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr; 
-    gap: 12px;
-}
-        .btn-edit { 
-            background: #e9effd; 
-            color: #2563eb;
-            border: 1px solid #92b1f5; 
-            padding: 12px; 
-            border-radius: 8px; 
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
+        /* ── METRICS GRID ── */
+        .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .metric-card { background: var(--surface); padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow-sm); border: 1.5px solid var(--border); position: relative; overflow: hidden; transition: box-shadow 0.2s; }
+        .metric-card:hover { box-shadow: var(--shadow); }
+        .metric-card .mc-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 12px; }
+        .metric-card .mc-val-row { display: flex; align-items: baseline; gap: 6px; }
+        .metric-card .mc-val { font-size: 30px; font-weight: 700; letter-spacing: -1px; line-height: 1; }
+        .metric-card .mc-sub { font-size: 14px; font-weight: 600; color: var(--text-muted); }
+        .metric-card .mc-accent-bar { position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: var(--radius) var(--radius) 0 0; }
+
+        .mc-bm .mc-accent-bar { background: var(--danger); } .mc-bm .mc-val { color: var(--danger); }
+        .mc-pm .mc-accent-bar { background: var(--success); } .mc-pm .mc-val { color: var(--success); }
+        .mc-pd .mc-accent-bar { background: var(--warning); } .mc-pd .mc-val { color: var(--warning); }
+        .mc-total { background: var(--primary); border-color: transparent; }
+        .mc-total .mc-accent-bar { background: var(--accent); } .mc-total .mc-label { color: #94a3b8; } .mc-total .mc-val { color: #fff; } .mc-total .mc-sub { color: #64748b; }
+
+        /* ── TABLE ── */
+        .table-wrap { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-sm); border: 1.5px solid var(--border); overflow: hidden; }
+        .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 560px; }
+        thead th { background: var(--surface-2); padding: 13px 20px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 1.5px solid var(--border); white-space: nowrap; }
+        tbody td { padding: 13px 20px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+        tbody tr:last-child td { border-bottom: none; }
+        
+        .section-row td { background: #f8fafc; font-weight: 700; font-size: 13px; color: var(--primary); padding-top: 14px; padding-bottom: 14px; }
+        .section-row td:first-child { display: flex; align-items: center; gap: 8px; }
+        .section-row td:first-child::before { content: '▸'; color: var(--accent); font-size: 12px; }
+        .line-cell { font-weight: 500; color: var(--text-main); padding-left: 44px !important; }
+
+        /* Stat pills */
+        .stat-pill { display: inline-flex; align-items: center; justify-content: space-between; gap: 8px; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; min-width: 84px; border: 1px solid transparent; }
+        .stat-bm  { background: var(--danger-bg);  color: var(--danger-text);  border-color: #fecaca; }
+        .stat-pm  { background: var(--success-bg); color: var(--success-text); border-color: #bbf7d0; }
+        .stat-pd  { background: var(--warning-bg); color: var(--warning-text); border-color: #fde68a; }
+        .stat-total { background: #f1f5f9; color: #334155; border-color: var(--border); }
+
+        .loading { text-align: center; padding: 72px 24px; color: var(--text-muted); font-size: 16px; font-weight: 500; }
+        .spinner { display: inline-block; width: 28px; height: 28px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── ADVANCED MODE (SECRET DASHBOARD) ── */
+        .adv-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
+        .adv-header h2 { margin: 0; color: var(--primary); font-size: 20px; display: flex; align-items: center; gap: 8px; }
+        .adv-header h2::before { content: '⚡'; }
+        
+        .adv-charts { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom: 24px; }
+        .chart-card { background: var(--surface); padding: 20px; border-radius: var(--radius); border: 1.5px solid var(--border); box-shadow: var(--shadow-sm); }
+        .chart-card h3 { margin: 0 0 16px 0; font-size: 14px; color: var(--text-muted); text-transform: uppercase; }
+        
+        .raw-table-wrap { max-height: 500px; overflow-y: auto; }
+        .raw-table-wrap th { position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .raw-table-wrap tbody tr:hover { background-color: #f8fafc; }
+        
+        .badge-mini { padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+        .bg-bm { background: var(--danger-bg); color: var(--danger-text); }
+        .bg-pm { background: var(--success-bg); color: var(--success-text); }
+        .bg-pd { background: var(--warning-bg); color: var(--warning-text); }
+
+        @media (max-width: 900px) {
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+            .adv-charts { grid-template-columns: 1fr; }
         }
-
-        .btn-delete { 
-            background: #fff1f2;
-            color: #e11d48; 
-            border: 1px solid #fecdd3; 
-            padding: 12px; 
-            border-radius: 8px; 
-            cursor: pointer;
-            transition: all 0.2s;
+        @media (max-width: 640px) {
+            body { padding: 16px 14px 40px; }
+            .header { margin-bottom: 20px; }
+            .header-left h1 { font-size: 20px; }
+            .header-left h1 .logo-icon { width: 32px; height: 32px; font-size: 16px; border-radius: 9px; }
+            .btn { padding: 9px 14px; font-size: 13px; }
+            .btn span.btn-label { display: none; }
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .metric-card { padding: 14px 14px 16px; }
+            .metric-card .mc-val { font-size: 26px; }
+            .tabs { width: 100%; }
+            .tab-btn { flex: 1; padding: 8px 10px; font-size: 13px; text-align: center; }
         }
-
-  
-/* Desktop Adjustment 
-@media (min-width: 480px) {
-    .report-card {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .report-info {
-        border-bottom: none;
-        padding-bottom: 0;
-    }
-    .btn-actions {
-        display: flex;
-        grid-template-columns: none;
-    }
-}*/
-
-        .btn-main {
-            display: block;
-            width: 100%;
-            background: var(--primary);
-            color: white;
-            padding: 16px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin-bottom: 20px;
-        }
-        .btn-back {
-  /* Layout & Sizing */
-  width: 100%;
-  margin-bottom: 20px;
-  padding: 10px 20px;
-  
-  /* Modern "Clear" Styling */
-  background: transparent;      /* Makes the button clear */
-  color: #475569;               /* A soft, modern slate gray for text */
-  border: 1px solid #e2e8f0;    /* Light, clean border color */
-  border-radius: 8px;           /* Modern rounded corners */
-  
-  /* Typography */
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  
-  /* Interaction */
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;                
-}
-
-        /* Form Styles */
-        .form-group { margin-bottom: 18px; }
-        label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #475569; }
-        .block-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px; }
-        .block-options label {
-            border: 1px solid var(--border);
-            padding: 12px 5px;
-            text-align: center;
-            border-radius: 8px;
-            cursor: pointer;
-            background: white;
-            transition: all 0.2s;
-            font-weight: 500;
-            margin: 0;
-        }
-        .block-options input[type="radio"] { display: none; }
-        .block-options label:has(input:checked) {
-            border-color: var(--primary);
-            background-color: #eff6ff;
-            color: var(--primary);
-            box-shadow: inset 0 0 0 1px var(--primary);
-        }
-        input[type="text"], input[type="date"], input[type="time"], select, textarea {
-            width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; box-sizing: border-box; background: #fcfcfc;
-        }
-        textarea { min-height: 90px; resize: vertical; }
-        .hidden { display: none; }
-        .btn-submit { width: 100%; background: var(--primary); color: white; padding: 16px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 20px; }
-        .btn-copy { background: var(--success); color: white; padding: 16px; border: none; border-radius: 6px; font-family: 'Inter', sans-serif;
-  font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
-        #summaryContainer { margin-top: 30px; display: none; }
-        #summaryOutput { background: #f8fafc; padding: 20px; border-radius: 8px; white-space: pre-wrap; font-family: 'Courier New', Courier, monospace; border: 1px solid var(--border); font-size: 0.95rem; line-height: 1.4; }
-.zero-state-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 10px 20px;
-    min-height: 400px;
-}
-
-.zero-state-image {
-    width: 100%;
-    max-width: 320px;
-    height: auto;
-    margin-bottom: 30px;
-}
-
-.zero-state-text {
-    font-size: 1rem;
-    color: #475569;
-    margin-bottom: 30px;
-    line-height: 1.5;
-    max-width: 300px;
-}
-
-.zero-state-container .btn-main {
-    max-width: 300px;
-}
-
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>LNS Major Downtime Report</h1>
 
-    <div id="dashboardView">
-        <button class="btn-main" onclick="createNewReport()">Create New Report</button>
-        <div id="reportsList"></div>
+    <div class="header">
+        <div class="header-left">
+            <h1>
+                <div class="logo-icon" onclick="handleSecretClick()" title="Secret Admin Toggle">📊</div>
+                Shift Logs Admin
+            </h1>
+            <div style="margin-top: 8px;">
+                <span class="header-badge" id="lastUpdated">Connecting…</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-outline" onclick="fetchData()">
+                ↻ <span class="btn-label">Refresh</span>
+            </button>
+            <button class="btn btn-accent" onclick="exportExcel()">
+                ↓ <span class="btn-label">Export CSV</span>
+            </button>
+        </div>
     </div>
 
-    <div id="formView" class="hidden">
-        <button class="btn-main btn-back" onclick="showDashboard()">← Back to Dashboard</button>
-        <input type="hidden" id="editingId">
-        
-        <form id="downtimeForm">
-            <div class="form-group">
-                <label>1. Stop Type:</label>
-                <div class="block-options">
-                    <label><input type="radio" name="stopType" value="BM" required> BM</label>
-                    <label><input type="radio" name="stopType" value="PD"> PD</label>
-                    <label><input type="radio" name="stopType" value="Other" id="otherToggle"> Other</label>
-                </div>
-                <input type="text" id="otherStopType" class="hidden" placeholder="Specify other stop type..." style="margin-top:10px;">
+    <div id="standardView">
+        <div class="controls">
+            <div class="tabs">
+                <button class="tab-btn active" id="tab-Assembly" onclick="setTab('Assembly')">Assembly</button>
+                <button class="tab-btn" id="tab-Formation" onclick="setTab('Formation')">Formation</button>
             </div>
+        </div>
 
-            <div class="form-group">
-                <label>2. Equipment</label>
-                <div class="block-options" id="equipmentGroup">
-                    <label><input type="radio" name="equipment" value="1-1" required onchange="filterMachines()"> 1-1</label>
-                    <label><input type="radio" name="equipment" value="1-2" onchange="filterMachines()"> 1-2</label>
-                    <label><input type="radio" name="equipment" value="1-3" onchange="filterMachines()"> 1-3</label>
-                    <label><input type="radio" name="equipment" value="1-4" onchange="filterMachines()"> 1-4</label>
-                    <label><input type="radio" name="equipment" value="1-5" onchange="filterMachines()"> 1-5</label>
-                    <label><input type="radio" name="equipment" value="1-H" onchange="filterMachines()"> 1-H</label>
-                    <label><input type="radio" name="equipment" value="2-1" onchange="filterMachines()"> 2-1</label>
-                    <label><input type="radio" name="equipment" value="2-2" onchange="filterMachines()"> 2-2</label>
-                    <label><input type="radio" name="equipment" value="2-3" onchange="filterMachines()"> 2-3</label>
-                    <label><input type="radio" name="equipment" value="2-4" onchange="filterMachines()"> 2-4</label>
-                    <label><input type="radio" name="equipment" value="2-5" onchange="filterMachines()"> 2-5</label>
-                    <label><input type="radio" name="equipment" value="3-1" onchange="filterMachines()"> 3-1</label>
-                </div>
+        <div id="dashboardContent">
+            <div class="loading">
+                <div class="spinner"></div><br>
+                Fetching live shift data…
             </div>
-
-            <label>3. Machine Area</label>
-            <div class="form-group">
-                <label>Machine:</label>
-                <select id="machine" required onchange="updateUnits()">
-                    <option value="" disabled selected>Select Machine</option>
-                    <option value="ESP">ESP</option>
-                    <option value="Lamination">LAMI</option>
-                    <option value="D-STK">D-STK</option>
-                    <option value="HalfCell/Taping">HC/TAPING</option>
-                    <option value="Inspection">INSP</option>
-                    <option value="Unloader">UNL</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Unit:</label>
-                <select id="unit">
-                    <option value="-">-</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Assembly:</label>
-                <input type="text" id="assembly" placeholder="e.g. Center/Upper Electrode Cutter">
-            </div>
-
-            <div class="form-group">
-                <label>Date:</label>
-                <input type="date" id="dateInput">
-            </div>
-
-            <div class="form-group">
-                <label>Start Time:</label>
-                <input type="time" id="startTime">
-            </div>
-
-            <div class="form-group">
-                <label>Issue Resolved?</label>
-                <div class="block-options">
-                    <label><input type="radio" name="resolved" value="Yes" id="resYes"> Yes</label>
-                    <label><input type="radio" name="resolved" value="No" checked> No</label>
-                </div>
-            </div>
-
-            <div class="form-group hidden" id="endTimeContainer">
-                <label>End Time:</label>
-                <input type="time" id="endTime">
-            </div>
-
-            <h3>Details</h3>
-            <div class="form-group">
-                <label>5. Phenomenon:</label>
-                <textarea id="phenomenon" placeholder="Describe what happened..."></textarea>
-            </div>
-            <div class="form-group">
-                <label>6. Root Cause:</label>
-                <textarea id="rootCause" placeholder="What caused the issue?"></textarea>
-            </div>
-            <div class="form-group">
-                <label>7. Action Taken:</label>
-                <textarea id="actionTaken" placeholder="How was the issue fixed?"></textarea>
-            </div>
-            <div id="errorMessage" style="color: var(--danger); font-weight: 600; margin-top: 10px; text-align: center; display: none;"></div>
-            <button type="button" class="btn-submit" onclick="generateSummary()">Generate Summary</button>
-            
-        </form>
-
-        <div id="summaryContainer">
-    <label>Generated Summary:</label>
-    <div id="summaryOutput"></div>
-    
-    <div style="display: flex; gap: 10px; margin-top: 20px;">
-        <button class="btn-copy" style="flex: 1; margin-bottom: 0;" onclick="copyToClipboard()">Copy Summary</button>
-        <button class="btn-main btn-back" style="flex: 1; margin-bottom: 0;" onclick="showDashboard()">Back to Dashboard</button>
+        </div>
     </div>
-</div>
+
+    <div id="advancedView" class="hidden">
+        <div class="adv-header">
+            <h2>Advanced Analytics & Master Logs</h2>
+            <button class="btn btn-outline" onclick="toggleAdvancedMode()" style="border-color: var(--primary); color: var(--primary);">
+                ✕ Exit Advanced Mode
+            </button>
+        </div>
+
+        <div class="adv-charts">
+            <div class="chart-card">
+                <h3>Global Task Distribution</h3>
+                <canvas id="typeChart" style="max-height: 250px;"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Hours Logged By Technician</h3>
+                <canvas id="techChart" style="max-height: 250px;"></canvas>
+            </div>
+        </div>
+
+        <div class="table-wrap raw-table-wrap">
+            <div class="table-scroll">
+                <table id="rawTable">
+                    <thead>
+                        <tr>
+                            <th>Time Logged</th>
+                            <th>Technician</th>
+                            <th>Dept</th>
+                            <th>Section</th>
+                            <th>Line</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Time Span</th>
+                            <th>Duration</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rawTableBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
     </div>
+
 </div>
 
 <script>
-    let reports = JSON.parse(localStorage.getItem('lns_storage_v1') || '[]');
+    // --- CONFIGURATION ---
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxl0KDjJSHmd_FKei_H-qaFCLMnd1SLdsdFfFf9F0rTMSezS2vz_kEgdJ7ECAmXtr0APQ/exec";
 
-    function checkShiftReset() {
-        const lastReset = localStorage.getItem('lns_last_reset');
-        const now = new Date();
-    const sixAM = new Date();
-    sixAM.setHours(6, 0, 0, 0);
-    const sixPM = new Date();
-    sixPM.setHours(18, 0, 0, 0);
-    let lastResetPoint;
-    if (now >= sixPM) {
-        lastResetPoint = sixPM.getTime();
-    } else if (now >= sixAM) {
-        lastResetPoint = sixAM.getTime();
-    } else {
-        // If it's before 6am today, the last reset point was 6pm yesterday
-        const yesterdaySixPM = new Date();
-        yesterdaySixPM.setDate(yesterdaySixPM.getDate() - 1);
-        yesterdaySixPM.setHours(18, 0, 0, 0);
-        lastResetPoint = yesterdaySixPM.getTime();
-    }
-    if (!lastReset || parseInt(lastReset) < lastResetPoint) {
-        if (reports.length > 0) {
-            reports = [];
-            localStorage.setItem('lns_storage_v1', JSON.stringify(reports));
-            localStorage.setItem('lns_last_reset', Date.now());
-            renderDashboard();
-            console.log("Shift change detected: Dashboard cleared.");
+    let rawTasks = [];
+    let aggregatedData = {};
+    let currentTab = 'Assembly';
+    let refreshInterval = null;
+    let isAdvancedMode = false;
+    
+    // Chart instances
+    let typeChartInstance = null;
+    let techChartInstance = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        fetchData();
+        refreshInterval = setInterval(fetchData, 60000);
+    });
+
+    // --- SECRET BUTTON LOGIC ---
+    let secretClicks = 0;
+    let secretTimer;
+    function handleSecretClick() {
+        secretClicks++;
+        clearTimeout(secretTimer);
+        secretTimer = setTimeout(() => secretClicks = 0, 800); // 800ms window
+        
+        if (secretClicks >= 3) { // 3 rapid clicks to toggle
+            toggleAdvancedMode();
+            secretClicks = 0;
         }
     }
-}
 
-    // --- DASHBOARD LOGIC ---
-    function renderDashboard() {
-    const list = document.getElementById('reportsList');
-    const dashboardView = document.getElementById('dashboardView');
-    
-    // Clear existing content
-    list.innerHTML = '';
-    
-    if (reports.length === 0) {
-        document.querySelector('#dashboardView .btn-main').style.display = 'none';
-        
-        list.innerHTML = `
-            <div class="zero-state-container">
-                <img src="https://illustrations.popsy.co/blue/business-presentation.svg" alt="No reports" class="zero-state-image">
-                
-                <div class="zero-state-text">
-                    Create a new report by clicking the button below to track your downtime.
-                </div>
-                
-                <button class="btn-main" onclick="createNewReport()">Create New Report</button>
-            </div>
-        `;
-    } else {
-        
-        document.querySelector('#dashboardView .btn-main').style.display = 'block';
-
-        const sortedReports = [...reports].sort((a, b) => b.id - a.id);
-        
-        // Add reset note
-        const resetNote = document.createElement('p');
-        resetNote.style = "text-align:center; font-size:0.8rem; color:#94a3b8; margin-bottom: 15px;";
-        resetNote.innerText = "Dashboard resets automatically at 6:00.";
-        list.appendChild(resetNote);
-
-        sortedReports.forEach(report => {
-            const card = document.createElement('div');
-            card.className = 'report-card';
-            card.onclick = () => editReport(report.id);
-
-            const statusClass = report.resolved === 'Yes' ? 'status-resolved' : 'status-open';
-            const statusText = report.resolved === 'Yes' ? 'Resolved' : 'Open';
-            
-            card.innerHTML = `
-                <div class="report-info">
-                    <div class="report-title">${report.equipment || 'Unknown'} | ${report.phenomenon}</div>
-                    <div class="report-meta">
-                        <span>${formatDate(report.dateRaw)}</span>
-                        <span>•</span>
-                        <span>${formatTime(report.startRaw)}</span>
-                        <span class="status-badge ${statusClass}">${statusText}</span>
-                    </div>
-                </div>
-                <div class="btn-actions">
-                    <button class="btn-edit">Edit</button>
-                    <button class="btn-delete" onclick="event.stopPropagation(); deleteReport(${report.id})">Delete</button>
-                </div>
-            `;
-            list.appendChild(card);
-        });
-    }
-}
-
-    function createNewReport() {
-        document.getElementById('editingId').value = '';
-        document.getElementById('downtimeForm').reset();
-        
-        // Reset dynamic fields
-        const now = new Date();
-        document.getElementById('dateInput').value = now.toISOString().split('T')[0];
-        document.getElementById('startTime').value = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-        document.getElementById('endTimeContainer').classList.add('hidden');
-        document.getElementById('otherStopType').classList.add('hidden');
-        document.getElementById('summaryContainer').style.display = 'none';
-        
-        showForm();
+    function toggleAdvancedMode() {
+        isAdvancedMode = !isAdvancedMode;
+        if (isAdvancedMode) {
+            document.getElementById('standardView').classList.add('hidden');
+            document.getElementById('advancedView').classList.remove('hidden');
+            renderAdvancedView();
+        } else {
+            document.getElementById('advancedView').classList.add('hidden');
+            document.getElementById('standardView').classList.remove('hidden');
+        }
     }
 
-    function showForm() {
-        document.getElementById('dashboardView').classList.add('hidden');
-        document.getElementById('formView').classList.remove('hidden');
-    }
-
-    function showDashboard() {
-        document.getElementById('dashboardView').classList.remove('hidden');
-        document.getElementById('formView').classList.add('hidden');
+    function setTab(dept) {
+        currentTab = dept;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`tab-${dept}`).classList.add('active');
         renderDashboard();
     }
 
-    function deleteReport(id) {
-        if (confirm('Are you sure you want to delete this report?')) {
-            reports = reports.filter(r => r.id !== id);
-            localStorage.setItem('lns_storage_v1', JSON.stringify(reports));
+    function fetchData() {
+        const content = document.getElementById('dashboardContent').innerHTML;
+        if (content.includes("Error") || content.includes("Fetching")) {
+            document.getElementById('dashboardContent').innerHTML =
+                '<div class="loading"><div class="spinner"></div><br>Fetching live shift data…</div>';
+        }
+
+        fetch(`${WEB_APP_URL}?action=getShiftMetrics`)
+        .then(res => res.json())
+        .then(data => {
+            rawTasks = data.tasks;
+            const now = new Date();
+            document.getElementById('lastUpdated').innerHTML =
+                `Live &nbsp;·&nbsp; ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+            
+            processData();
             renderDashboard();
-        }
-    }
-
-    function editReport(id) {
-        const report = reports.find(r => r.id === id);
-        if (!report) return;
-
-        document.getElementById('editingId').value = id;
-        
-        // Populate inputs
-        if (report.stopTypeVal) {
-            const radio = document.querySelector(`input[name="stopType"][value="${report.stopTypeVal}"]`);
-            if (radio) radio.checked = true;
-            document.getElementById('otherStopType').classList.toggle('hidden', report.stopTypeVal !== 'Other');
-            document.getElementById('otherStopType').value = report.otherStopType || '';
-        }
-
-        if (report.equipment) {
-            const eqRadio = document.querySelector(`input[name="equipment"][value="${report.equipment}"]`);
-            if (eqRadio) eqRadio.checked = true;
-        }
-
-        document.getElementById('machine').value = report.machine;
-        updateUnits();
-        document.getElementById('unit').value = report.unit;
-        document.getElementById('assembly').value = report.assembly;
-        document.getElementById('dateInput').value = report.dateRaw;
-        document.getElementById('startTime').value = report.startRaw;
-        
-        const resRadio = document.querySelector(`input[name="resolved"][value="${report.resolved}"]`);
-        if (resRadio) {
-            resRadio.checked = true;
-            document.getElementById('endTimeContainer').classList.toggle('hidden', report.resolved !== 'Yes');
-        }
-        document.getElementById('endTime').value = report.endRaw;
-        document.getElementById('phenomenon').value = report.phenomenon;
-        document.getElementById('rootCause').value = report.rootCause;
-        document.getElementById('actionTaken').value = report.actionTaken;
-
-        document.getElementById('summaryContainer').style.display = 'none';
-        showForm();
-    }
-
-    // --- YOUR ORIGINAL LOGIC (Preserved) ---
-    function filterMachines() {
-        const equipment = document.querySelector('input[name="equipment"]:checked')?.value;
-        const machineSelect = document.getElementById('machine');
-        const options = machineSelect.options;
-        for (let i = 1; i < options.length; i++) {
-            const val = options[i].value;
-            if (equipment === '1-H') {
-                options[i].style.display = (val === 'ESP' || val === 'Lamination' || val === 'Unloader') ? 'block' : 'none';
-            } else {
-                options[i].style.display = 'block';
+            
+            if (isAdvancedMode) {
+                renderAdvancedView(); // Auto-update graphs if open
             }
-        }
-        if (machineSelect.selectedOptions[0].style.display === 'none') {
-            machineSelect.selectedIndex = 0;
-            updateUnits();
-        }
-    }
-
-    function updateUnits() {
-        const process = document.getElementById('machine').value;
-        const unitSelect = document.getElementById('unit');
-        let options = ['-'];
-        if (process === 'ESP') options = [' ', 'Cathode Unwinder', 'Anode Unwinder', 'ATR', 'Crane'];
-        else if (process === 'Lamination') options = [' ', 'Separator/PET Unwinder', 'Electrode/Separator Combiner', 'Heating/Laminator', 'Cell Final Cutter', 'Cell Tracking System', 'Cell Inspector', 'Cell Unloader'];
-        else if (process === 'D-STK') options = [' ', 'Cell Loading C/V[1]', 'Cell Loading C/V[2]', 'Stacking Table[01]', 'Stacking Table[02]', 'Stacking Table[03]', 'Stacked Cell Transfer'];
-        else if (process === 'HalfCell/Taping') options = [' ', 'Half Cell Loading', 'HalfCell Stack', 'LMS', 'Taping[01]', 'Taping[02]'];
-        else if (process === 'Inspection') options = [' ', 'Taped Cell Vision', 'Taped Cell Rotate', 'Taped Cell ', 'Cell Tracking System', 'Taped Cell Transfer'];
-        else if (process === 'Unloader') options = [' ', 'Taped Cell Unloader'];
-
-        unitSelect.innerHTML = '';
-        options.forEach(opt => {
-            const el = document.createElement('option');
-            el.textContent = opt; el.value = opt; unitSelect.appendChild(el);
+        })
+        .catch(err => {
+            console.error("Refresh failed:", err);
+            if (rawTasks.length === 0) {
+                document.getElementById('dashboardContent').innerHTML =
+                    `<div class="loading" style="color:var(--danger);">⚠️ Could not load data. Check your connection or Web App URL.</div>`;
+            }
         });
     }
 
-    function formatDate(dateStr) {
-        if (!dateStr) return "";
-        const date = new Date(dateStr + 'T12:00:00'); 
-        return `${date.getDate()} ${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`;
-    }
-
-    function formatTime(timeStr) {
-        if (!timeStr) return "";
-        let [hours, minutes] = timeStr.split(':');
-        let ampm = hours >= 12 ? 'PM' : 'AM';
-        hours = hours % 12 || 12;
-        return `${hours.toString().padStart(2, '0')}:${minutes} ${ampm}`;
-    }
-
-    // --- MODIFIED GENERATE SUMMARY (Now saves automatically) ---
-    function generateSummary() {
-        const phenomenon = document.getElementById('phenomenon').value.trim();
-        const rootCause = document.getElementById('rootCause').value.trim();
-        const actionTaken = document.getElementById('actionTaken').value.trim();
-        const errorEl = document.getElementById('errorMessage');
-
-        // 1. Mandatory Validation
-        if (!phenomenon) { errorEl.innerText = "Please enter Phenomenon"; errorEl.style.display = 'block'; return; }
-        if (!rootCause) { errorEl.innerText = "Please enter Root Cause"; errorEl.style.display = 'block'; return; }
-        if (!actionTaken) { errorEl.innerText = "Please enter Action Taken"; errorEl.style.display = 'block'; return; }
-        
-        // 2. DUPLICATE PREVENTION CHECK
-        const currentEquipment = document.querySelector('input[name="equipment"]:checked')?.value || "";
-        const currentEditingId = document.getElementById('editingId').value ? parseInt(document.getElementById('editingId').value) : null;
-
-        const isDuplicate = reports.some(report => {
-            // Check if another report has the same Equipment AND Phenomenon
-            // We exclude the current report if we are in "Edit" mode (matching IDs)
-            return report.id !== currentEditingId && 
-                   report.equipment === currentEquipment && 
-                   report.phenomenon.trim().toLowerCase() === phenomenon.toLowerCase();
-        });
-
-        if (isDuplicate) {
-            errorEl.innerText = "Error: Report already exists.";
-            errorEl.style.display = 'block';
-            return;
-        }
-
-        errorEl.style.display = 'none';
-
-        // 3. CAPTURE AND SAVE DATA (Original Logic)
-        const stopTypeVal = document.querySelector('input[name="stopType"]:checked')?.value;
-        const resolved = document.querySelector('input[name="resolved"]:checked').value;
-        const startRaw = document.getElementById('startTime').value;
-        const endRaw = document.getElementById('endTime').value;
-
-        const reportData = {
-            id: currentEditingId || Date.now(),
-            stopTypeVal: stopTypeVal,
-            otherStopType: document.getElementById('otherStopType').value,
-            stopType: stopTypeVal === 'Other' ? document.getElementById('otherStopType').value : stopTypeVal,
-            equipment: currentEquipment,
-            machine: document.getElementById('machine').value,
-            unit: document.getElementById('unit').value,
-            assembly: document.getElementById('assembly').value,
-            dateRaw: document.getElementById('dateInput').value,
-            startRaw: startRaw,
-            endRaw: endRaw,
-            resolved: resolved,
-            phenomenon: phenomenon,
-            rootCause: rootCause,
-            actionTaken: actionTaken
+    function processData() {
+        aggregatedData = {
+            "Assembly":  { sections: {}, totals: { BM:{c:0,h:0}, PM:{c:0,h:0}, PD:{c:0,h:0}, ALL:{c:0,h:0} } },
+            "Formation": { sections: {}, totals: { BM:{c:0,h:0}, PM:{c:0,h:0}, PD:{c:0,h:0}, ALL:{c:0,h:0} } }
         };
 
-        const index = reports.findIndex(r => r.id === reportData.id);
-        if (index > -1) reports[index] = reportData;
-        else reports.push(reportData);
-        localStorage.setItem('lns_storage_v1', JSON.stringify(reports));
+        rawTasks.forEach(t => {
+            let dept = t.dept;
+            if (!aggregatedData[dept]) return;
 
-        // 4. DOWNTIME CALCULATION & SUMMARY GENERATION
-        let downtimeLine = "";
-        if (resolved === 'Yes' && startRaw && endRaw) {
-            const start = new Date(`2000-01-01T${startRaw}`);
-            let end = new Date(`2000-01-01T${endRaw}`);
-            if (end < start) end.setDate(end.getDate() + 1);
-            const diff = Math.floor((end - start) / 60000);
-            downtimeLine = `\n\nTotal Downtime: ${Math.floor(diff/60)}h ${diff%60}m`;
+            let sec  = t.section  || "General";
+            let type = t.type     || "BM";
+            let dur  = parseFloat(t.duration) || 0;
+
+            let line = t.line || "N/A";
+            if (typeof line === 'string' && line.includes('T') && line.includes('Z')) {
+                let d = new Date(line);
+                if (!isNaN(d.getTime())) line = (d.getMonth() + 1) + "-" + d.getDate();
+                t.line = line; // Fix raw array too for advanced mode
+            }
+
+            aggregatedData[dept].totals[type].c++;
+            aggregatedData[dept].totals[type].h += dur;
+            aggregatedData[dept].totals.ALL.c++;
+            aggregatedData[dept].totals.ALL.h += dur;
+
+            if (!aggregatedData[dept].sections[sec]) {
+                aggregatedData[dept].sections[sec] = { totals: { BM:{c:0,h:0}, PM:{c:0,h:0}, PD:{c:0,h:0}, ALL:{c:0,h:0} }, lines: {} };
+            }
+            if (!aggregatedData[dept].sections[sec].lines[line]) {
+                aggregatedData[dept].sections[sec].lines[line] = { BM:{c:0,h:0}, PM:{c:0,h:0}, PD:{c:0,h:0}, ALL:{c:0,h:0} };
+            }
+
+            aggregatedData[dept].sections[sec].totals[type].c++;
+            aggregatedData[dept].sections[sec].totals[type].h += dur;
+            aggregatedData[dept].sections[sec].totals.ALL.c++;
+            aggregatedData[dept].sections[sec].totals.ALL.h += dur;
+
+            aggregatedData[dept].sections[sec].lines[line][type].c++;
+            aggregatedData[dept].sections[sec].lines[line][type].h += dur;
+            aggregatedData[dept].sections[sec].lines[line].ALL.c++;
+            aggregatedData[dept].sections[sec].lines[line].ALL.h += dur;
+        });
+    }
+
+    function renderDashboard() {
+        const deptData = aggregatedData[currentTab];
+        if (!deptData) return;
+        const t = deptData.totals;
+
+        let html = `
+        <div class="metrics-grid">
+            <div class="metric-card mc-bm">
+                <div class="mc-accent-bar"></div>
+                <div class="mc-label">Breakdowns (BM)</div>
+                <div class="mc-val-row"><span class="mc-val">${t.BM.c}</span><span class="mc-sub">${t.BM.h.toFixed(1)} hrs</span></div>
+            </div>
+            <div class="metric-card mc-pm">
+                <div class="mc-accent-bar"></div>
+                <div class="mc-label">Preventive (PM)</div>
+                <div class="mc-val-row"><span class="mc-val">${t.PM.c}</span><span class="mc-sub">${t.PM.h.toFixed(1)} hrs</span></div>
+            </div>
+            <div class="metric-card mc-pd">
+                <div class="mc-accent-bar"></div>
+                <div class="mc-label">Projects (PD)</div>
+                <div class="mc-val-row"><span class="mc-val">${t.PD.c}</span><span class="mc-sub">${t.PD.h.toFixed(1)} hrs</span></div>
+            </div>
+            <div class="metric-card mc-total">
+                <div class="mc-accent-bar"></div>
+                <div class="mc-label">Total Work</div>
+                <div class="mc-val-row"><span class="mc-val">${t.ALL.c}</span><span class="mc-sub">${t.ALL.h.toFixed(1)} hrs</span></div>
+            </div>
+        </div>
+        <div class="table-wrap"><div class="table-scroll"><table>
+            <thead><tr><th>Location / Line</th><th>BM</th><th>PM</th><th>PD</th><th>Total Time</th></tr></thead><tbody>`;
+
+        const sections = Object.keys(deptData.sections).sort();
+        if (sections.length === 0) {
+            html += `<tr><td colspan="5" style="text-align:center;padding:48px;color:var(--text-muted);">No tasks logged for ${currentTab} yet this shift.</td></tr>`;
         }
 
-        const summary = `1. Stop Type:
-${reportData.stopType}
+        sections.forEach(sec => {
+            const s = deptData.sections[sec];
+            html += `
+                <tr class="section-row">
+                    <td>Section: ${sec}</td>
+                    <td>${s.totals.BM.c} tasks <span style="font-size:12px;color:var(--text-subtle)">(${s.totals.BM.h.toFixed(1)}h)</span></td>
+                    <td>${s.totals.PM.c} tasks <span style="font-size:12px;color:var(--text-subtle)">(${s.totals.PM.h.toFixed(1)}h)</span></td>
+                    <td>${s.totals.PD.c} tasks <span style="font-size:12px;color:var(--text-subtle)">(${s.totals.PD.h.toFixed(1)}h)</span></td>
+                    <td><strong>${s.totals.ALL.h.toFixed(1)} hrs</strong></td>
+                </tr>`;
 
-2. Equipment:
-${reportData.equipment}
+            const lines = Object.keys(s.lines).sort((a,b) => a.localeCompare(b, undefined, {numeric:true, sensitivity:'base'}));
+            lines.forEach(line => {
+                const l = s.lines[line];
+                html += `
+                    <tr>
+                        <td class="line-cell">Line ${line}</td>
+                        <td><div class="stat-pill stat-bm"><span>${l.BM.c}</span><span>${l.BM.h.toFixed(1)}h</span></div></td>
+                        <td><div class="stat-pill stat-pm"><span>${l.PM.c}</span><span>${l.PM.h.toFixed(1)}h</span></div></td>
+                        <td><div class="stat-pill stat-pd"><span>${l.PD.c}</span><span>${l.PD.h.toFixed(1)}h</span></div></td>
+                        <td><div class="stat-pill stat-total"><span>Total</span><span>${l.ALL.h.toFixed(1)}h</span></div></td>
+                    </tr>`;
+            });
+        });
 
-3. Machine Area:
-    Machine: ${reportData.machine}
-    Unit: ${reportData.unit}
-    Assembly: ${reportData.assembly}
-    Date: ${formatDate(reportData.dateRaw)}
-    Start Time: ${formatTime(reportData.startRaw)}
-    End Time: ${resolved === 'Yes' ? formatTime(endRaw) : "-"}
-    Issue Resolved: ${resolved === 'Yes' ? "Yes ✅" : "No"}
-
-5. Phenomenon:
-${phenomenon}
-
-6. Root Cause:
-${rootCause}
-
-7. Action taken:
-${actionTaken}${downtimeLine}`;
-
-        document.getElementById('summaryOutput').innerText = summary;
-        document.getElementById('summaryContainer').style.display = 'block';
-        document.getElementById('summaryContainer').scrollIntoView({ behavior: 'smooth' });
-        setTimeout(() => {
-        container.scrollIntoView({ behavior: 'smooth', block: 'end' });
-    }, 100);
+        html += `</tbody></table></div></div>`;
+        document.getElementById('dashboardContent').innerHTML = html;
     }
 
-    function copyToClipboard() {
-        const text = document.getElementById('summaryOutput').innerText;
-        navigator.clipboard.writeText(text).then(() => {
-            const btn = document.querySelector('.btn-copy');
-            btn.innerText = "✓ Copied!";
-            setTimeout(() => { btn.innerText = "Copy Summary"; }, 2000);
+    // --- ADVANCED RENDER LOGIC ---
+    function renderAdvancedView() {
+        if (!rawTasks || rawTasks.length === 0) return;
+
+        // 1. Process Data for Charts
+        let typeCounts = { BM: 0, PM: 0, PD: 0 };
+        let techHours = {};
+
+        const tbody = document.getElementById('rawTableBody');
+        tbody.innerHTML = '';
+
+        rawTasks.forEach(t => {
+            // Aggregate Types
+            if (typeCounts[t.type] !== undefined) typeCounts[t.type]++;
+            
+            // Aggregate Tech Hours
+            const dur = parseFloat(t.duration) || 0;
+            if (t.tech) {
+                techHours[t.tech] = (techHours[t.tech] || 0) + dur;
+            }
+
+            // Build Raw Table Rows
+            const cleanTime = new Date(t.time);
+            const timeStr = isNaN(cleanTime) ? t.time : cleanTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const typeBadge = `<span class="badge-mini bg-${t.type.toLowerCase()}">${t.type}</span>`;
+            
+            tbody.innerHTML += `
+                <tr>
+                    <td style="color:var(--text-muted); font-size:13px;">${timeStr}</td>
+                    <td style="font-weight:600;">${t.tech}</td>
+                    <td>${t.dept}</td>
+                    <td>${t.section || '-'}</td>
+                    <td>${t.line || '-'}</td>
+                    <td>${typeBadge}</td>
+                    <td>${t.desc}</td>
+                    <td style="color:var(--text-muted); font-size:13px;">${t.timeSpan || '-'}</td>
+                    <td style="font-weight:600;">${dur.toFixed(1)}h</td>
+                </tr>
+            `;
+        });
+
+        // 2. Draw Type Doughnut Chart
+        if (typeChartInstance) typeChartInstance.destroy();
+        const ctxType = document.getElementById('typeChart').getContext('2d');
+        typeChartInstance = new Chart(ctxType, {
+            type: 'doughnut',
+            data: {
+                labels: ['Breakdown (BM)', 'Preventive (PM)', 'Project (PD)'],
+                datasets: [{
+                    data: [typeCounts.BM, typeCounts.PM, typeCounts.PD],
+                    backgroundColor: ['#ef4444', '#10b981', '#f59e0b'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+        });
+
+        // 3. Draw Tech Bar Chart
+        if (techChartInstance) techChartInstance.destroy();
+        
+        // Sort techs by most hours
+        const sortedTechs = Object.keys(techHours).sort((a,b) => techHours[b] - techHours[a]);
+        const techLabels = sortedTechs;
+        const techData = sortedTechs.map(tech => techHours[tech]);
+
+        const ctxTech = document.getElementById('techChart').getContext('2d');
+        techChartInstance = new Chart(ctxTech, {
+            type: 'bar',
+            data: {
+                labels: techLabels,
+                datasets: [{
+                    label: 'Total Hours Logged',
+                    data: techData,
+                    backgroundColor: '#6366f1',
+                    borderRadius: 4
+                }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, title: { display: true, text: 'Hours' } } }
+            }
         });
     }
 
-    // --- EVENT LISTENERS ---
-    document.getElementsByName('stopType').forEach(el => {
-        el.addEventListener('change', () => {
-            document.getElementById('otherStopType').classList.toggle('hidden', el.value !== 'Other');
-        });
-    });
+    // --- EXPORT TO EXCEL ---
+    function exportExcel() {
+        let hasData = false;
+        let csv = `Shift Logs Admin Master Export - All Departments\nExported on: ${new Date().toLocaleString()}\n\n`;
+        csv += "Department,Section,Line,BM Count,BM Hours,PM Count,PM Hours,PD Count,PD Hours,Total Hours\n";
 
-    document.getElementsByName('resolved').forEach(el => {
-        el.addEventListener('change', () => {
-            document.getElementById('endTimeContainer').classList.toggle('hidden', el.value !== 'Yes');
-        });
-    });
+        const departments = ["Assembly", "Formation"];
+        departments.forEach(dept => {
+            const deptData = aggregatedData[dept];
+            if (!deptData || Object.keys(deptData.sections).length === 0) return;
+            hasData = true;
+            const sections = Object.keys(deptData.sections).sort();
 
-    // Init
-    checkShiftReset();
-    renderDashboard();
-    setInterval(checkShiftReset, 60000);
+            sections.forEach(sec => {
+                const sData = deptData.sections[sec];
+                const lines = Object.keys(sData.lines).sort((a,b) => a.localeCompare(b, undefined, {numeric:true, sensitivity:'base'}));
+
+                lines.forEach(line => {
+                    const lData = sData.lines[line];
+                    csv += `"${dept}","${sec}","${line}","${lData.BM.c}","${lData.BM.h.toFixed(2)}","${lData.PM.c}","${lData.PM.h.toFixed(2)}","${lData.PD.c}","${lData.PD.h.toFixed(2)}","${lData.ALL.h.toFixed(2)}"\n`;
+                });
+                csv += `"${dept}","${sec} SUBTOTAL","","${sData.totals.BM.c}","${sData.totals.BM.h.toFixed(2)}","${sData.totals.PM.c}","${sData.totals.PM.h.toFixed(2)}","${sData.totals.PD.c}","${sData.totals.PD.h.toFixed(2)}","${sData.totals.ALL.h.toFixed(2)}"\n`;
+            });
+        });
+
+        if (!hasData) return alert("No data available to export.");
+
+        const encodedUri = encodeURI("data:text/csv;charset=utf-8," + csv);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `Shift_Summary_Master_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
 </script>
 
 </body>
