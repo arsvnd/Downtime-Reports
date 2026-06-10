@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Shift Logs App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
+        /* --- CSS VARIABLES & RESET --- */
+        :root {
+            --bg-color: #f0f4f9;
+            --surface: #ffffff;
+            --surface-2: #f8fafc;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --text-subtle: #94a3b8;
+            --border: #e2e8f0;
+            --border-strong: #cbd5e1;
+            --success: #10b981;
+            --success-bg: #f0fdf4;
+            --success-text: #065f46;
+            --success-border: #bbf7d0;
+            --warning: #f59e0b;
+            --warning-bg: #fffbeb;
+            --warning-text: #92400e;
+            --warning-border: #fde68a;
+            --danger: #ef4444;
+            --danger-bg: #fef2f2;
+            --danger-text: #991b1b;
+            --danger-border: #fecaca;
+            --radius: 16px;
+            --radius-sm: 10px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow: 0 4px 12px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding-bottom: 90px;
+            -webkit-font-smoothing: antialiased;
+            overscroll-behavior-y: none;
+        }
+
+        .container { max-width: 500px; margin: 0 auto; padding: 20px 16px; position: relative; }
+        .hidden { display: none !important; }
+
+        /* --- TYPOGRAPHY --- */
+        h1 { font-size: 24px; font-weight: 700; margin: 0 0 6px 0; letter-spacing: -0.4px; color: var(--text-main); }
+        p.subtitle { font-size: 15px; color: var(--text-muted); margin-top: 0; margin-bottom: 24px; line-height: 1.5; }
+        h2 { font-size: 11px; font-weight: 700; margin: 0 0 14px 0; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+
+        /* --- CARDS & INPUTS --- */
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            border: 1.5px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .form-group { margin-bottom: 18px; position: relative; }
+
+        label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 8px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        input, select {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--surface-2);
+            font-size: 16px;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            transition: all 0.15s ease;
+            appearance: none;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+        }
+        input::placeholder { color: var(--text-subtle); }
+
+        .row { display: flex; gap: 12px; }
+        .col { flex: 1; min-width: 0; }
+
+        /* --- BUTTONS --- */
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            color: white;
+            background: var(--primary);
+            font-family: 'Inter', sans-serif;
+            transition: all 0.15s ease;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+        }
+        .btn:active { opacity: 0.85; transform: scale(0.99); }
+        .btn:hover { background: var(--primary-hover); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35); }
+        .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* --- TYPE SELECTOR --- */
+        .type-selector {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 20px;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            padding: 4px;
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .type-btn {
+            flex: 1;
+            padding: 11px 0;
+            text-align: center;
+            border: none;
+            border-radius: 7px;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.3px;
+        }
+        .type-btn:hover:not(.active) { background: var(--bg-color); color: var(--text-main); }
+        .type-btn.active { color: white; box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
+        .type-btn.active.bm { background: var(--danger); }
+        .type-btn.active.pm { background: var(--success); }
+        .type-btn.active.pd { background: var(--warning); }
+
+        /* --- HEADER & WIDGETS --- */
+        .app-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 22px; padding-top: 6px; }
+
+        .shift-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #ede9fe;
+            color: #4c1d95;
+            padding: 5px 11px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 6px;
+            border: 1px solid #ddd6fe;
+        }
+
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--surface);
+            border: 1.5px solid var(--border-strong);
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-main);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .user-chip:hover { border-color: var(--primary); color: var(--primary); }
+
+        .char-counter {
+            position: absolute;
+            right: 14px;
+            top: 38px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: var(--surface-2);
+            padding-left: 4px;
+            pointer-events: none;
+        }
+
+        /* --- METRICS --- */
+        .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 22px; }
+
+        .metric-box {
+            background: var(--surface);
+            border-radius: var(--radius-sm);
+            padding: 14px 10px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            border: 1.5px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-box::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+        }
+
+        .border-bm::before { background: var(--danger); }
+        .border-pm::before { background: var(--success); }
+        .border-pd::before { background: var(--warning); }
+
+        .metric-box h3 { margin: 0 0 4px; font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .metric-box .val { font-size: 26px; font-weight: 700; margin: 4px 0 2px; color: var(--text-main); letter-spacing: -0.5px; line-height: 1; }
+        .border-bm .val { color: var(--danger); }
+        .border-pm .val { color: var(--success); }
+        .border-pd .val { color: var(--warning); }
+        .metric-box .hrs { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+
+        /* --- FEED --- */
+        .feed-item {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: var(--shadow-sm);
+            border: 1.5px solid var(--border);
+            margin-bottom: 10px;
+            transition: box-shadow 0.15s;
+        }
+        .feed-item:hover { box-shadow: var(--shadow); }
+
+        .feed-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+
+        .badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            letter-spacing: 0.3px;
+        }
+        .badge.bm { background: var(--danger-bg);  color: var(--danger-text);  border-color: var(--danger-border); }
+        .badge.pm { background: var(--success-bg); color: var(--success-text); border-color: var(--success-border); }
+        .badge.pd { background: var(--warning-bg); color: var(--warning-text); border-color: var(--warning-border); }
+
+        /* --- PULL TO REFRESH --- */
+        .ptr-container { height: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; transition: height 0.2s ease; }
+        .ptr-pill {
+            background: var(--surface);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            box-shadow: var(--shadow);
+            border: 1.5px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .spin { animation: spin 0.8s linear infinite; display: inline-block; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* --- BOTTOM NAV --- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: var(--surface);
+            border-top: 1.5px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            padding-bottom: calc(10px + env(safe-area-inset-bottom));
+            z-index: 100;
+            box-shadow: 0 -4px 16px rgba(0,0,0,0.06);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            color: var(--text-subtle);
+            background: none;
+            border: none;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            padding: 4px 28px;
+            border-radius: var(--radius-sm);
+            transition: all 0.15s;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .nav-item:hover { color: var(--text-main); }
+        .nav-item.active { color: var(--primary); }
+
+        /* --- SETUP / WELCOME --- */
+        .welcome-icon {
+            font-size: 52px;
+            margin-bottom: 16px;
+            display: inline-block;
+            animation: wave 2.5s infinite;
+            transform-origin: 70% 70%;
+        }
+        @keyframes wave {
+            0%   { transform: rotate(  0deg) }
+            10%  { transform: rotate( 14deg) }
+            20%  { transform: rotate( -8deg) }
+            30%  { transform: rotate( 14deg) }
+            40%  { transform: rotate( -4deg) }
+            50%  { transform: rotate( 10deg) }
+            60%  { transform: rotate(  0deg) }
+            100% { transform: rotate(  0deg) }
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 400px) {
+            h1 { font-size: 21px; }
+            .container { padding: 16px 12px; }
+            .metric-box .val { font-size: 22px; }
+            .nav-item { padding: 4px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="setupView" class="container hidden">
+    <div style="text-align: center; margin: 40px 0 30px 0;">
+        <span class="welcome-icon">👋</span>
+        <h1>Welcome to Shift Logs</h1>
+        <p class="subtitle">Let's get your profile set up quickly so you can start logging tasks.</p>
+    </div>
+    <div class="card">
+        <div class="form-group">
+            <label>Your Name</label>
+            <input type="text" id="setupName" placeholder="First and Last">
+        </div>
+        <div class="form-group" style="margin-bottom: 24px;">
+            <label>Owning Department</label>
+            <select id="setupDept">
+                <option value="">Choose department...</option>
+                <option value="Assembly">Assembly</option>
+                <option value="Formation">Formation</option>
+            </select>
+        </div>
+        <button class="btn" onclick="saveProfile()">Start Logging</button>
+    </div>
+</div>
+
+<div id="appView" class="hidden">
+    <div class="container">
+        
+        <div class="app-header">
+            <div>
+                <h1 id="viewTitle">New Task</h1>
+                <div id="shiftClock" class="shift-pill">⏳ Calculating shift...</div>
+            </div>
+            <div class="user-chip" onclick="resetProfile()"><span id="displayUser">User</span> ⚙️</div>
+        </div>
+
+        <div id="tabLog">
+            <label>Task Type</label>
+            <div class="type-selector" id="taskTypeGroup">
+                <button class="type-btn active bm" data-type="BM" onclick="selectType('BM')">BM</button>
+                <button class="type-btn pm" data-type="PM" onclick="selectType('PM')">PM</button>
+                <button class="type-btn pd" data-type="PD" onclick="selectType('PD')">PD</button>
+            </div>
+
+            <div class="card">
+                <div class="row">
+                    <div class="form-group col">
+                        <label>Section</label>
+                        <select id="sectionSelect" onchange="saveSection(); populateLines()"></select>
+                    </div>
+                    <div class="form-group col">
+                        <label>Line</label>
+                        <select id="lineSelect"></select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>What did you do?</label>
+                    <input type="text" id="taskDesc" placeholder="Brief details..." oninput="updateCharCount(this)">
+                    <div id="charCount" class="char-counter">120</div>
+                </div>
+                
+                <div class="row">
+                    <div class="form-group col"><label>Started</label><input type="time" id="startTime"></div>
+                    <div class="form-group col"><label>Finished</label><input type="time" id="endTime"></div>
+                </div>
+                
+                <button id="submitBtn" class="btn" onclick="submitTask()" style="margin-top: 8px;">Save Task</button>
+            </div>
+        </div>
+
+        <div id="tabFeed" class="hidden">
+            <div class="metrics-grid">
+                <div class="metric-box border-bm"><h3>BM</h3><div class="val" id="bmCount">-</div><div class="hrs" id="bmHrs">0h</div></div>
+                <div class="metric-box border-pm"><h3>PM</h3><div class="val" id="pmCount">-</div><div class="hrs" id="pmHrs">0h</div></div>
+                <div class="metric-box border-pd"><h3>PD</h3><div class="val" id="pdCount">-</div><div class="hrs" id="pdHrs">0h</div></div>
+            </div>
+            
+            <h2>Recent Activity</h2>
+            <div id="ptrContainer" class="ptr-container">
+                <div id="ptrPill" class="ptr-pill">↓ Pull to refresh</div>
+            </div>
+            
+            <div id="feedList"><p style="text-align:center; color: var(--text-subtle); padding: 32px 20px; font-weight: 500;">Loading data...</p></div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="switchTab('log')" id="navLog">
+            <span style="font-size: 22px; margin-bottom: 2px;">📝</span> Log Task
+        </button>
+        <button class="nav-item" onclick="switchTab('feed')" id="navFeed">
+            <span style="font-size: 22px; margin-bottom: 2px;">📊</span> Activity
+        </button>
+    </nav>
+</div>
+
+<script>
+    // --- CONFIGURATION & RESILIENCE ---
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxl0KDjJSHmd_FKei_H-qaFCLMnd1SLdsdFfFf9F0rTMSezS2vz_kEgdJ7ECAmXtr0APQ/exec";
+    const APP_VERSION = "1.3"; // Bumped version to clear old organization caches
+
+    const orgStructure = {
+        "Assembly": {
+            "L&S": ["1-1", "1-2", "1-3", "1-4", "1-H", "2-1", "2-2", "2-3", "2-4", "2-5", "3-1", "3-2", "3-3", "3-4", "3-5", "2-H", "4-1", "4-2", "4-3"],
+            "PKG": ["1-1", "1-2", "2-1", "2-2", "3-1", "3-2"]
+        },
+        "Formation": {
+            "HPCD": ["1", "2", "3", "4"],
+            "JF": ["1-1", "1-2", "1-3", "2-1", "2-2", "2-3", "3-1", "3-2", "3-3", "4-1", "4-2", "4-3"],
+            "Degas": ["1-1", "1-2", "2-1", "2-2", "3-1", "3-2"],
+            "CDC": ["1", "2", "3", "4"],
+            "SEL": ["JF", "CDC", "OCV"],
+            "EOL": ["1-1", "1-2", "2-1", "2-2", "3-1", "3-2", "4-1", "4-2"]
+        }
+    };
+
+    let userProfile = null;
+    let selectedType = "BM"; 
+
+    // --- INIT, CLOCK, & VERSION CHECK ---
+    document.addEventListener("DOMContentLoaded", () => {
+        // Version Check: Wipe cache if schema updated
+        if (localStorage.getItem("ts_version") !== APP_VERSION) {
+            localStorage.clear();
+            localStorage.setItem("ts_version", APP_VERSION);
+        }
+        checkProfile();
+        updateShiftClock();
+        setInterval(updateShiftClock, 60000); 
+    });
+
+    function updateShiftClock() {
+        const now = new Date();
+        const currentHour = now.getHours();
+        let end = new Date(now);
+        
+        if (currentHour >= 6 && currentHour < 18) {
+            end.setHours(18, 0, 0, 0); 
+        } else {
+            if (currentHour >= 18) end.setDate(end.getDate() + 1);
+            end.setHours(6, 0, 0, 0); 
+        }
+        
+        const diffMs = end - now;
+        document.getElementById('shiftClock').innerText = `⏳ ${Math.floor(diffMs / 3600000)}h ${Math.floor((diffMs % 3600000) / 60000)}m left`;
+    }
+
+    function updateCharCount(el) {
+        const limit = 120;
+        const remaining = limit - el.value.length;
+        const counter = document.getElementById('charCount');
+        counter.innerText = remaining;
+        counter.style.color = remaining < 0 ? 'var(--danger)' : (remaining <= 20 ? 'var(--warning)' : 'var(--text-muted)');
+    }
+
+    // --- PROFILE & CASCADING ---
+    // Helper: Normalize names (e.g., "ash malik" -> "Ash Malik")
+    function toTitleCase(str) {
+        return str.trim().toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    }
+
+    function checkProfile() {
+        const stored = localStorage.getItem("techProfile");
+        if (stored) {
+            userProfile = JSON.parse(stored);
+            
+            // GUARD: Check for stale or invalid department data
+            if (!orgStructure[userProfile.dept]) {
+                alert("App structure updated. Please re-select your department.");
+                localStorage.removeItem("techProfile");
+                window.location.reload();
+                return;
+            }
+
+            document.getElementById("displayUser").innerText = userProfile.name;
+            populateSections();
+            document.getElementById("setupView").classList.add("hidden");
+            document.getElementById("appView").classList.remove("hidden");
+            fetchLiveData(); 
+        } else {
+            document.getElementById("appView").classList.add("hidden");
+            document.getElementById("setupView").classList.remove("hidden");
+        }
+    }
+
+    function saveProfile() {
+        const rawName = document.getElementById("setupName").value;
+        const dept = document.getElementById("setupDept").value;
+        if (!rawName.trim() || !dept) return alert("Please fill out both fields.");
+        
+        const name = toTitleCase(rawName); // Normalize name
+        localStorage.setItem("techProfile", JSON.stringify({ name, dept }));
+        checkProfile();
+    }
+
+    function resetProfile() {
+        if(confirm("Log out and change profile?")) {
+            localStorage.removeItem("techProfile");
+            checkProfile();
+        }
+    }
+
+    function saveSection() { localStorage.setItem("techSection", document.getElementById("sectionSelect").value); }
+
+    function populateSections() {
+        const secSelect = document.getElementById("sectionSelect");
+        secSelect.innerHTML = "";
+        const sections = Object.keys(orgStructure[userProfile.dept]);
+        
+        sections.forEach(sec => { secSelect.innerHTML += `<option value="${sec}">${sec}</option>`; });
+        
+        // Restore saved section memory
+        const savedSection = localStorage.getItem("techSection");
+        if (savedSection && sections.includes(savedSection)) secSelect.value = savedSection;
+        populateLines(); 
+    }
+
+    function populateLines() {
+        const sec = document.getElementById("sectionSelect").value;
+        const lineSelect = document.getElementById("lineSelect");
+        lineSelect.innerHTML = "";
+        orgStructure[userProfile.dept][sec].forEach(line => {
+            lineSelect.innerHTML += `<option value="${line}">${line}</option>`;
+        });
+    }
+
+    // --- UI NAVIGATION & SUBMISSION ---
+    function selectType(type) {
+        selectedType = type;
+        const buttons = document.querySelectorAll('.type-btn');
+        buttons.forEach(btn => {
+            btn.classList.remove('active', 'bm', 'pm', 'pd');
+            if(btn.dataset.type === type) btn.classList.add('active', type.toLowerCase());
+        });
+    }
+
+    function switchTab(tab) {
+        document.getElementById("tabLog").classList.add("hidden");
+        document.getElementById("tabFeed").classList.add("hidden");
+        document.getElementById("navLog").classList.remove("active");
+        document.getElementById("navFeed").classList.remove("active");
+        
+        if (tab === 'log') {
+            document.getElementById("tabLog").classList.remove("hidden");
+            document.getElementById("navLog").classList.add("active");
+            document.getElementById("viewTitle").innerText = "New Task";
+        } else {
+            document.getElementById("tabFeed").classList.remove("hidden");
+            document.getElementById("navFeed").classList.add("active");
+            document.getElementById("viewTitle").innerText = "Activity";
+            fetchLiveData();
+        }
+    }
+
+    function submitTask() {
+        const btn = document.getElementById("submitBtn");
+        const section = document.getElementById("sectionSelect").value;
+        const line = document.getElementById("lineSelect").value;
+        const desc = document.getElementById("taskDesc").value.trim();
+        const start = document.getElementById("startTime").value;
+        const end = document.getElementById("endTime").value;
+
+        // HARDENED VALIDATION
+        if (desc.length < 10) return alert("Please provide a description of at least 10 characters.");
+        if (!start || !end) return alert("Please enter both start and end times.");
+
+        let startD = new Date(`1970-01-01T${start}:00`);
+        let endD = new Date(`1970-01-01T${end}:00`);
+        if (endD < startD) endD.setDate(endD.getDate() + 1);
+        const durationHrs = parseFloat(((endD - startD) / 3600000).toFixed(2));
+
+        if (durationHrs <= 0 || durationHrs > 12) return alert("Invalid duration (over 12 hours or negative). Please check your times.");
+
+        // IDEMPOTENCY: Generate UUID (with fallback for older mobile browsers)
+        const subId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'id-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+
+        const payload = {
+            timestamp: new Date().toLocaleString(), techName: userProfile.name, dept: userProfile.dept,
+            section: section, line: line, type: selectedType, desc: desc, timeFrame: `${start} - ${end}`, 
+            duration: durationHrs, submissionId: subId
+        };
+
+        // COLD START UI HANDLING
+        btn.innerText = "Saving..."; 
+        btn.disabled = true;
+        let coldStartWarning = setTimeout(() => {
+            btn.innerText = "Taking longer than usual — Apps Script waking up...";
+        }, 3500);
+
+        fetch(WEB_APP_URL, {
+            method: 'POST', mode: 'no-cors', cache: 'no-cache',
+            headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+        }).then(() => {
+            clearTimeout(coldStartWarning);
+            document.getElementById("taskDesc").value = "";
+            document.getElementById("startTime").value = "";
+            document.getElementById("endTime").value = "";
+            updateCharCount(document.getElementById("taskDesc"));
+            
+            btn.innerText = "Task Saved!";
+            switchTab('feed');
+            
+            // Lock button for 2 seconds to prevent rapid double-clicks on return
+            setTimeout(() => {
+                btn.innerText = "Save Task";
+                btn.disabled = false;
+            }, 2000);
+            
+        }).catch(err => {
+            clearTimeout(coldStartWarning);
+            alert("Network Error."); 
+            btn.innerText = "Save Task"; 
+            btn.disabled = false;
+        });
+    }
+
+    // --- LIVE FEED & PULL TO REFRESH ---
+    function fetchLiveData() {
+        if (!userProfile) return Promise.resolve();
+        
+        return fetch(`${WEB_APP_URL}?action=getShiftMetrics`)
+        .then(res => res.json())
+        .then(data => {
+            ["BM", "PM", "PD"].forEach(t => {
+                if(data.metrics[t]) {
+                    document.getElementById(`${t.toLowerCase()}Count`).innerText = data.metrics[t].count;
+                    document.getElementById(`${t.toLowerCase()}Hrs`).innerText = data.metrics[t].hrs.toFixed(1) + "h";
+                }
+            });
+
+            const list = document.getElementById("feedList"); list.innerHTML = "";
+            let count = 0;
+            
+            data.tasks.forEach(t => {
+                if (t.dept === userProfile.dept) {
+                    count++;
+                    const tClass = t.type ? t.type.toLowerCase() : 'bm';
+                    let cleanTime = t.time; 
+                    const dateObj = new Date(t.time);
+                    if (!isNaN(dateObj.getTime())) cleanTime = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                    let locStr = t.section || "General";
+                    if (t.line && String(t.line).trim() !== "" && !String(t.line).includes("Z")) locStr += ` • Line ${t.line}`;
+                    const initial = t.tech ? t.tech.charAt(0).toUpperCase() : '?';
+
+                    list.innerHTML += `
+                        <div class="feed-item">
+                            <div class="feed-header">
+                                <div style="display:flex; align-items:center;">
+                                    <div style="width:30px;height:30px;border-radius:50%;background:#ede9fe;display:flex;align-items:center;justify-content:center;font-weight:700;color:#4c1d95;font-size:12px;margin-right:10px;flex-shrink:0;">${initial}</div>
+                                    <span style="font-size:14px;font-weight:700;color:var(--text-main);">${t.tech}</span>
+                                </div>
+                                <span class="badge ${tClass}">${t.type}</span>
+                            </div>
+                            <div style="font-size:15px;color:var(--text-main);margin-bottom:12px;line-height:1.5;padding-left:40px;">${t.desc}</div>
+                            <div style="padding-left:40px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:10px;">
+                                <div style="color:var(--text-muted);font-size:12px;font-weight:500;">📍 ${locStr}</div>
+                                <div style="color:var(--text-muted);font-size:12px;font-weight:500;">🕒 ${cleanTime}</div>
+                            </div>
+                        </div>`;
+                }
+            });
+            if(count === 0) list.innerHTML = `<p style="text-align:center; color: var(--text-subtle); padding: 32px 20px; font-weight: 500;">No activity yet.</p>`;
+        }).catch(err => {
+            document.getElementById("feedList").innerHTML = `<p style="text-align:center; color: var(--danger);">Network Error</p>`;
+        });
+    }
+
+    // PULL TO REFRESH LOGIC
+    let startY = 0;
+    let isPulling = false;
+    const tabFeed = document.getElementById('tabFeed');
+    const ptrContainer = document.getElementById('ptrContainer');
+    const ptrPill = document.getElementById('ptrPill');
+
+    tabFeed.addEventListener('touchstart', e => {
+        if (window.scrollY === 0) {
+            startY = e.touches[0].clientY;
+            isPulling = true;
+        }
+    }, {passive: true});
+
+    tabFeed.addEventListener('touchmove', e => {
+        if (!isPulling) return;
+        const currentY = e.touches[0].clientY;
+        const delta = currentY - startY;
+        
+        if (delta > 0 && window.scrollY === 0) {
+            ptrContainer.style.height = `${Math.min(delta, 80)}px`;
+            if (delta > 60) ptrPill.innerHTML = '↻ Release to update';
+            else ptrPill.innerHTML = '↓ Pull to refresh';
+        }
+    }, {passive: true});
+
+    tabFeed.addEventListener('touchend', e => {
+        if (!isPulling) return;
+        isPulling = false;
+        const currentY = e.changedTouches[0].clientY;
+        
+        if (currentY - startY > 60 && window.scrollY === 0) {
+            ptrPill.innerHTML = '<span class="spin">↻</span> Updating...';
+            ptrContainer.style.height = '60px';
+            
+            fetchLiveData().then(() => {
+                setTimeout(() => { ptrContainer.style.height = '0'; }, 500);
+            });
+        } else {
+            ptrContainer.style.height = '0';
+        }
+    });
+</script>
+</body>
+</html>
