@@ -3,5 +3,7 @@
   "short_name": "ShiftLog",
   "start_url": "ShiftLogs.html",
   "display": "standalone",
+  "background_color": "#0F1117", 
+  "theme_color": "#F6F1E8",
   "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
 }
