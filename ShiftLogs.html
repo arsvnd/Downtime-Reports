@@ -1289,5 +1289,12 @@ document.getElementById("tabFeed").addEventListener("touchend", e => {
   } else { ptrWrap.style.height="0"; }
 });
 </script>
+  <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('sw.js');
+        });
+      }
+    </script>
 </body>
 </html>
