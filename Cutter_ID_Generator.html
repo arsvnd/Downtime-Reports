@@ -2,8 +2,36 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
+    <!-- Native-like scaling constraints -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    
+    <!-- iOS Full-Screen Web App Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Cutter ID" />
+    
+    <!-- PWA Manifest and Icons -->
+    <link rel="manifest" href="manifest-CID.json">
+    <link rel="apple-touch-icon" href="CID-icon-192.png">
+    
     <title>Cutter ID Generator</title>
+    
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // NOTE: Update 'sw.js' to match the actual name/path of your existing Service Worker file
+                navigator.serviceWorker.register('sw-CID.js')
+                    .then((registration) => {
+                        console.log('Service Worker registered with scope:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.error('Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
+
     <style>
         /* =========================================
            1. PREMIUM DESIGN SYSTEM & VARIABLES
@@ -14,8 +42,8 @@
             --text-main: #111111; 
             --text-muted: #888888; 
             --accent-color: #111111; 
-            --accent-green: #22C55E; 
-            --accent-red: #EF4444; 
+            --accent-green: #84CC16; 
+            --accent-red: #E11D48; 
             --border: #EAEAEA; 
             
             --radius-sm: 12px;
@@ -32,16 +60,50 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-sans); -webkit-tap-highlight-color: transparent; }
 
-        html, body { background-color: var(--bg-color); color: var(--text-main); width: 100%; height: 100dvh; overflow: hidden; display: flex; justify-content: center; letter-spacing: -0.02em; }
+        /* Prevent system rubber-banding on app frame */
+        html, body { 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            width: 100%; 
+            height: 100dvh; 
+            overflow: hidden; 
+            display: flex; 
+            justify-content: center; 
+            letter-spacing: -0.02em;
+            overscroll-behavior: none;
+        }
 
-        #app-container { width: 100%; max-width: 414px; background-color: var(--bg-color); position: relative; height: 100%; display: flex; flex-direction: column; box-shadow: 0 0 40px rgba(0, 0, 0, 0.05); }
+        /* Responsive handling for desktop vs native iOS viewport scaling */
+        #app-container { 
+            width: 100%; 
+            max-width: 414px; 
+            background-color: var(--bg-color); 
+            position: relative; 
+            height: 100%; 
+            display: flex; 
+            flex-direction: column; 
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.05); 
+        }
 
         /* =========================================
-           2. HEADER & LAYOUT
+           2. HEADER & LAYOUT (iOS Safe Areas)
            ========================================= */
-        header { padding: env(safe-area-inset-top) 20px 16px; position: relative; z-index: 100; background: rgba(250, 250, 250, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); min-height: 70px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+        header { 
+            /* Extra top padding specifically ensures layout safely clears notch/Dynamic Island */
+            padding: calc(12px + env(safe-area-inset-top)) 20px 16px; 
+            position: relative; 
+            z-index: 100; 
+            background: rgba(250, 250, 250, 0.85); 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px); 
+            flex-shrink: 0; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            border-bottom: 1px solid var(--border); 
+        }
         
-        .header-btn { background: var(--card-bg); border: 1px solid var(--border); font-size: 14px; font-weight: 700; color: var(--text-main); cursor: pointer; padding: 8px 16px; border-radius: var(--radius-pill); box-shadow: var(--shadow-sm); transition: transform 0.15s; visibility: hidden;}
+        .header-btn { background: var(--card-bg); border: 1px solid var(--border); font-size: 14px; font-weight: 700; color: var(--text-main); cursor: pointer; padding: 8px 16px; border-radius: var(--radius-pill); box-shadow: var(--shadow-sm); transition: transform 0.15s; visibility: hidden; width: 85px;}
         .header-btn:active { transform: scale(0.95); }
 
         #content { flex-grow: 1; position: relative; overflow: hidden; }
@@ -61,7 +123,21 @@
            3. COMPONENTS
            ========================================= */
         .card { background-color: var(--card-bg); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 24px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
-        .bottom-bar { position: sticky; bottom: 0; padding: 16px 20px calc(16px + env(safe-area-inset-bottom)); background: var(--bg-color); border-top: 1px solid var(--border); box-shadow: var(--shadow-sticky); z-index: 50; display: flex; gap: 12px;}
+        
+        /* Bottom Action Bar safely clears the iOS Home Indicator */
+        .bottom-bar { 
+            position: sticky; 
+            bottom: 0; 
+            padding: 16px 20px calc(16px + env(safe-area-inset-bottom)); 
+            background: rgba(250, 250, 250, 0.9);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid var(--border); 
+            box-shadow: var(--shadow-sticky); 
+            z-index: 50; 
+            display: flex; 
+            gap: 12px;
+        }
 
         /* Buttons */
         .btn { background-color: var(--accent-color); color: white; border: none; border-radius: var(--radius-pill); padding: 18px 24px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); width: 100%; box-shadow: var(--shadow-btn); text-align: center; }
@@ -71,7 +147,7 @@
         .btn-small:active { transform: scale(0.95); }
         .btn-grey { background-color: #F4F4F4; color: var(--text-main); border: 1px solid var(--border); }
         .btn-danger { background-color: #FFF0F0; color: var(--accent-red); border: 1px solid #FFE5E5; }
-        .copy-success { background-color: var(--accent-green) !important; color: white !important; border-color: var(--accent-green) !important; box-shadow: 0 8px 16px -4px rgba(34, 197, 94, 0.4) !important;}
+        .copy-success { background-color: #22C55E !important; color: white !important; border-color: #22C55E !important; box-shadow: 0 8px 16px -4px rgba(34, 197, 94, 0.4) !important;}
 
         /* Report History Items */
         .report-item { background-color: var(--card-bg); border-radius: var(--radius-md); padding: 20px; display: flex; flex-direction: column; gap: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 12px; }
@@ -90,15 +166,93 @@
         textarea { width: 100%; height: 100px; resize: vertical; font-family: inherit; color: var(--text-main); background-color: #FAFAFA; border-radius: var(--radius-sm); padding: 16px; border: 2px solid var(--border); font-weight: 500; font-size: 15px; outline: none;}
         textarea:focus { border-color: var(--accent-color); background-color: var(--card-bg); }
 
-        /* Custom Checkboxes */
-        .check-container { display: flex; align-items: center; position: relative; padding: 16px 0; border-bottom: 1px solid var(--border); cursor: pointer; font-size: 15px; font-weight: 600; user-select: none; gap: 16px;}
-        .check-container:last-child { border-bottom: none; }
-        .check-container input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+        /* Main Toggle Checkbox */
+        .check-container-legacy { display: flex; align-items: center; position: relative; padding: 16px 0; cursor: pointer; font-size: 15px; font-weight: 600; user-select: none; gap: 16px;}
+        .check-container-legacy input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
         .custom-checkbox { width: 24px; height: 24px; background: #FAFAFA; border: 2px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0;}
-        .check-container:hover input ~ .custom-checkbox { background: #EAEAEA; }
-        .check-container input:checked ~ .custom-checkbox { background: var(--accent-color); border-color: var(--accent-color); }
+        .check-container-legacy:hover input ~ .custom-checkbox { background: #EAEAEA; }
+        .check-container-legacy input:checked ~ .custom-checkbox { background: var(--accent-color); border-color: var(--accent-color); }
         .custom-checkbox svg { width: 14px; height: 14px; fill: none; stroke: white; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 16; stroke-dashoffset: 16; transition: stroke-dashoffset 0.3s ease-in-out; }
-        .check-container input:checked ~ .custom-checkbox svg { stroke-dashoffset: 0; }
+        .check-container-legacy input:checked ~ .custom-checkbox svg { stroke-dashoffset: 0; }
+
+        /* =========================================
+           3-WAY TOGGLE (Custom App-Style)
+           ========================================= */
+        .three-way-toggle {
+            position: relative;
+            width: 70px;
+            height: 32px;
+            background: #F4F4F4;
+            border-radius: 20px;
+            cursor: pointer;
+            flex-shrink: 0;
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.06);
+            transition: background-color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid #EAEAEA;
+        }
+
+        .three-way-toggle::before, .three-way-toggle::after {
+            content: "";
+            position: absolute;
+            top: 50%; transform: translateY(-50%);
+            width: 13px; height: 13px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 1;
+            transition: opacity 0.2s;
+        }
+
+        /* Red X inside Track */
+        .three-way-toggle::before {
+            left: 9px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E11D48' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3C/svg%3E");
+        }
+
+        /* Green Check inside Track */
+        .three-way-toggle::after {
+            right: 9px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2384CC16' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+        }
+
+        .three-way-toggle .thumb {
+            position: absolute;
+            width: 26px; height: 26px;
+            background: #FFFFFF;
+            border-radius: 50%;
+            top: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 2;
+        }
+
+        .three-way-toggle .thumb::after {
+            content: ""; position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 12px; height: 12px;
+            background-size: contain; background-repeat: no-repeat;
+            opacity: 0; transition: opacity 0.3s;
+        }
+
+        /* "No" State */
+        .three-way-toggle[data-state="no"] { background: #FFE4E6; border-color: #FECDD3; }
+        .three-way-toggle[data-state="no"]::before, .three-way-toggle[data-state="no"]::after { opacity: 0; }
+        .three-way-toggle[data-state="no"] .thumb { left: 2px; transform: translateX(0); }
+        .three-way-toggle[data-state="no"] .thumb::after {
+            opacity: 1;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E11D48' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3C/svg%3E");
+        }
+
+        /* "Yes" State */
+        .three-way-toggle[data-state="yes"] { background: #ECFCCB; border-color: #D9F99D; }
+        .three-way-toggle[data-state="yes"]::before, .three-way-toggle[data-state="yes"]::after { opacity: 0; }
+        .three-way-toggle[data-state="yes"] .thumb { left: calc(100% - 28px); transform: translateX(0); }
+        .three-way-toggle[data-state="yes"] .thumb::after {
+            opacity: 1;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2384CC16' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+        }
 
         .flex-row { display: flex; gap: 16px; margin-bottom: 16px; }
         .flex-row .form-group { flex: 1; margin-bottom: 0; }
@@ -108,7 +262,7 @@
         .cutter-btn.active { border-color: var(--accent-color); color: var(--accent-color); background: #FAFAFA; box-shadow: 0 0 0 1px var(--accent-color); }
 
         /* =========================================
-           4. ID INPUTS (Micro-interactions)
+           4. ID INPUTS
            ========================================= */
         .id-input-wrapper { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; background-color: #FAFAFA; border-radius: var(--radius-sm); padding: 8px 16px; border: 2px solid var(--border); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .id-input-wrapper:focus-within { border-color: var(--text-muted); background-color: var(--card-bg); }
@@ -116,7 +270,7 @@
         .id-input { border: none; background: transparent; font-size: 22px; font-weight: 800; width: 70px; text-align: center; outline: none; font-family: ui-monospace, monospace; color: var(--accent-color); letter-spacing: 2px; padding: 8px 0; transition: color 0.3s;}
         .id-input::placeholder { color: #DDDDDD; }
         
-        @keyframes successPop { 0% { transform: scale(1); } 50% { transform: scale(1.04); border-color: var(--accent-green); background-color: #F0FDF4; } 100% { transform: scale(1); border-color: var(--accent-green); background-color: #F0FDF4; } }
+        @keyframes successPop { 0% { transform: scale(1); } 50% { transform: scale(1.04); border-color: #22C55E; background-color: #F0FDF4; } 100% { transform: scale(1); border-color: #22C55E; background-color: #F0FDF4; } }
         .id-input-wrapper.is-complete { animation: successPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
         .id-input-wrapper.is-complete .id-input, .id-input-wrapper.is-complete span { color: #15803D; }
 
@@ -143,7 +297,7 @@
     <div class="easter-egg-content">
         <button class="easter-egg-close" onclick="closeEasterEgg()">&times;</button>
         <img src="https://illustrations.popsy.co/purple/remote-work.svg" alt="Remote Work">
-        <p>This app has no budget, no team, no office, no sleep, and absolutely nobody asking for it. Just @arsvnd, a laptop, and too much free time. See what free time looks like.</p>
+        <p>This app has no budget, no team, no office, no sleep, and absolutely nobody asking for it. Just @arsvnd, a laptop, and too much free time.</p>
         <button class="btn-gradient-magic" onclick="activateMagicMode()">Don't tap this</button>
     </div>
 </div>
@@ -152,7 +306,8 @@
     <header>
         <button class="header-btn" id="nav-back" onclick="handleBack()">Back</button>
         <h1 onclick="handleTitleTap()">Cutter ID</h1>
-        <div style="width: 65px;"></div> </header>
+        <button class="header-btn" id="nav-settings" onclick="showSettings()">Settings</button>
+    </header>
 
     <div id="content">
         <div id="screen-home" class="screen active">
@@ -164,8 +319,29 @@
         </div>
 
         <div id="screen-history" class="screen">
-            <div class="scrollable-body" id="history-list">
+            <div class="scrollable-body" id="history-list"></div>
+        </div>
+
+        <div id="screen-settings" class="screen">
+            <div class="scrollable-body">
+                <h2>Checklist Settings</h2>
+                <p style="color:var(--text-muted); font-size:14px; margin-bottom:24px;">Add custom tasks to your report checklists.</p>
+                
+                <div id="custom-checks-list" style="margin-bottom: 32px; display: flex; flex-direction: column; gap: 12px;"></div>
+
+                <div class="card" style="margin-bottom: 0;">
+                    <h3>Add New Item</h3>
+                    <div class="form-group">
+                        <label>Task Title (App UI)</label>
+                        <input type="text" id="new-check-title" class="form-input" placeholder="e.g. Master Reset">
+                    </div>
+                    <div class="form-group">
+                        <label>Description (Report Output)</label>
+                        <textarea id="new-check-desc" style="height: 80px;" placeholder="e.g. Master reset procedure completed"></textarea>
+                    </div>
+                    <button class="btn btn-secondary" onclick="addCustomCheck()">Add Item</button>
                 </div>
+            </div>
         </div>
 
         <div id="screen-form" class="screen">
@@ -186,8 +362,7 @@
                     </div>
                 </div>
 
-                <div id="dynamic-ids-container">
-                    </div>
+                <div id="dynamic-ids-container"></div>
 
                 <div class="card">
                     <h2>Details</h2>
@@ -202,14 +377,13 @@
                         </div>
                     </div>
 
-                    <label class="check-container" style="background:#FAFAFA; padding:16px; border-radius:var(--radius-sm); border:2px solid var(--border); margin-bottom:16px;">
+                    <label class="check-container-legacy" style="background:#FAFAFA; padding:16px; border-radius:var(--radius-sm); border:2px solid var(--border); margin-bottom:16px;">
                         <input type="checkbox" id="includeChecklistToggle" onchange="toggleChecklist()">
                         <div class="custom-checkbox"><svg viewBox="0 0 12 10"><polyline points="1.5 6 4.5 9 10.5 1"></polyline></svg></div>
                         <span style="color:var(--text-main); font-weight:700;">Include Checklist in Report</span>
                     </label>
 
-                    <div id="checklistItemsContainer" style="display: none; margin-bottom: 16px;">
-                        </div>
+                    <div id="checklistItemsContainer" style="display: none; margin-bottom: 16px;"></div>
 
                     <div class="form-group" style="margin-bottom: 0;">
                         <label>Remarks</label>
@@ -228,15 +402,14 @@
                 <p style="color:var(--text-muted); text-align:center; margin-bottom:24px; font-size:14px;">Review your data before saving to history.</p>
                 <div class="report-preview" id="review-text"></div>
             </div>
-            <div class="bottom-bar" id="review-buttons">
-                </div>
+            <div class="bottom-bar" id="review-buttons"></div>
         </div>
     </div>
 </div>
 
 <script>
-    // --- Configuration & State ---
-    const STORAGE_KEY = "cutter_reports_v11";
+    const STORAGE_KEY = "cutter_reports_v13";
+    const CUSTOM_CHECKS_KEY = "cutter_custom_checks_v2";
     const LINES = ["1-1", "1-2", "1-3", "1-4", "1-5", "1-H", "2-1", "2-2", "2-3", "2-4", "2-5", "3-1"];
     const CUTTER_ORDER = ["Upper", "Center", "Final"]; 
     const FORMATS = {
@@ -247,22 +420,20 @@
 
     let selectedCutters = [];
     let savedReports = [];
+    let customChecks = [];
     let currentReviewText = "";
     let currentReviewLine = "";
     let reviewMode = 'edit'; 
-    let activeEditId = null; // Tracks if we are editing an existing report
+    let activeEditId = null; 
 
-    // --- Initialization ---
     function init() {
-        try { savedReports = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } 
-        catch(e) { savedReports = []; }
+        try { savedReports = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { savedReports = []; }
+        try { customChecks = JSON.parse(localStorage.getItem(CUSTOM_CHECKS_KEY)) || []; } catch(e) { customChecks = []; }
 
         const lineSelect = document.getElementById('lineSelect');
-        // Default "Select Line" option
         lineSelect.add(new Option('Select Line', ''));
         lineSelect.options[0].disabled = true;
         lineSelect.options[0].selected = true;
-
         LINES.forEach(l => lineSelect.add(new Option(`Line ${l}`, l)));
         
         const timeSelect = document.getElementById('timeInput');
@@ -276,7 +447,15 @@
 
         buildInputContainers();
         showScreen('screen-home');
+
+        // Stop double-tap to zoom behavior standard to iOS webviews
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) { event.preventDefault(); }
+            lastTouchEnd = now;
+        }, false);
     }
+    let lastTouchEnd = 0;
 
     function getNearestTime() {
         const d = new Date();
@@ -288,7 +467,6 @@
         return `${hour}:${m}${ampm}`;
     }
 
-    // --- Navigation Flow ---
     function showScreen(screenId) {
         if (navigator.vibrate) navigator.vibrate(10);
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -296,6 +474,9 @@
 
         const backBtn = document.getElementById('nav-back');
         backBtn.style.visibility = (screenId === 'screen-home') ? 'hidden' : 'visible';
+
+        const settingsBtn = document.getElementById('nav-settings');
+        settingsBtn.style.visibility = (screenId === 'screen-history') ? 'visible' : 'hidden';
     }
 
     function handleBack() {
@@ -303,15 +484,14 @@
         if (activeScreen === 'screen-review') {
             showScreen(reviewMode === 'edit' ? 'screen-form' : 'screen-history');
         } else if (activeScreen === 'screen-form') {
-            if (confirm("Discard this form and go back?")) {
-                showScreen('screen-home');
-            }
+            if (confirm("Discard this form and go back?")) { showScreen('screen-home'); }
         } else if (activeScreen === 'screen-history') {
             showScreen('screen-home');
+        } else if (activeScreen === 'screen-settings') {
+            showScreen('screen-history');
         }
     }
 
-    // --- Home / History Screen Logic ---
     function showHistory() {
         renderHistory();
         showScreen('screen-history');
@@ -323,7 +503,6 @@
             list.innerHTML = `<div class="empty-state"><img src="https://illustrations.popsy.co/white/page-under-construction.svg" style="width:180px; margin-bottom:16px; opacity:0.8;"><p>No previous reports found.</p></div>`;
             return;
         }
-
         list.innerHTML = `<h2 style="margin-bottom: 24px;">History</h2>` + savedReports.map(r => `
             <div class="report-item">
                 <div class="report-header">
@@ -341,59 +520,93 @@
         `).join('');
     }
 
-    function openNewForm() {
-        activeEditId = null; // We are building a brand new report
+    function showSettings() {
+        renderCustomChecks();
+        showScreen('screen-settings');
+    }
 
+    function renderCustomChecks() {
+        const list = document.getElementById('custom-checks-list');
+        if (customChecks.length === 0) {
+            list.innerHTML = `<div style="text-align:center; padding: 24px; border: 2px dashed var(--border); border-radius: var(--radius-sm); color: var(--text-muted); font-weight: 500;">No custom checklist items.</div>`;
+            return;
+        }
+        list.innerHTML = customChecks.map(c => `
+            <div class="report-item" style="padding: 16px; margin-bottom: 0;">
+                <div style="display:flex; justify-content: space-between; align-items: center;">
+                    <div style="padding-right: 16px;">
+                        <h4 style="font-size: 15px;">${c.title}</h4>
+                        ${c.title !== c.desc ? `<p style="font-size: 13px; color: var(--text-muted); margin-top:4px;">Output: ${c.desc}</p>` : ''}
+                    </div>
+                    <button class="btn-small btn-danger" onclick="deleteCustomCheck(${c.id})">Del</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function addCustomCheck() {
+        const title = document.getElementById('new-check-title').value.trim();
+        const desc = document.getElementById('new-check-desc').value.trim();
+        if (!title || !desc) { alert("Please provide both a title and a description."); return; }
+
+        customChecks.push({ id: Date.now(), title: title, desc: desc });
+        localStorage.setItem(CUSTOM_CHECKS_KEY, JSON.stringify(customChecks));
+        document.getElementById('new-check-title').value = '';
+        document.getElementById('new-check-desc').value = '';
+        renderCustomChecks();
+        updateChecklistUI();
+    }
+
+    function deleteCustomCheck(id) {
+        if (confirm("Delete this custom checklist item?")) {
+            customChecks = customChecks.filter(c => c.id !== id);
+            localStorage.setItem(CUSTOM_CHECKS_KEY, JSON.stringify(customChecks));
+            renderCustomChecks();
+            updateChecklistUI();
+        }
+    }
+
+    function openNewForm() {
+        activeEditId = null; 
         document.getElementById('lineSelect').value = "";
         document.getElementById('dateInput').value = new Date().toISOString().split("T")[0];
         document.getElementById('timeInput').value = getNearestTime();
         document.getElementById('remarksInput').value = "";
-        
         document.getElementById('includeChecklistToggle').checked = false;
         toggleChecklist();
-        
         selectedCutters = [];
         document.querySelectorAll('.cutter-btn').forEach(btn => btn.classList.remove('active'));
-        
-        // Hide all dynamic groups
         document.getElementById('old-group').style.display = 'none';
         document.getElementById('new-group').style.display = 'none';
         document.querySelectorAll('.cutter-block').forEach(block => {
             block.style.display = 'none';
             block.classList.remove('visible');
         });
-        
         document.querySelectorAll('.id-input').forEach(input => {
             input.value = '';
             input.closest('.id-input-wrapper').classList.remove('is-complete');
         });
         updateChecklistUI();
-        
         showScreen('screen-form');
     }
 
     function editReport(id) {
         const report = savedReports.find(r => r.id === id);
         if(!report) return;
+        activeEditId = report.id;
 
-        activeEditId = report.id; // Track that we are editing an existing report
-
-        // Populate Setup & Details
         document.getElementById('lineSelect').value = report.line || "";
         document.getElementById('dateInput').value = report.date || "";
         document.getElementById('timeInput').value = report.time || "";
         document.getElementById('remarksInput').value = report.remarks || "";
-        
         document.getElementById('includeChecklistToggle').checked = report.includeChecklist || false;
         toggleChecklist();
 
-        // Reset and trigger cutter selection
         selectedCutters = report.cutters || [];
         document.querySelectorAll('.cutter-btn').forEach(btn => {
             btn.classList.toggle('active', selectedCutters.includes(btn.dataset.cutter));
         });
 
-        // Toggle Group visibility
         document.getElementById('old-group').style.display = selectedCutters.length > 0 ? 'block' : 'none';
         document.getElementById('new-group').style.display = selectedCutters.length > 0 ? 'block' : 'none';
 
@@ -401,19 +614,14 @@
             const isVisible = selectedCutters.includes(cutter);
             const oldBlock = document.getElementById(`old-block-${cutter}`);
             const newBlock = document.getElementById(`new-block-${cutter}`);
-            
             if (isVisible) {
                 oldBlock.style.display = 'block'; oldBlock.classList.add('visible');
                 newBlock.style.display = 'block'; newBlock.classList.add('visible');
-                
-                // Populate IDs safely
                 for(let idx=0; idx<=1; idx++) {
                     const oldInput = document.querySelector(`input[data-type="old"][data-cutter="${cutter}"][data-idx="${idx}"]`);
                     const newInput = document.querySelector(`input[data-type="new"][data-cutter="${cutter}"][data-idx="${idx}"]`);
-                    
                     oldInput.value = report.ids?.old?.[cutter]?.[idx] || "";
                     newInput.value = report.ids?.new?.[cutter]?.[idx] || "";
-                    
                     oldInput.closest('.id-input-wrapper').classList.toggle('is-complete', oldInput.value.length === 4);
                     newInput.closest('.id-input-wrapper').classList.toggle('is-complete', newInput.value.length === 4);
                 }
@@ -424,14 +632,12 @@
         });
 
         updateChecklistUI();
-        
-        // Apply checked state
-        if (report.checkedTasks) {
-            document.querySelectorAll('.check-input').forEach(chk => {
-                chk.checked = report.checkedTasks.includes(chk.dataset.task);
+        if (report.taskStates) {
+            document.querySelectorAll('.check-input-toggle').forEach(toggle => {
+                const id = toggle.dataset.taskId;
+                if(report.taskStates[id]) toggle.dataset.state = report.taskStates[id];
             });
         }
-
         showScreen('screen-form');
     }
 
@@ -444,7 +650,6 @@
         }
     }
 
-    // --- Form UI Interactions ---
     function toggleCutter(element) {
         if (navigator.vibrate) navigator.vibrate(10);
         const c = element.dataset.cutter;
@@ -462,7 +667,6 @@
 
         CUTTER_ORDER.forEach(cutter => {
             const isVisible = selectedCutters.includes(cutter);
-            
             const oldBlock = document.getElementById(`old-block-${cutter}`);
             if (isVisible) { oldBlock.style.display = 'block'; oldBlock.classList.add('visible'); } 
             else { oldBlock.style.display = 'none'; oldBlock.classList.remove('visible'); }
@@ -471,19 +675,24 @@
             if (isVisible) { newBlock.style.display = 'block'; newBlock.classList.add('visible'); } 
             else { newBlock.style.display = 'none'; newBlock.classList.remove('visible'); }
         });
-
         updateChecklistUI();
     }
 
     function toggleChecklist() {
         const isChecked = document.getElementById('includeChecklistToggle').checked;
-        const container = document.getElementById('checklistItemsContainer');
-        container.style.display = isChecked ? 'block' : 'none';
+        document.getElementById('checklistItemsContainer').style.display = isChecked ? 'block' : 'none';
+    }
+
+    function cycleToggle(el) {
+        if (navigator.vibrate) navigator.vibrate(10);
+        const states = ['none', 'yes', 'no'];
+        let currentIdx = states.indexOf(el.dataset.state);
+        let nextIdx = (currentIdx + 1) % states.length;
+        el.dataset.state = states[nextIdx];
     }
 
     function buildInputContainers() {
         const container = document.getElementById('dynamic-ids-container');
-        
         let oldHtml = `<div id="old-group" style="display:none; margin-bottom: 24px;">`;
         let newHtml = `<div id="new-group" style="display:none; margin-bottom: 24px;">`;
 
@@ -506,41 +715,41 @@
                     <h2 style="color:var(--text-main); font-size:18px; margin-bottom:16px;">📤 OLD ${c}</h2>
                     ${generateInputs('old')}
                 </div>`;
-                
             newHtml += `
                 <div id="new-block-${c}" class="cutter-block card" style="display:none; margin-bottom: 16px;">
                     <h2 style="color:var(--text-main); font-size:18px; margin-bottom:16px;">📥 NEW ${c}</h2>
                     ${generateInputs('new')}
                 </div>`;
         });
-        
-        oldHtml += `</div>`;
-        newHtml += `</div>`;
-
-        container.innerHTML = oldHtml + newHtml;
+        container.innerHTML = oldHtml + `</div>` + newHtml + `</div>`;
     }
 
     function updateChecklistUI() {
-        let items = [];
-        if (selectedCutters.includes("Upper") || selectedCutters.includes("Center")) items.push("Cutter Linear greasing");
-        if (selectedCutters.includes("Final")) { items.push("All Linear greasing"); items.push("Vulkollan tape replacement"); items.push("STK purging"); }
-        if (selectedCutters.includes("Center")) { items.push("ESP & LAMI purging"); items.push("Ring blower and turtle pump filter cleaning"); }
-        items.push("Guide master bolt check");
-        items = [...new Set(items)]; 
-
+        let dynamicTitles = [];
+        if (selectedCutters.includes("Upper") || selectedCutters.includes("Center")) dynamicTitles.push("Cutter Linear greasing");
+        if (selectedCutters.includes("Final")) { dynamicTitles.push("All Linear greasing"); dynamicTitles.push("Vulkollan tape replacement"); dynamicTitles.push("STK purging"); }
+        if (selectedCutters.includes("Center")) { dynamicTitles.push("ESP & LAMI purging"); dynamicTitles.push("Ring blower and turtle pump filter cleaning"); }
+        if (selectedCutters.length > 0) dynamicTitles.push("Guide master bolt check");
+        dynamicTitles = [...new Set(dynamicTitles)]; 
+        
+        const dynamicItems = dynamicTitles.map(t => ({ id: "dyn_" + t.replace(/\s/g,''), title: t, desc: t }));
+        const allItems = [...dynamicItems, ...customChecks];
         const container = document.getElementById('checklistItemsContainer');
-        if (items.length === 0) { container.innerHTML = ""; return; }
+        if (allItems.length === 0) { container.innerHTML = ""; return; }
 
-        container.innerHTML = `<div class="card" style="padding: 8px 20px; margin-bottom: 0;">` + items.map(item => `
-            <label class="check-container">
-                <input class="check-input" type="checkbox" data-task="${item}">
-                <div class="custom-checkbox"><svg viewBox="0 0 12 10"><polyline points="1.5 6 4.5 9 10.5 1"></polyline></svg></div>
-                <span>${item}</span>
-            </label>
+        container.innerHTML = `<div class="card" style="padding: 8px 20px; margin-bottom: 0;">` + allItems.map((item, index) => `
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 0; ${index < allItems.length - 1 ? 'border-bottom: 1px solid var(--border);' : ''}">
+                <div style="display:flex; flex-direction:column; gap:4px; max-width: 65%; padding-right: 12px; cursor: pointer; -webkit-tap-highlight-color: transparent;" onclick="cycleToggle(this.nextElementSibling)">
+                    <span style="color:var(--text-main); font-weight:700; font-size:15px; user-select:none;">${item.title}</span>
+                    ${item.title !== item.desc ? `<span style="color:var(--text-muted); font-size:13px; user-select:none;">${item.desc}</span>` : ''}
+                </div>
+                <div class="three-way-toggle check-input-toggle" data-task-id="${item.id}" data-task-desc="${item.desc}" data-state="none" onclick="cycleToggle(this)">
+                    <div class="thumb"></div>
+                </div>
+            </div>
         `).join("") + `</div>`;
     }
 
-    // --- Dopamine Inputs ---
     document.getElementById("content").addEventListener("focusin", e => {
         if (e.target.classList.contains("id-input")) {
             setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 150);
@@ -556,7 +765,6 @@
             if (val.length === 4) {
                 wrapper.classList.add('is-complete');
                 if (navigator.vibrate) navigator.vibrate([15, 30]);
-
                 const allVisibleInputs = Array.from(document.querySelectorAll('.cutter-block.visible .id-input'));
                 const currentIndex = allVisibleInputs.indexOf(e.target);
                 if (currentIndex >= 0 && currentIndex < allVisibleInputs.length - 1) {
@@ -575,10 +783,8 @@
                 e.preventDefault();
                 e.target.value = pasteData.slice(0, 4);
                 e.target.closest('.id-input-wrapper').classList.add('is-complete');
-
                 const allVisibleInputs = Array.from(document.querySelectorAll('.cutter-block.visible .id-input'));
                 const currentIndex = allVisibleInputs.indexOf(e.target);
-                
                 if (currentIndex >= 0 && currentIndex < allVisibleInputs.length - 1) {
                     const nextInput = allVisibleInputs[currentIndex + 1];
                     nextInput.value = pasteData.slice(4, 8);
@@ -603,7 +809,6 @@
         }
     });
 
-    // --- Generation & Review Logic ---
     function goToReview() {
         const dateObj = new Date(document.getElementById('dateInput').value + "T00:00:00");
         const month = dateObj.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
@@ -613,7 +818,6 @@
         const includeChecklist = document.getElementById('includeChecklistToggle').checked;
 
         let txt = `${month} ${dateObj.getDate()} | ${time}\nLine: ${line}\n\n`;
-
         const getIDs = (type) => {
             let block = "";
             selectedCutters.forEach(c => {
@@ -628,24 +832,27 @@
         if (selectedCutters.length > 0) {
             txt += `OLD Cutter IDs:\n\n${getIDs('old')}\n`;
             txt += `New Cutter IDs:\n\n${getIDs('new')}\n`;
-        } else {
-            txt += "No cutters replaced.\n\n";
-        }
+        } else { txt += "No cutters replaced.\n\n"; }
 
-        if (includeChecklist && selectedCutters.length > 0) {
-            txt += "Tasks Checklist:\n";
-            document.querySelectorAll('.check-input').forEach(box => {
-                txt += `${box.dataset.task} ${box.checked ? "done" : "not done"}\n`;
+        if (includeChecklist) {
+            const toggles = document.querySelectorAll('.check-input-toggle');
+            let hasAddedItems = false;
+            let checklistText = "Tasks Checklist:\n";
+            toggles.forEach(toggle => {
+                const desc = toggle.dataset.taskDesc;
+                const state = toggle.dataset.state;
+                if (state !== 'none') {
+                    checklistText += `- ${desc} : ${state === 'yes' ? 'Yes' : 'No'}\n`;
+                    hasAddedItems = true;
+                }
             });
-            txt += "\n";
+            if (hasAddedItems) txt += checklistText + "\n";
         }
-
         if (remarks) txt += `Remarks:\n${remarks}\n`;
 
         currentReviewText = txt.trim();
         currentReviewLine = line;
         reviewMode = 'edit';
-        
         document.getElementById('review-text').innerText = currentReviewText;
         document.getElementById('review-buttons').innerHTML = `
             <button class="btn btn-secondary" style="flex:1;" onclick="handleBack()">Edit Form</button>
@@ -657,35 +864,33 @@
     function viewReport(id) {
         const report = savedReports.find(r => r.id === id);
         if(!report) return;
-
         currentReviewText = report.text;
         reviewMode = 'view';
-        
         document.getElementById('review-text').innerText = currentReviewText;
-        document.getElementById('review-buttons').innerHTML = `
-            <button class="btn" id="copyBtn" onclick="justCopy()">Copy Text</button>
-        `;
+        document.getElementById('review-buttons').innerHTML = `<button class="btn" id="copyBtn" onclick="justCopy()">Copy Text</button>`;
         showScreen('screen-review');
     }
 
     async function saveAndCopy() {
+        const taskStatesMap = {};
+        document.querySelectorAll('.check-input-toggle').forEach(toggle => {
+            taskStatesMap[toggle.dataset.taskId] = toggle.dataset.state;
+        });
+
         const stateToSave = {
             id: activeEditId || Date.now(),
             timestamp: Date.now(),
             line: currentReviewLine,
             text: currentReviewText,
-            
-            // Raw form data to allow re-editing later
             date: document.getElementById('dateInput').value,
             time: document.getElementById('timeInput').value,
             remarks: document.getElementById('remarksInput').value,
             includeChecklist: document.getElementById('includeChecklistToggle').checked,
             cutters: [...selectedCutters],
             ids: { old: {}, new: {} },
-            checkedTasks: Array.from(document.querySelectorAll('.check-input:checked')).map(el => el.dataset.task)
+            taskStates: taskStatesMap
         };
 
-        // Gather all inputs to save their state
         selectedCutters.forEach(c => {
             stateToSave.ids.old[c] = [
                 document.querySelector(`input[data-type="old"][data-cutter="${c}"][data-idx="0"]`).value,
@@ -698,21 +903,15 @@
         });
 
         const existingIdx = savedReports.findIndex(r => r.id === activeEditId);
-        if (existingIdx >= 0) {
-            savedReports[existingIdx] = stateToSave;
-        } else {
-            savedReports.unshift(stateToSave);
-        }
+        if (existingIdx >= 0) savedReports[existingIdx] = stateToSave;
+        else savedReports.unshift(stateToSave);
         
         localStorage.setItem(STORAGE_KEY, JSON.stringify(savedReports));
-
         await executeCopy();
         setTimeout(() => showScreen('screen-home'), 1200);
     }
 
-    async function justCopy() {
-        await executeCopy();
-    }
+    async function justCopy() { await executeCopy(); }
 
     async function executeCopy() {
         try {
@@ -722,14 +921,12 @@
             btn.innerText = "✓ Copied!";
             btn.classList.add("copy-success");
             if (magicModeActive) triggerConfetti();
-            
             setTimeout(() => {
                 if(btn) { btn.innerText = reviewMode === 'edit' ? "Save & Copy" : "Copy Text"; btn.classList.remove("copy-success"); }
             }, 2000);
         } catch(e) { alert("Failed to copy. Please check browser permissions."); }
     }
 
-    // --- Easter Egg ---
     let titleTapCount = 0, titleTapTimer = null, magicModeActive = false;
     function handleTitleTap() {
         titleTapCount++; clearTimeout(titleTapTimer);
@@ -744,7 +941,7 @@
         if (navigator.vibrate) navigator.vibrate([20, 50, 20]);
     }
     function triggerConfetti() {
-        const colors = ['#9333ea', '#c084fc', '#22C55E', '#FBBF24', '#3B82F6', '#FF5287'];
+        const colors = ['#9333ea', '#c084fc', '#84CC16', '#FBBF24', '#3B82F6', '#FF5287'];
         for (let i = 0; i < 40; i++) {
             const conf = document.createElement('div');
             conf.style.cssText = `position:fixed; width:${Math.random()*8+6}px; height:${Math.random()*4+8}px; background:${colors[Math.floor(Math.random()*colors.length)]}; bottom:15%; left:50%; z-index:99999; pointer-events:none; border-radius:${Math.random()>0.5?'50%':'2px'};`;
