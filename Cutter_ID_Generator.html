@@ -2,21 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <!-- Native-like scaling constraints -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     
-    <!-- iOS Full-Screen Web App Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Cutter ID" />
     
-    <!-- PWA Manifest and Icons -->
     <link rel="manifest" href="manifest-CID.json">
     <link rel="apple-touch-icon" href="CID-icon-192.png">
     
     <title>Cutter ID Generator</title>
     
-    <!-- Service Worker Registration -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -52,24 +48,31 @@
 
             --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.03);
             --shadow-btn: 0 8px 24px rgba(0, 0, 0, 0.12);
-            --shadow-sticky: 0 16px 40px rgba(0, 0, 0, 0.08); /* Updated for floating bar */
+            --shadow-sticky: 0 16px 40px rgba(0, 0, 0, 0.08); /* Floating bar shadow */
             
             --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-sans); -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: var(--font-sans); 
+            -webkit-tap-highlight-color: transparent; 
+            touch-action: manipulation; /* Prevents double-tap zoom natively */
+        }
 
-        /* Prevent system rubber-banding on app frame */
+        /* iOS PWA Keyboard Fix: Safely lock the background */
         html, body { 
             background-color: var(--bg-color); 
             color: var(--text-main); 
             width: 100%; 
-            height: 100dvh; 
+            height: 100%; /* Changed from 100dvh */
+            position: fixed; /* Locks the body */
             overflow: hidden; 
             display: flex; 
             justify-content: center; 
             letter-spacing: -0.02em;
-            overscroll-behavior: none;
         }
 
         /* Responsive handling for desktop vs native iOS viewport scaling */
@@ -88,7 +91,6 @@
            2. HEADER & LAYOUT (iOS Safe Areas)
            ========================================= */
         header { 
-            /* Extra top padding specifically ensures layout safely clears notch/Dynamic Island */
             padding: calc(12px + env(safe-area-inset-top)) 20px 16px; 
             position: relative; 
             z-index: 100; 
@@ -115,7 +117,6 @@
             flex-grow: 1; 
             overflow-y: auto; 
             -webkit-overflow-scrolling: touch; 
-            /* Added massive padding at the bottom so content clears the floating glass bar */
             padding: 24px 20px calc(110px + env(safe-area-inset-bottom)); 
             display: flex; 
             flex-direction: column; 
@@ -148,7 +149,6 @@
             gap: 10px;
         }
 
-        /* Buttons inside the floating bar get a tighter aesthetic */
         .bottom-bar .btn {
             padding: 16px 24px;
             margin: 0;
@@ -180,6 +180,14 @@
         select.form-input:invalid { color: var(--text-muted); }
         textarea { width: 100%; height: 100px; resize: vertical; font-family: inherit; color: var(--text-main); background-color: #FAFAFA; border-radius: var(--radius-sm); padding: 16px; border: 2px solid var(--border); font-weight: 500; font-size: 15px; outline: none;}
         textarea:focus { border-color: var(--accent-color); background-color: var(--card-bg); }
+
+        /* iOS PWA Keyboard Fix: Force inputs to accept focus and touches */
+        input, textarea, select, .id-input {
+            -webkit-user-select: text !important;
+            user-select: text !important;
+            -webkit-touch-callout: default !important;
+            touch-action: auto !important;
+        }
 
         /* Main Toggle Checkbox */
         .check-container-legacy { display: flex; align-items: center; position: relative; padding: 16px 0; cursor: pointer; font-size: 15px; font-weight: 600; user-select: none; gap: 16px;}
