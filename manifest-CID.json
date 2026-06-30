@@ -1,0 +1,20 @@
+{
+  "name": "Cutter ID Generator",
+  "short_name": "CutterID",
+  "start_url": "Cutter_ID_Generator.html",
+  "display": "standalone",
+  "background_color": "#FAFAFA",
+  "theme_color": "#111111",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
