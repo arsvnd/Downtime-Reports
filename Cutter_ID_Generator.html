@@ -462,13 +462,6 @@
 
         buildInputContainers();
         showScreen('screen-home');
-
-        // Stop double-tap to zoom behavior standard to iOS webviews
-        document.addEventListener('touchend', function (event) {
-            const now = (new Date()).getTime();
-            if (now - lastTouchEnd <= 300) { event.preventDefault(); }
-            lastTouchEnd = now;
-        }, false);
     }
     let lastTouchEnd = 0;
 
