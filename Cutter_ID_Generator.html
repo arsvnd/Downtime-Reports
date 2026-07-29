@@ -441,6 +441,55 @@
         'Final': { prefix: 'LCAGHY', suffixes: ['FU656X1.2', 'FL718X0.0'] } 
     };
 
+    // --- CENTRALIZED CHECKLIST CONFIGURATION ---
+    // Modify this array to easily add, update, or remove rules in the future
+    const CHECKLIST_RULES = [
+        {
+            // Applied if Upper OR Center is selected
+            condition: (cutters) => cutters.includes("Upper") || cutters.includes("Center"),
+            tasks: [
+                "Cutter Linear Greasing",
+                "Gripper Gap Setting"
+            ]
+        },
+        {
+            // Applied if Upper is selected
+            condition: (cutters) => cutters.includes("Upper"),
+            tasks: [
+                "Cutter Linear Greasing",
+                "STK Blade Removal and Cleaning"
+            ]
+        },
+        {
+            // Applied only if Center is selected
+            condition: (cutters) => cutters.includes("Center"),
+            tasks: [
+                "Ring Blower and Turtle Pump Filter Cleaning",
+                "SRS Autosplicing Cutter and Gripper Cleaning",
+                "Vulkollan Condition Check",
+                "ESP & LAMI Purging"
+            ]
+        },
+        {
+            // Applied only if Final is selected
+            condition: (cutters) => cutters.includes("Final"),
+            tasks: [
+                "Cutter Linear Greasing",
+                "SSSS, Short Check, Vision Linear Greasing",
+                "Vulkollan Tape Replacement",
+                "STK Purging"
+            ]
+        },
+        {
+            // Applied if ANY cutter is selected
+            condition: (cutters) => cutters.length > 0,
+            tasks: [
+                "Guide Master Bolt Check",
+                "Quality Run Prep"
+            ]
+        }
+    ];
+
     let selectedCutters = [];
     let savedReports = [];
     let customChecks = [];
@@ -741,10 +790,16 @@
 
     function updateChecklistUI() {
         let dynamicTitles = [];
-        if (selectedCutters.includes("Upper") || selectedCutters.includes("Center")) dynamicTitles.push("Cutter Linear greasing");
-        if (selectedCutters.includes("Final")) { dynamicTitles.push("All Linear greasing"); dynamicTitles.push("Vulkollan tape replacement"); dynamicTitles.push("STK purging"); }
-        if (selectedCutters.includes("Center")) { dynamicTitles.push("ESP & LAMI purging"); dynamicTitles.push("Ring blower and turtle pump filter cleaning"); }
-        if (selectedCutters.length > 0) dynamicTitles.push("Guide master bolt check");
+        
+        // --- NEW CONFIGURATION APPLIED HERE ---
+        // Dynamically apply all checklist rules to gather relevant tasks
+        CHECKLIST_RULES.forEach(rule => {
+            if (rule.condition(selectedCutters)) {
+                dynamicTitles.push(...rule.tasks);
+            }
+        });
+        // --------------------------------------
+        
         dynamicTitles = [...new Set(dynamicTitles)]; 
         
         const dynamicItems = dynamicTitles.map(t => ({ id: "dyn_" + t.replace(/\s/g,''), title: t, desc: t }));
