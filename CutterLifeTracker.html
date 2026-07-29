@@ -1,0 +1,816 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cutter Wear Monitor</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#EEF1F5;
+    --bg-grid: linear-gradient(#E3E8EE 1px, transparent 1px), linear-gradient(90deg, #E3E8EE 1px, transparent 1px);
+    --panel:#FFFFFF;
+    --panel-border:#DDE3EA;
+    --ink:#1B2531;
+    --muted:#64748B;
+    --faint:#94A3B3;
+    --accent:#2B5F94;
+    --accent-hover:#204A76;
+    --accent-soft:#DCE8F5;
+    --green:#2C9A5B;
+    --green-soft:#E3F6EA;
+    --orange:#D97F0A;
+    --orange-soft:#FCEED9;
+    --red:#D2483F;
+    --red-soft:#FBE2E0;
+    --purple:#6B42A1;
+    --purple-soft:#F3E8FF;
+    --radius:14px;
+    --shadow-sm: 0 1px 2px rgba(20,30,45,0.04);
+    --shadow-lg: 0 12px 32px -18px rgba(20,30,45,0.18);
+    --shadow-modal: 0 24px 48px -12px rgba(20,30,45,0.25);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background-color:var(--bg);
+    background-image:var(--bg-grid);
+    background-size:28px 28px;
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeModal { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+  @keyframes backdropFade { from { opacity: 0; } to { opacity: 1; } }
+
+  .app{max-width:1440px;margin:0 auto;padding:0 2.5rem 4rem 2.5rem;}
+
+  .topbar-wrapper {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: rgba(238, 241, 245, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--panel-border);
+    padding: 1.25rem 2.5rem 0 2.5rem;
+    margin: 0 -2.5rem 1.5rem -2.5rem;
+  }
+  
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:2rem;
+    max-width: 1360px;
+    margin: 0 auto;
+    flex-wrap:wrap;
+    padding-bottom: 1.25rem;
+  }
+  
+  .brand{display:flex;align-items:center;gap:0.9rem;}
+  .brand h1{ font-family:'Space Grotesk',sans-serif; font-size:1.35rem; font-weight:700; letter-spacing:0.02em; margin:0; }
+  .brand .subtitle{ margin:0.15rem 0 0 0; font-size:0.78rem; color:var(--muted); letter-spacing:0.06em; text-transform:uppercase; font-weight:600; }
+
+  .summary-stats{display:flex;gap:0.6rem;flex-wrap:wrap;}
+  .stat-chip{ background:var(--panel); border:1px solid var(--panel-border); border-radius:10px; padding:0.4rem 0.8rem; min-width:80px; text-align:left; box-shadow: var(--shadow-sm); }
+  .stat-chip .stat-num{ font-family:'Space Grotesk',sans-serif; font-size:1.15rem; font-weight:700; line-height:1; }
+  .stat-chip .stat-label{ font-size:0.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; font-weight:600; margin-top:0.25rem; }
+  .stat-chip.green .stat-num{color:var(--green);}
+  .stat-chip.orange .stat-num{color:var(--orange);}
+  .stat-chip.red .stat-num{color:var(--red);}
+
+  .tabs-container { display: flex; gap: 1.5rem; max-width: 1360px; margin: 0 auto; border-bottom: 2px solid transparent; }
+  .tab-btn { background: transparent; border: none; padding: 0.8rem 0.5rem; font-size: 0.9rem; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; border-radius: 0; }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { color: var(--accent); border-bottom: 3px solid var(--accent); }
+
+  button{font-family:'Inter',sans-serif;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:0.5rem;transition:all 0.15s ease;}
+  .btn-primary{ background:var(--accent); color:#fff; padding:0.65rem 1.2rem; border-radius:9px; font-weight:600; font-size:0.85rem; box-shadow: 0 2px 6px rgba(43, 95, 148, 0.2); }
+  .btn-primary:hover{background:var(--accent-hover); transform: translateY(-1px);}
+  .btn-primary:active{transform:scale(0.98);}
+  .btn-excel{ background:var(--green); color:#fff; padding:0.6rem 1.1rem; border-radius:8px; font-weight:600; font-size:0.82rem; }
+  .btn-excel:hover{background:#23824d; transform: translateY(-1px);}
+  .btn-ghost{ background:transparent; color:var(--muted); padding:0.6rem 0.9rem; font-weight:600; font-size:0.82rem; border-radius:8px; }
+  .btn-ghost:hover{background:#e6eaef;color:var(--ink);}
+
+  .input-group { display: flex; align-items: center; background: var(--panel); border: 1px solid var(--panel-border); border-radius: 8px; padding-left: 0.75rem; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); overflow: hidden;}
+  .input-group label { font-size: 0.75rem; font-weight: 600; color: var(--muted); margin-right: 0.5rem; white-space: nowrap; }
+  .search-input { padding: 0.6rem 0.75rem 0.6rem 0; border: none; font-family: 'Inter', sans-serif; font-size: 0.85rem; outline: none; width: 140px; background: transparent;}
+  
+  .number-input { padding: 0.6rem 0.5rem 0.6rem 0; border: none; font-family: 'Inter', sans-serif; font-size: 0.85rem; outline: none; width: 50px; font-weight: 600; color: var(--accent); background: transparent;}
+
+  .modal-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 1rem; animation: backdropFade 0.2s ease forwards; }
+  .modal-backdrop[hidden] { display: none; }
+  .modal-card { background: var(--panel); border-radius: var(--radius); width: 100%; max-width: 800px; box-shadow: var(--shadow-modal); animation: fadeModal 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; display: flex; flex-direction: column; }
+  .modal-header { padding: 1.5rem; border-bottom: 1px solid var(--panel-border); display: flex; justify-content: space-between; align-items: center; }
+  .modal-header h2 { margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem; }
+  .modal-close { background: transparent; color: var(--muted); padding: 0.4rem; border-radius: 6px; }
+  .modal-close:hover { background: #F1F5F9; color: var(--ink); }
+  .modal-body { padding: 1.5rem; }
+  .modal-body p { margin: 0 0 1rem 0; color: var(--muted); font-size: 0.9rem; line-height: 1.5; }
+  textarea#rawInput { width: 100%; min-height: 240px; resize: vertical; border: 1.5px solid var(--panel-border); border-radius: 10px; padding: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; line-height: 1.5; color: var(--ink); background: #FAFBFC; outline: none; transition: border-color 0.2s; }
+  textarea#rawInput:focus { border-color: var(--accent); }
+  .modal-footer { padding: 1.25rem 1.5rem; border-top: 1px solid var(--panel-border); background: #FAFBFC; border-radius: 0 0 var(--radius) var(--radius); display: flex; justify-content: flex-end; align-items: center; gap: 1rem; }
+  .paste-msg{font-size:0.82rem;color:var(--red);font-weight:600; margin-right:auto;}
+
+  .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 6rem 2rem; background: var(--panel); border: 1px dashed #CBD5E1; border-radius: var(--radius); box-shadow: var(--shadow-sm); }
+  .empty-state-icon { width: 64px; height: 64px; background: var(--accent-soft); color: var(--accent); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; }
+  .empty-state-icon svg { width: 32px; height: 32px; }
+  .empty-state h3 { margin: 0 0 0.5rem 0; font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem; }
+  .empty-state p { margin: 0 0 1.5rem 0; color: var(--muted); max-width: 400px; font-size: 0.95rem; line-height: 1.5; }
+
+  .dashboard-toolbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem; flex-wrap:wrap; gap:1rem; }
+  .controls-group { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;}
+  
+  .legend{display:flex;gap:1.1rem;align-items:center;flex-wrap:wrap; background: var(--panel); padding: 0.55rem 1rem; border-radius: 8px; border: 1px solid var(--panel-border); box-shadow: var(--shadow-sm);}
+  .legend-item{display:flex;align-items:center;gap:0.4rem;font-size:0.75rem;color:var(--muted);font-weight:600;}
+  .legend-dot{width:10px;height:10px;border-radius:3px;}
+  .toolbar-actions{display:flex;gap:0.75rem; align-items:center;}
+
+  .view-section { display: none; }
+  .view-section.active { display: block; animation: fadeIn 0.3s ease-out forwards; }
+
+  .line-panel{ background:var(--panel); border:1px solid var(--panel-border); border-radius:var(--radius); margin-bottom:1.5rem; overflow:hidden; box-shadow:var(--shadow-sm); animation: fadeIn 0.4s ease-out forwards; }
+  .line-header{ display:flex; align-items:center; justify-content:space-between; padding:1rem 1.5rem; background:linear-gradient(180deg, #1B2531 0%, #263243 100%); color:#fff; flex-wrap:wrap; gap:0.6rem; }
+  .line-header .line-id{ display:flex;align-items:baseline;gap:0.6rem; }
+  .line-id .tag{ font-size:0.65rem; letter-spacing:0.12em; color:#9FB3C8; text-transform:uppercase; font-weight:700; }
+  .line-id .num{ font-family:'Space Grotesk',sans-serif; font-size:1.35rem; font-weight:700; letter-spacing:0.02em; }
+  .line-header .line-badges{display:flex;gap:0.5rem;}
+  .line-badge{ font-size:0.72rem; font-weight:700; padding:0.25rem 0.55rem; border-radius:6px; display:flex;align-items:center;gap:0.3rem; }
+  .line-badge.green{background:rgba(44,154,91,0.22);color:#7FE3AA;}
+  .line-badge.orange{background:rgba(217,127,10,0.22);color:#F5B860;}
+  .line-badge.red{background:rgba(210,72,63,0.25);color:#F59A93;}
+  .line-badge.running{background:var(--green);color:#fff; box-shadow: 0 0 10px rgba(44,154,91,0.4);}
+  .line-badge.stopped{background:var(--muted);color:#fff;}
+  .line-badge.batching{background:var(--purple);color:#fff; box-shadow: 0 0 10px rgba(107, 66, 161,0.4);}
+
+  .cutters-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:1px; background:var(--panel-border); }
+  .cutter-card{background:var(--panel);padding:1.1rem 1.3rem 1.3rem 1.3rem;}
+  .cutter-title{ display:flex;align-items:center;gap:0.5rem; font-family:'Space Grotesk',sans-serif; font-size:0.92rem; font-weight:700; margin-bottom:0.7rem; color:var(--ink); }
+
+  .knife-block{padding:0.7rem 0;border-top:1px dashed var(--panel-border); position:relative;}
+  .knife-block:first-of-type{border-top:none;padding-top:0;}
+  .knife-toprow{ display:flex; align-items:flex-start; justify-content:space-between; gap:0.5rem; margin-bottom:0.35rem; }
+  .knife-label{display:flex;align-items:center;gap:0.4rem;}
+  .knife-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+  .knife-name{ font-size:0.7rem; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; color:var(--muted); }
+  .knife-modified{ font-size:0.68rem; color:var(--faint); text-align:right; white-space:nowrap; font-weight:500; line-height:1.3; }
+  .knife-id{ font-family:'JetBrains Mono',monospace; font-size:0.74rem; color:var(--ink); margin-bottom:0.5rem; word-break:break-all; }
+  
+  .tags-row { display: flex; gap: 0.4rem; margin-bottom: 0.6rem; flex-wrap: wrap; }
+  .action-tag { font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.4rem; border-radius: 4px; display: inline-block; letter-spacing: 0.02em; }
+  .tag-scrap { background: var(--red-soft); color: var(--red); border: 1px solid rgba(210, 72, 63, 0.3); }
+  .tag-polish { background: var(--green-soft); color: var(--green); border: 1px solid rgba(44, 154, 91, 0.3); }
+  .tag-batch { background: var(--purple-soft); color: var(--purple); border: 1px solid rgba(107, 66, 161, 0.3); }
+
+  .progress-track{ position:relative; height:10px; border-radius:5px; background:repeating-linear-gradient(90deg,#EDF0F3 0 8px, #E4E8EC 8px 9px); overflow:visible; margin-bottom:0.4rem; }
+  .progress-fill{ position:absolute;top:0;left:0;bottom:0; border-radius:5px; transition:width 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+  .progress-fill.green{background:linear-gradient(90deg,#3DB673,var(--green));}
+  .progress-fill.orange{background:linear-gradient(90deg,#EDA43A,var(--orange));}
+  .progress-fill.red{background:linear-gradient(90deg,#E06A61,var(--red));}
+  .progress-fill.purple{background:linear-gradient(90deg,#9F7AEA,var(--purple));}
+  
+  .threshold-marker{ position:absolute; top:-3px;bottom:-3px; width:2px; background:rgba(27,37,49,0.35); }
+  .threshold-marker::after{ content:attr(data-label); position:absolute; top:-15px; left:50%; transform:translateX(-50%); font-size:0.55rem; color:var(--faint); font-weight:700; white-space:nowrap; }
+
+  .knife-numbers{ display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:0.72rem; color:var(--muted); }
+  .knife-numbers .acc{font-weight:600;}
+  .knife-numbers .acc.green{color:var(--green);}
+  .knife-numbers .acc.orange{color:var(--orange);}
+  .knife-numbers .acc.red{color:var(--red);}
+  .knife-numbers .acc.purple{color:var(--purple);}
+
+  .projected-info{ margin-top:0.5rem; font-size:0.68rem; color:var(--muted); border-top:1px solid var(--panel-border); padding-top:0.45rem; display:flex; justify-content:space-between; align-items:center; }
+  .projected-info strong { color:var(--ink); font-weight:600; }
+  .cpm-badge { background:var(--accent-soft); color:var(--accent); padding:0.2rem 0.4rem; border-radius:4px; font-weight:600; font-size:0.65rem; letter-spacing: 0.02em;}
+
+  /* ---------- Shift Plan View ---------- */
+  .shift-bucket { background: var(--panel); border: 1px solid var(--panel-border); border-radius: var(--radius); margin-bottom: 2rem; box-shadow: var(--shadow-sm); overflow: hidden; }
+  .shift-bucket-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--panel-border); display: flex; justify-content: space-between; align-items: center; }
+  .shift-bucket-header h2 { margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; display: flex; align-items: center; gap: 0.5rem; }
+  .shift-bucket-header .time-window { font-size: 0.85rem; color: var(--muted); font-weight: 500; }
+  
+  .bucket-this-shift .shift-bucket-header { background: var(--red-soft); color: var(--red); border-bottom-color: rgba(210,72,63,0.15); }
+  .bucket-this-shift .shift-bucket-header .time-window { color: var(--red); opacity: 0.8; }
+  
+  .bucket-next-shift .shift-bucket-header { background: var(--orange-soft); color: var(--orange); border-bottom-color: rgba(217,127,10,0.15); }
+  .bucket-next-shift .shift-bucket-header .time-window { color: var(--orange); opacity: 0.8; }
+  
+  .bucket-safe .shift-bucket-header { background: var(--green-soft); color: var(--green); border-bottom-color: rgba(44,154,91,0.15); }
+  .bucket-safe .shift-bucket-header .time-window { color: var(--green); opacity: 0.8; }
+
+  .shift-line-item { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--panel-border); }
+  .shift-line-item:last-child { border-bottom: none; }
+  .shift-line-header { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--ink); display: flex; justify-content: space-between; }
+  .shift-line-header .line-downtime { font-size: 0.8rem; font-family: 'Inter'; font-weight: 600; color: var(--red); background: var(--red-soft); padding: 0.2rem 0.5rem; border-radius: 6px; }
+  
+  .shift-task-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+  .shift-task-card { background: #F8FAFC; border: 1px solid var(--panel-border); border-radius: 8px; padding: 1rem; }
+  .shift-task-card.trigger { border-left: 4px solid var(--red); }
+  .shift-task-card.batch { border-left: 4px solid var(--purple); }
+  
+  .task-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
+  .task-pos { font-size: 0.85rem; font-weight: 600; color: var(--ink); }
+  .task-acc { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--muted); }
+  
+  .empty-bucket { padding: 2rem; text-align: center; color: var(--muted); font-size: 0.95rem; font-style: italic; }
+
+  @media (max-width:1000px){
+    .cutters-grid{grid-template-columns:1fr;}
+    .app{padding:0 1.2rem;}
+    .topbar-wrapper { padding: 1rem 1.2rem 0 1.2rem; margin: 0 -1.2rem 1rem -1.2rem; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar-wrapper">
+    <header class="topbar">
+      <div class="brand">
+        <div>
+          <h1>CUTTER LIFE TRACKER</h1>
+          <p class="subtitle">LAMI Cutter Life Management</p>
+        </div>
+      </div>
+      <div class="summary-stats" id="summaryStats"></div>
+    </header>
+    <div class="tabs-container">
+      <button class="tab-btn active" data-target="dashboardView">Live Dashboard</button>
+      <button class="tab-btn" data-target="shiftPlanView">Shift Plan & Batching</button>
+    </div>
+  </div>
+
+  <div id="emptyState" class="empty-state">
+    <div class="empty-state-icon">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+    </div>
+    <h3>No MES Data Loaded</h3>
+    <p>Import raw tab-separated export data from MES to generate the live diagnostic dashboard and automated shift plan.</p>
+    <button class="btn-primary" id="emptyStateImportBtn">Import MES Data</button>
+  </div>
+
+  <section class="view-section active" id="dashboardView">
+    <div class="dashboard-toolbar">
+      
+      <div class="controls-group">
+        <div class="input-group">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16" style="margin-right:0.4rem; color:var(--muted)"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          <input type="text" id="searchInput" class="search-input" placeholder="Filter by Line ID...">
+        </div>
+        
+        <div class="input-group" title="Adjust this if the line is not running continuously">
+          <label for="uptimeInput">Est. Uptime (%)</label>
+          <input type="number" id="uptimeInput" class="number-input" value="100" min="10" max="100" step="5">
+        </div>
+      </div>
+      
+      <div class="legend">
+        <div class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>< 1.6M</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--orange)"></span>1.6M – 1.8M</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--red)"></span>> 1.8M</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--purple)"></span>Batch Swap Target</div>
+      </div>
+      
+      <div class="toolbar-actions">
+        <button class="btn-ghost" id="resetBtn" style="display:none;">Clear Data</button>
+        <button class="btn-excel" id="exportBtn" style="display:none;">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          Export
+        </button>
+        <button class="btn-primary" id="openImportBtn">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+          Import Data
+        </button>
+      </div>
+    </div>
+    <div id="linesContainer"></div>
+  </section>
+
+  <section class="view-section" id="shiftPlanView">
+    <div id="shiftPlanContainer"></div>
+  </section>
+
+  <!-- Import Modal -->
+  <div id="importModal" class="modal-backdrop" hidden>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Load MES Data</h2>
+        <button class="modal-close" id="closeImportBtn">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Paste the raw tab-separated export from MES below. New uploads will append to existing data.</p>
+        <textarea id="rawInput" placeholder="Engraving Tool ID&#9;Standard tool ID&#9;..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <span class="paste-msg" id="pasteMsg"></span>
+        <button class="btn-ghost" id="cancelImportBtn">Cancel</button>
+        <button class="btn-primary" id="processBtn">Process Data</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // --- CONFIGURATION ---
+  const LINE_CPM = {
+    'default': 230,
+    '2-4': 240
+  };
+  const TARGET_CUTS = 2000000;
+  const WARNING_THRESHOLD = 1600000;
+  const BATCH_WARNING_THRESHOLD = 1400000; 
+  // ---------------------
+
+  const slots = new Map();
+  const CUTTER_ORDER = ['Upper Cutter','Center Cutter','Final Cutter'];
+  const KNIFE_ORDER = ['Top','Bottom'];
+
+  // DOM Elements
+  const ui = {
+    modal: document.getElementById('importModal'),
+    openBtn: document.getElementById('openImportBtn'),
+    emptyOpenBtn: document.getElementById('emptyStateImportBtn'),
+    closeBtn: document.getElementById('closeImportBtn'),
+    cancelBtn: document.getElementById('cancelImportBtn'),
+    processBtn: document.getElementById('processBtn'),
+    resetBtn: document.getElementById('resetBtn'),
+    exportBtn: document.getElementById('exportBtn'),
+    searchInput: document.getElementById('searchInput'),
+    uptimeInput: document.getElementById('uptimeInput'),
+    rawInput: document.getElementById('rawInput'),
+    pasteMsg: document.getElementById('pasteMsg'),
+    emptyState: document.getElementById('emptyState'),
+    container: document.getElementById('linesContainer'),
+    shiftContainer: document.getElementById('shiftPlanContainer'),
+    summary: document.getElementById('summaryStats'),
+    tabs: document.querySelectorAll('.tab-btn'),
+    views: document.querySelectorAll('.view-section')
+  };
+
+  // Tab Navigation
+  ui.tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      ui.tabs.forEach(t => t.classList.remove('active'));
+      ui.views.forEach(v => v.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(tab.getAttribute('data-target')).classList.add('active');
+    });
+  });
+
+  // Modal Logic
+  const toggleModal = (show) => {
+    if (show) { ui.modal.hidden = false; ui.rawInput.focus(); } 
+    else { ui.modal.hidden = true; ui.pasteMsg.textContent = ''; ui.rawInput.value = ''; }
+  };
+  ui.openBtn.addEventListener('click', () => toggleModal(true));
+  ui.emptyOpenBtn.addEventListener('click', () => toggleModal(true));
+  ui.closeBtn.addEventListener('click', () => toggleModal(false));
+  ui.cancelBtn.addEventListener('click', () => toggleModal(false));
+
+  // Search Logic
+  ui.searchInput.addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase().trim();
+    const panels = document.querySelectorAll('.line-panel');
+    panels.forEach(panel => {
+      const lineId = panel.getAttribute('data-line');
+      panel.style.display = lineId.toLowerCase().includes(term) ? 'block' : 'none';
+    });
+  });
+
+  // Uptime Change Logic
+  ui.uptimeInput.addEventListener('change', () => {
+    if(slots.size > 0) updateApp();
+  });
+
+  function classifyPosition(rawPos){
+    if(!rawPos) return null;
+    const p = rawPos.trim();
+    const norm = p.toLowerCase().replace(/\s+/g,'_');
+    let cutter = null, knife = null;
+
+    if (norm.includes('pancake_id_01')) { cutter = 'Upper Cutter'; knife = 'Bottom'; } 
+    else if (norm.includes('pancake_id_02')) { cutter = 'Upper Cutter'; knife = 'Top'; } 
+    else {
+      if(norm.includes('upper')) cutter = 'Upper Cutter';
+      else if(norm.includes('middle') || norm.includes('center')) cutter = 'Center Cutter';
+      else if(norm.includes('final')) cutter = 'Final Cutter';
+      else return null;
+
+      if(norm.includes('top') || p.includes('상도')) knife = 'Top';
+      else if(norm.includes('bottom') || p.includes('하도')) knife = 'Bottom';
+      else return null;
+    }
+    return {cutter, knife};
+  }
+
+  function parseLine(equipStr){
+    if(!equipStr) return null;
+    const m = equipStr.match(/#\s*0*(\d+)\s*-\s*0*(\d+)/);
+    if(!m) return null;
+    return parseInt(m[1],10) + '-' + parseInt(m[2],10);
+  }
+
+  function formatNumber(n){ return n.toLocaleString('en-US'); }
+
+  function formatDate(str){
+    if(!str) return '—';
+    const d = new Date(str.trim().replace(' ','T'));
+    if(isNaN(d.getTime())) return str;
+    return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' · ' + d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  }
+  
+  function calcProjectedTime(lineId, accCt, modifiedTimeStr) {
+    const baseCpm = LINE_CPM[lineId] || LINE_CPM['default'];
+    
+    const uptimePct = parseFloat(ui.uptimeInput.value) || 100;
+    const effectiveCpm = baseCpm * (uptimePct / 100);
+
+    const modDate = new Date(modifiedTimeStr.trim().replace(' ', 'T'));
+    const remainingCuts = Math.max(0, WARNING_THRESHOLD - accCt);
+    
+    const minutesRemaining = effectiveCpm > 0 ? (remainingCuts / effectiveCpm) : Infinity; 
+    
+    const projectedDate = new Date(modDate.getTime() + (minutesRemaining * 60000));
+    return { cpm: baseCpm, effectiveCpm, remainingCuts, minutesRemaining, projectedDate, modDate };
+  }
+
+  function getFutureShiftBoundaries(timeMs, shiftOffset) {
+    const d = new Date(timeMs);
+    const h = d.getHours();
+    
+    let currentShiftStart = new Date(d);
+    currentShiftStart.setMinutes(0,0,0,0);
+    
+    if (h >= 6 && h < 18) {
+        currentShiftStart.setHours(6);
+    } else {
+        if (h < 6) {
+            currentShiftStart.setDate(currentShiftStart.getDate() - 1);
+        }
+        currentShiftStart.setHours(18);
+    }
+
+    const targetShiftStartMs = currentShiftStart.getTime() + (shiftOffset * 12 * 60 * 60 * 1000);
+    const targetShiftEndMs = targetShiftStartMs + (12 * 60 * 60 * 1000);
+    
+    const targetStartDate = new Date(targetShiftStartMs);
+    const isDayShift = targetStartDate.getHours() === 6;
+    const name = isDayShift ? "Day Shift" : "Night Shift";
+    
+    return { start: targetShiftStartMs, end: targetShiftEndMs, name };
+  }
+
+  function severity(accumulated){
+    if(accumulated >= 1800000) return 'red';
+    if(accumulated >= 1600000) return 'orange';
+    return 'green';
+  }
+
+  function parseRawData(text){
+    const lines = text.split(/\r?\n/).map(l=>l.trim()).filter(l=>l.length>0);
+    let added = 0;
+
+    for(const line of lines){
+      if(line.toLowerCase().includes('engraving tool id') && line.toLowerCase().includes('modified time')) continue;
+
+      const cols = line.split('\t').map(c=>c.trim());
+      if(cols.length < 14) continue;
+
+      const engravingId = cols[0];
+      if(!engravingId.toUpperCase().startsWith('LCAGHY')) continue;
+
+      const maxCt = parseInt(cols[3].replace(/,/g,''),10);
+      const accCt = parseInt(cols[4].replace(/,/g,''),10);
+      const maxPolish = parseInt(cols[5], 10);
+      const accPolish = parseInt(cols[6], 10);
+      const equip = cols[9];
+      const position = cols[10];
+      const modifiedTime = cols[13];
+
+      if(isNaN(maxCt) || isNaN(accCt)) continue;
+
+      const lineId = parseLine(equip);
+      const posInfo = classifyPosition(position);
+      if(!lineId || !posInfo) continue;
+
+      const key = lineId + '|' + posInfo.cutter + '|' + posInfo.knife;
+      slots.set(key, { 
+        lineId, cutter: posInfo.cutter, knife: posInfo.knife, 
+        toolId: engravingId, maxCt, accCt, maxPolish, accPolish, modifiedTime 
+      });
+      added++;
+    }
+    return added;
+  }
+
+  function naturalLineSort(a,b){
+    const pa = a.split('-').map(Number);
+    const pb = b.split('-').map(Number);
+    if(pa[0] !== pb[0]) return pa[0]-pb[0];
+    return pa[1]-pb[1];
+  }
+
+  function updateApp(){
+    if (slots.size === 0) {
+      ui.emptyState.style.display = 'flex';
+      ui.resetBtn.style.display = 'none';
+      ui.exportBtn.style.display = 'none';
+      ui.summary.innerHTML = '';
+      ui.container.innerHTML = '';
+      ui.shiftContainer.innerHTML = '';
+      return;
+    }
+    ui.emptyState.style.display = 'none';
+    ui.resetBtn.style.display = 'flex';
+    ui.exportBtn.style.display = 'flex';
+    
+    renderDashboard();
+    renderShiftPlan();
+  }
+
+  function renderDashboard(){
+    ui.container.innerHTML = '';
+    const nowMs = Date.now();
+    const ONE_HOUR_MS = 60 * 60 * 1000;
+    const lineIds = [...new Set([...slots.values()].map(s=>s.lineId))].sort(naturalLineSort);
+    let counts = {green:0, orange:0, red:0, total:0};
+
+    let animDelay = 0;
+
+    for(const lineId of lineIds){
+      const panel = document.createElement('div');
+      panel.className = 'line-panel';
+      panel.setAttribute('data-line', lineId);
+      panel.style.animationDelay = `${animDelay}s`;
+      animDelay += 0.05;
+
+      let lineGreen=0, lineOrange=0, lineRed=0, lineTotal=0;
+      let isLineRunning = false;
+      let hasBatchSwap = false;
+
+      const lineNeedsService = Array.from(slots.values()).filter(s => s.lineId === lineId).some(s => s.accCt >= WARNING_THRESHOLD);
+
+      const cuttersHtml = CUTTER_ORDER.map(cutterName=>{
+        const knivesHtml = KNIFE_ORDER.map(knifeName=>{
+          const key = lineId + '|' + cutterName + '|' + knifeName;
+          const row = slots.get(key);
+          if(!row) return `<div class="knife-block"><div class="knife-toprow"><div class="knife-label"><span class="knife-dot" style="background:var(--faint)"></span><span class="knife-name">${knifeName} Knife</span></div></div><div class="knife-empty" style="color:var(--faint);font-size:0.75rem;padding:0.5rem 0;font-style:italic;">No position data</div></div>`;
+
+          lineTotal++; counts.total++;
+          
+          let sev = severity(row.accCt);
+          let isBatchTarget = false;
+
+          if (lineNeedsService && row.accCt < WARNING_THRESHOLD && row.accCt >= BATCH_WARNING_THRESHOLD) {
+            sev = 'purple';
+            isBatchTarget = true;
+            hasBatchSwap = true;
+          }
+
+          if(sev==='green'){lineGreen++;counts.green++;}
+          if(sev==='orange'){lineOrange++;counts.orange++;}
+          if(sev==='red'){lineRed++;counts.red++;}
+          
+          const projection = calcProjectedTime(row.lineId, row.accCt, row.modifiedTime);
+          if ((nowMs - projection.modDate.getTime()) <= ONE_HOUR_MS) isLineRunning = true;
+
+          const pct = Math.min(100, (row.accCt / row.maxCt) * 100);
+          const t16 = (1600000 / row.maxCt) * 100;
+          const t18 = (1800000 / row.maxCt) * 100;
+          const marker16 = (t16 > 0 && t16 < 100) ? `<div class="threshold-marker" style="left:${t16}%" data-label="1.6M"></div>` : '';
+          const marker18 = (t18 > 0 && t18 < 100) ? `<div class="threshold-marker" style="left:${t18}%" data-label="1.8M"></div>` : '';
+
+          let projectedDateStr = projection.projectedDate.toLocaleDateString('en-US', {month:'short',day:'numeric'}) + ' ' + projection.projectedDate.toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit'});
+          if (row.accCt >= WARNING_THRESHOLD) projectedDateStr = 'Needs Change';
+          if (projection.minutesRemaining === Infinity) projectedDateStr = 'Paused';
+
+          setTimeout(() => {
+            const bar = document.getElementById(`fill-${key.replace(/[^a-z0-9]/gi, '')}`);
+            if(bar) bar.style.width = `${pct}%`;
+          }, 100);
+
+          const isScrap = row.accPolish >= row.maxPolish;
+          const polishTag = isScrap 
+            ? `<span class="action-tag tag-scrap">Replace & Scrap (${row.accPolish}/${row.maxPolish})</span>` 
+            : `<span class="action-tag tag-polish">Replace & Polish (${row.accPolish}/${row.maxPolish})</span>`;
+          const batchTag = isBatchTarget ? `<span class="action-tag tag-batch">Batch Swap Target</span>` : '';
+          
+          const effectiveCpmFormatted = (projection.cpm !== projection.effectiveCpm) ? `${projection.effectiveCpm.toFixed(1)} CPM (Eff.)` : `${projection.cpm} CPM`;
+
+          return `<div class="knife-block">
+            <div class="knife-toprow">
+              <div class="knife-label"><span class="knife-dot" style="background:var(--${sev})"></span><span class="knife-name">${knifeName} Knife</span></div>
+              <div class="knife-modified">${formatDate(row.modifiedTime)}</div>
+            </div>
+            <div class="knife-id">${row.toolId}</div>
+            <div class="tags-row">${polishTag}${batchTag}</div>
+            <div class="progress-track">
+              <div id="fill-${key.replace(/[^a-z0-9]/gi, '')}" class="progress-fill ${sev}" style="width:0%"></div>
+              ${marker16}${marker18}
+            </div>
+            <div class="knife-numbers">
+              <span class="acc ${sev}">${formatNumber(row.accCt)}</span>
+              <span class="max">/ ${formatNumber(row.maxCt)} max</span>
+            </div>
+            <div class="projected-info">
+              <span><strong>1.6M Est:</strong> ${projectedDateStr}</span>
+              <span class="cpm-badge">${effectiveCpmFormatted}</span>
+            </div>
+          </div>`;
+        }).join('');
+
+        return `<div class="cutter-card"><div class="cutter-title">${cutterName}</div>${knivesHtml}</div>`;
+      }).join('');
+
+      const badges = [];
+      if (isLineRunning) badges.push(`<span class="line-badge running">Running</span>`);
+      else badges.push(`<span class="line-badge stopped">Stopped</span>`);
+
+      if(lineRed>0) badges.push(`<span class="line-badge red">${lineRed} critical</span>`);
+      if(lineOrange>0) badges.push(`<span class="line-badge orange">${lineOrange} warning</span>`);
+      if(hasBatchSwap) badges.push(`<span class="line-badge batching">Batch Swap</span>`);
+      if(lineGreen>0 && !hasBatchSwap) badges.push(`<span class="line-badge green">${lineGreen} ok</span>`);
+
+      panel.innerHTML = `
+        <div class="line-header">
+          <div class="line-id"><span class="tag">Line</span><span class="num">${lineId}</span></div>
+          <div class="line-badges">${badges.join('')}</div>
+        </div>
+        <div class="cutters-grid">${cuttersHtml}</div>
+      `;
+      ui.container.appendChild(panel);
+    }
+
+    if(counts.total > 0) {
+      ui.summary.innerHTML = `
+        <div class="stat-chip"><div class="stat-num">${counts.total}</div><div class="stat-label">Tracked</div></div>
+        <div class="stat-chip green"><div class="stat-num">${counts.green}</div><div class="stat-label">OK</div></div>
+        <div class="stat-chip orange"><div class="stat-num">${counts.orange}</div><div class="stat-label">Warning</div></div>
+        <div class="stat-chip red"><div class="stat-num">${counts.red}</div><div class="stat-label">Critical</div></div>
+      `;
+    }
+  }
+
+  function renderShiftPlan() {
+    ui.shiftContainer.innerHTML = '';
+    const nowMs = Date.now();
+    
+    const upcomingShift = getFutureShiftBoundaries(nowMs, 1);
+    const followingShift = getFutureShiftBoundaries(nowMs, 2);
+
+    const lineIds = [...new Set([...slots.values()].map(s=>s.lineId))].sort(naturalLineSort);
+    const buckets = { upcomingShift: [], followingShift: [], safe: [] };
+
+    for (const lineId of lineIds) {
+      const lineCutters = Array.from(slots.values()).filter(s=>s.lineId === lineId);
+      
+      let earliestHit16 = Infinity;
+      
+      lineCutters.forEach(row => {
+        const projection = calcProjectedTime(row.lineId, row.accCt, row.modifiedTime);
+        const hitMs = projection.projectedDate.getTime();
+        if (hitMs < earliestHit16) earliestHit16 = hitMs;
+      });
+
+      // FIX: Any cutter that has ALREADY breached the threshold (earliestHit16 is in the past) 
+      // OR triggers during the upcoming shift gets bucketing into upcomingShift.
+      if (earliestHit16 <= upcomingShift.end) buckets.upcomingShift.push(lineId);
+      else if (earliestHit16 <= followingShift.end) buckets.followingShift.push(lineId);
+      else buckets.safe.push(lineId);
+    }
+
+    const formatTimeWindow = (shiftObj) => {
+      const s = new Date(shiftObj.start).toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit', hour12: false});
+      const e = new Date(shiftObj.end).toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit', hour12: false});
+      const dateStart = new Date(shiftObj.start).toLocaleDateString('en-US', {month:'short', day:'numeric'});
+      return `${shiftObj.name} (${dateStart} ${s} - ${e})`;
+    };
+
+    const buildBucketHTML = (title, shiftObj, linesArr, cssClass, emptyMsg) => {
+      let html = `<div class="shift-bucket ${cssClass}">
+        <div class="shift-bucket-header">
+          <h2>${title}</h2>
+          ${shiftObj ? `<span class="time-window">${formatTimeWindow(shiftObj)}</span>` : ''}
+        </div>
+        <div class="shift-bucket-body">`;
+      
+      if (linesArr.length === 0) {
+        html += `<div class="empty-bucket">${emptyMsg}</div>`;
+      } else {
+        linesArr.forEach(lineId => {
+          html += `<div class="shift-line-item">
+            <div class="shift-line-header">
+              <span>Line ${lineId}</span>
+              <span class="line-downtime">Requires Shutdown</span>
+            </div>
+            <div class="shift-task-grid">`;
+            
+          const cutters = Array.from(slots.values()).filter(s=>s.lineId === lineId);
+          
+          cutters.forEach(row => {
+            if (row.accCt >= WARNING_THRESHOLD || row.accCt >= BATCH_WARNING_THRESHOLD) {
+              const isTrigger = row.accCt >= WARNING_THRESHOLD;
+              const cardClass = isTrigger ? 'trigger' : 'batch';
+              const isScrap = row.accPolish >= row.maxPolish;
+              const polishTag = isScrap 
+                ? `<span class="action-tag tag-scrap">Replace & Scrap (${row.accPolish}/${row.maxPolish})</span>` 
+                : `<span class="action-tag tag-polish">Replace & Polish (${row.accPolish}/${row.maxPolish})</span>`;
+              
+              html += `<div class="shift-task-card ${cardClass}">
+                <div class="task-top">
+                  <div class="task-pos">${row.cutter} (${row.knife})</div>
+                  <div class="task-acc">${formatNumber(row.accCt)} cuts</div>
+                </div>
+                <div style="margin-bottom:0.5rem;font-size:0.75rem;color:var(--muted)">ID: ${row.toolId}</div>
+                <div class="tags-row">
+                  ${isTrigger ? `<span class="action-tag tag-scrap" style="border:none;background:var(--red);color:#fff">Threshold Trigger</span>` : `<span class="action-tag tag-batch">Preventive Batch Swap</span>`}
+                  ${polishTag}
+                </div>
+              </div>`;
+            }
+          });
+          
+          html += `</div></div>`;
+        });
+      }
+      html += `</div></div>`;
+      return html;
+    };
+
+    ui.shiftContainer.innerHTML = 
+      buildBucketHTML("Upcoming Shift Tasks", upcomingShift, buckets.upcomingShift, "bucket-this-shift", "No cutter changes required for the upcoming shift.") +
+      buildBucketHTML("Following Shift Tasks", followingShift, buckets.followingShift, "bucket-next-shift", "No cutter changes required for the following shift.") +
+      buildBucketHTML("Safe (Further Out)", null, buckets.safe, "bucket-safe", "All lines require maintenance before this time.");
+  }
+
+  ui.processBtn.addEventListener('click', ()=>{
+    const text = ui.rawInput.value;
+    const added = parseRawData(text);
+    if(added === 0 && slots.size === 0){
+      ui.pasteMsg.textContent = 'No valid LCAGHY rows found. Check your pasted data.';
+      return;
+    }
+    toggleModal(false);
+    ui.searchInput.value = '';
+    updateApp();
+  });
+
+  ui.resetBtn.addEventListener('click', ()=>{
+    if(confirm("Are you sure you want to clear all loaded data?")){
+      slots.clear();
+      updateApp();
+    }
+  });
+
+  ui.exportBtn.addEventListener('click', () => {
+    const headers = ["Line", "Cutter ID", "Cutter Type", "Current Count", "Max Polish", "Acc Polish", "Action Needed", "Effective CPM", "Expected 1.6M Date"];
+    const dataArray = Array.from(slots.values());
+    dataArray.sort((a, b) => naturalLineSort(a.lineId, b.lineId));
+
+    let csvContent = headers.map(h => `"${h}"`).join(",") + "\n";
+
+    dataArray.forEach(row => {
+      const projection = calcProjectedTime(row.lineId, row.accCt, row.modifiedTime);
+      const isScrap = row.accPolish >= row.maxPolish;
+      const action = isScrap ? "Scrap" : "Polish";
+      
+      const expectedStr = projection.minutesRemaining === Infinity 
+          ? "Paused" 
+          : projection.projectedDate.toLocaleString('en-US', { hour12: false });
+
+      const rowData = [
+        row.lineId,
+        row.toolId,
+        `${row.cutter} (${row.knife})`,
+        row.accCt,
+        row.maxPolish,
+        row.accPolish,
+        action,
+        projection.effectiveCpm.toFixed(1),
+        expectedStr
+      ];
+      csvContent += rowData.map(v => `"${v}"`).join(",") + "\n";
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `Cutter_Data_Export_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  });
+
+  // Init
+  updateApp();
+</script>
+</body>
+</html>
