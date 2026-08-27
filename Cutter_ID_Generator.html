@@ -48,7 +48,7 @@
 
             --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.03);
             --shadow-btn: 0 8px 24px rgba(0, 0, 0, 0.12);
-            --shadow-sticky: 0 16px 40px rgba(0, 0, 0, 0.08); /* Floating bar shadow */
+            --shadow-sticky: 0 16px 40px rgba(0, 0, 0, 0.08);
             
             --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
@@ -59,23 +59,28 @@
             padding: 0; 
             font-family: var(--font-sans); 
             -webkit-tap-highlight-color: transparent; 
-            touch-action: manipulation; /* Prevents double-tap zoom natively */
+            touch-action: manipulation;
         }
 
-        /* iOS PWA Keyboard Fix: Safely lock the background */
         html, body { 
             background-color: var(--bg-color); 
             color: var(--text-main); 
             width: 100%; 
-            height: 100%; /* Changed from 100dvh */
-            position: fixed; /* Locks the body */
+            height: 100%; 
+            position: fixed; 
             overflow: hidden; 
             display: flex; 
             justify-content: center; 
             letter-spacing: -0.02em;
         }
+        .home-title {
+    font-size: 38px;
+    line-height: 1.1;
+    letter-spacing: -0.04em;
+    margin-bottom: 60px; /* Adjust this value */
+    color: var(--text-main);
+}
 
-        /* Responsive handling for desktop vs native iOS viewport scaling */
         #app-container { 
             width: 100%; 
             max-width: 414px; 
@@ -100,11 +105,11 @@
             flex-shrink: 0; 
             display: flex; 
             align-items: center; 
-            justify-content: space-between; 
+            justify-content: center; 
             border-bottom: 0.5px solid rgba(0, 0, 0, 0.05); 
         }
         
-        .header-btn { background: var(--card-bg); border: 1px solid var(--border); font-size: 14px; font-weight: 700; color: var(--text-main); cursor: pointer; padding: 8px 16px; border-radius: var(--radius-pill); box-shadow: var(--shadow-sm); transition: transform 0.15s; visibility: hidden; width: 85px;}
+        .header-btn { background: var(--card-bg); border: 1px solid var(--border); font-size: 14px; font-weight: 700; color: var(--text-main); cursor: pointer; padding: 8px 16px; border-radius: var(--radius-pill); box-shadow: var(--shadow-sm); transition: transform 0.15s; visibility: hidden; width: 85px; position: absolute; left: 20px; bottom: 16px;}
         .header-btn:active { transform: scale(0.95); }
 
         #content { flex-grow: 1; position: relative; overflow: hidden; }
@@ -132,7 +137,6 @@
            ========================================= */
         .card { background-color: var(--card-bg); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 24px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
         
-        /* Modern iOS Floating Glass Bar */
         .bottom-bar { 
             position: absolute; 
             bottom: calc(16px + env(safe-area-inset-bottom)); 
@@ -164,14 +168,12 @@
         .btn-danger { background-color: #FFF0F0; color: var(--accent-red); border: 1px solid #FFE5E5; }
         .copy-success { background-color: #22C55E !important; color: white !important; border-color: #22C55E !important; box-shadow: 0 8px 16px -4px rgba(34, 197, 94, 0.4) !important;}
 
-        /* Report History Items */
         .report-item { background-color: var(--card-bg); border-radius: var(--radius-md); padding: 20px; display: flex; flex-direction: column; gap: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 12px; }
         .report-header { display: flex; justify-content: space-between; align-items: center; }
         .report-header h4 { font-size: 18px; margin-bottom: 4px; }
         .report-header p { font-size: 13px; color: var(--text-muted); font-weight: 500;}
         .empty-state { text-align: center; padding: 40px 20px; opacity: 0.7; }
 
-        /* Forms */
         .form-group { margin-bottom: 16px; }
         .form-group label { display: block; font-weight: 700; margin-bottom: 8px; font-size: 14px; color: var(--text-muted); }
         .form-input { width: 100%; padding: 16px; background-color: #FAFAFA; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 16px; color: var(--text-main); font-weight: 600; outline: none; transition: 0.2s;}
@@ -181,7 +183,6 @@
         textarea { width: 100%; height: 100px; resize: vertical; font-family: inherit; color: var(--text-main); background-color: #FAFAFA; border-radius: var(--radius-sm); padding: 16px; border: 2px solid var(--border); font-weight: 500; font-size: 15px; outline: none;}
         textarea:focus { border-color: var(--accent-color); background-color: var(--card-bg); }
 
-        /* iOS PWA Keyboard Fix: Force inputs to accept focus and touches */
         input, textarea, select, .id-input {
             -webkit-user-select: text !important;
             user-select: text !important;
@@ -189,7 +190,6 @@
             touch-action: auto !important;
         }
 
-        /* Main Toggle Checkbox */
         .check-container-legacy { display: flex; align-items: center; position: relative; padding: 16px 0; cursor: pointer; font-size: 15px; font-weight: 600; user-select: none; gap: 16px;}
         .check-container-legacy input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
         .custom-checkbox { width: 24px; height: 24px; background: #FAFAFA; border: 2px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0;}
@@ -198,84 +198,24 @@
         .custom-checkbox svg { width: 14px; height: 14px; fill: none; stroke: white; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 16; stroke-dashoffset: 16; transition: stroke-dashoffset 0.3s ease-in-out; }
         .check-container-legacy input:checked ~ .custom-checkbox svg { stroke-dashoffset: 0; }
 
-        /* =========================================
-           3-WAY TOGGLE (Custom App-Style)
-           ========================================= */
         .three-way-toggle {
-            position: relative;
-            width: 70px;
-            height: 32px;
-            background: #F4F4F4;
-            border-radius: 20px;
-            cursor: pointer;
-            flex-shrink: 0;
-            box-shadow: inset 0 1px 4px rgba(0,0,0,0.06);
-            transition: background-color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            border: 1px solid #EAEAEA;
+            position: relative; width: 70px; height: 32px; background: #F4F4F4; border-radius: 20px; cursor: pointer; flex-shrink: 0; box-shadow: inset 0 1px 4px rgba(0,0,0,0.06); transition: background-color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); border: 1px solid #EAEAEA;
         }
-
         .three-way-toggle::before, .three-way-toggle::after {
-            content: "";
-            position: absolute;
-            top: 50%; transform: translateY(-50%);
-            width: 13px; height: 13px;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            opacity: 1;
-            transition: opacity 0.2s;
+            content: ""; position: absolute; top: 50%; transform: translateY(-50%); width: 13px; height: 13px; background-size: contain; background-repeat: no-repeat; background-position: center; opacity: 1; transition: opacity 0.2s;
         }
-
-        /* Red X inside Track */
-        .three-way-toggle::before {
-            left: 9px;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E11D48' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3C/svg%3E");
-        }
-
-        /* Green Check inside Track */
-        .three-way-toggle::after {
-            right: 9px;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2384CC16' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
-        }
-
-        .three-way-toggle .thumb {
-            position: absolute;
-            width: 26px; height: 26px;
-            background: #FFFFFF;
-            border-radius: 50%;
-            top: 2px;
-            left: 50%;
-            transform: translateX(-50%);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-            transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            z-index: 2;
-        }
-
-        .three-way-toggle .thumb::after {
-            content: ""; position: absolute;
-            top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 12px; height: 12px;
-            background-size: contain; background-repeat: no-repeat;
-            opacity: 0; transition: opacity 0.3s;
-        }
-
-        /* "No" State */
+        .three-way-toggle::before { left: 9px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E11D48' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3C/svg%3E"); }
+        .three-way-toggle::after { right: 9px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2384CC16' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E"); }
+        .three-way-toggle .thumb { position: absolute; width: 26px; height: 26px; background: #FFFFFF; border-radius: 50%; top: 2px; left: 50%; transform: translateX(-50%); box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 2; }
+        .three-way-toggle .thumb::after { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 12px; height: 12px; background-size: contain; background-repeat: no-repeat; opacity: 0; transition: opacity 0.3s; }
         .three-way-toggle[data-state="no"] { background: #FFE4E6; border-color: #FECDD3; }
         .three-way-toggle[data-state="no"]::before, .three-way-toggle[data-state="no"]::after { opacity: 0; }
         .three-way-toggle[data-state="no"] .thumb { left: 2px; transform: translateX(0); }
-        .three-way-toggle[data-state="no"] .thumb::after {
-            opacity: 1;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E11D48' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3C/svg%3E");
-        }
-
-        /* "Yes" State */
+        .three-way-toggle[data-state="no"] .thumb::after { opacity: 1; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E11D48' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3C/svg%3E"); }
         .three-way-toggle[data-state="yes"] { background: #ECFCCB; border-color: #D9F99D; }
         .three-way-toggle[data-state="yes"]::before, .three-way-toggle[data-state="yes"]::after { opacity: 0; }
         .three-way-toggle[data-state="yes"] .thumb { left: calc(100% - 28px); transform: translateX(0); }
-        .three-way-toggle[data-state="yes"] .thumb::after {
-            opacity: 1;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2384CC16' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
-        }
+        .three-way-toggle[data-state="yes"] .thumb::after { opacity: 1; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2384CC16' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E"); }
 
         .flex-row { display: flex; gap: 16px; margin-bottom: 16px; }
         .flex-row .form-group { flex: 1; margin-bottom: 0; }
@@ -284,9 +224,6 @@
         .cutter-btn { flex: 1; min-width: 80px; text-align: center; padding: 14px 8px; border: 2px solid var(--border); border-radius: var(--radius-md); font-weight: 700; color: var(--text-muted); transition: 0.2s; cursor: pointer; background: var(--card-bg); user-select: none;}
         .cutter-btn.active { border-color: var(--accent-color); color: var(--accent-color); background: #FAFAFA; box-shadow: 0 0 0 1px var(--accent-color); }
 
-        /* =========================================
-           4. ID INPUTS
-           ========================================= */
         .id-input-wrapper { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; background-color: #FAFAFA; border-radius: var(--radius-sm); padding: 8px 16px; border: 2px solid var(--border); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .id-input-wrapper:focus-within { border-color: var(--text-muted); background-color: var(--card-bg); }
         .id-input-wrapper span { color: var(--text-muted); font-family: ui-monospace, monospace; font-size: 14px; font-weight: 600; letter-spacing: 1px; transition: color 0.3s;}
@@ -298,44 +235,20 @@
         .id-input-wrapper.is-complete .id-input, .id-input-wrapper.is-complete span { color: #15803D; }
 
         .report-preview { background-color: #FAFAFA; color: #111111; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 24px; font-family: ui-monospace, monospace; font-size: 13px; white-space: pre-wrap; line-height: 1.6;}
-
-        /* =========================================
-           5. EASTER EGG & MAGIC MODE
-           ========================================= */
-        #easter-egg-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 99999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
-        #easter-egg-modal.show { opacity: 1; pointer-events: auto; }
-        .easter-egg-content { background: white; padding: 32px 24px; border-radius: 28px; width: 85%; max-width: 340px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.15); transform: scale(0.9); transition: transform 0.3s; position: relative; }
-        #easter-egg-modal.show .easter-egg-content { transform: scale(1); }
-        .easter-egg-content img { width: 100%; max-width: 220px; margin-bottom: 24px; }
-        .easter-egg-content p { font-size: 15px; line-height: 1.5; color: var(--text-muted); margin-bottom: 32px; font-weight: 500; }
-        .easter-egg-close { position: absolute; top: 16px; right: 20px; font-size: 28px; color: #CCCCCC; cursor: pointer; background: none; border: none; line-height: 1; }
-        .btn-gradient-magic { background: linear-gradient(90deg, #c084fc 0%, #9333ea 50%, #c084fc 100%); background-size: 200% auto; color: white; border: 4px solid #f3e8ff; border-radius: 9999px; padding: 16px 24px; font-size: 18px; font-weight: 800; cursor: pointer; width: 100%; box-shadow: 0 8px 24px rgba(147, 51, 234, 0.3); transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; animation: gradient-shift 3s linear infinite; }
-        @keyframes gradient-shift { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
-        body.magic-theme .btn:not(.btn-secondary):not(.btn-grey):not(.btn-danger) { background: linear-gradient(90deg, #c084fc 0%, #9333ea 50%, #c084fc 100%); background-size: 200% auto; border: none; box-shadow: 0 8px 24px rgba(147, 51, 234, 0.3); animation: gradient-shift 3s linear infinite; }
     </style>
 </head>
 <body>
 
-<div id="easter-egg-modal">
-    <div class="easter-egg-content">
-        <button class="easter-egg-close" onclick="closeEasterEgg()">&times;</button>
-        <img src="https://illustrations.popsy.co/purple/remote-work.svg" alt="Remote Work">
-        <p>This app has no budget, no team, no office, no sleep, and absolutely nobody asking for it. Just @arsvnd, a laptop, and too much free time.</p>
-        <button class="btn-gradient-magic" onclick="activateMagicMode()">Don't tap this</button>
-    </div>
-</div>
-
 <div id="app-container">
     <header>
         <button class="header-btn" id="nav-back" onclick="handleBack()">Back</button>
-        <h1 onclick="handleTitleTap()">Cutter ID</h1>
-        <button class="header-btn" id="nav-settings" onclick="showSettings()">Settings</button>
+        <h1>Cutter ID Generator</h1>
     </header>
 
     <div id="content">
         <div id="screen-home" class="screen active">
             <div class="scrollable-body" style="justify-content: center; align-items: center; text-align: center;">
-                <img src="https://illustrations.popsy.co/white/page-under-construction.svg" style="width: 200px; margin-bottom: 32px; opacity: 0.9;" alt="Under construction">
+                <h2 class="home-title">Another day,<br>another cutter.</h2>
                 <button class="btn" style="margin-bottom: 16px;" onclick="openNewForm()">New Cutter Change</button>
                 <button class="btn btn-secondary" onclick="showHistory()">Previous Reports</button>
             </div>
@@ -343,28 +256,6 @@
 
         <div id="screen-history" class="screen">
             <div class="scrollable-body" id="history-list"></div>
-        </div>
-
-        <div id="screen-settings" class="screen">
-            <div class="scrollable-body">
-                <h2>Checklist Settings</h2>
-                <p style="color:var(--text-muted); font-size:14px; margin-bottom:24px;">Add custom tasks to your report checklists.</p>
-                
-                <div id="custom-checks-list" style="margin-bottom: 32px; display: flex; flex-direction: column; gap: 12px;"></div>
-
-                <div class="card" style="margin-bottom: 0;">
-                    <h3>Add New Item</h3>
-                    <div class="form-group">
-                        <label>Task Title (App UI)</label>
-                        <input type="text" id="new-check-title" class="form-input" placeholder="e.g. Master Reset">
-                    </div>
-                    <div class="form-group">
-                        <label>Description (Report Output)</label>
-                        <textarea id="new-check-desc" style="height: 80px;" placeholder="e.g. Master reset procedure completed"></textarea>
-                    </div>
-                    <button class="btn btn-secondary" onclick="addCustomCheck()">Add Item</button>
-                </div>
-            </div>
         </div>
 
         <div id="screen-form" class="screen">
@@ -401,6 +292,24 @@
                     </div>
 
                     <label class="check-container-legacy" style="background:#FAFAFA; padding:16px; border-radius:var(--radius-sm); border:2px solid var(--border); margin-bottom:16px;">
+                        <input type="checkbox" id="moduleReplacementToggle" onchange="toggleModuleReplacement()">
+                        <div class="custom-checkbox"><svg viewBox="0 0 12 10"><polyline points="1.5 6 4.5 9 10.5 1"></polyline></svg></div>
+                        <span style="color:var(--text-main); font-weight:700;">Module Replacement</span>
+                    </label>
+
+                    <div id="moduleReplacementContainer" style="display: none; margin-bottom: 16px;">
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label>Modules Being Replaced</label>
+                            <div class="cutter-checkboxes">
+                                <div class="module-btn cutter-btn" data-module="Upper" onclick="toggleModule(this)">Upper</div>
+                                <div class="module-btn cutter-btn" data-module="Center" onclick="toggleModule(this)">Center</div>
+                                <div class="module-btn cutter-btn" data-module="Final" onclick="toggleModule(this)">Final</div>
+                            </div>
+                        </div>
+                        <div id="dynamic-modules-container"></div>
+                    </div>
+
+                    <label class="check-container-legacy" style="background:#FAFAFA; padding:16px; border-radius:var(--radius-sm); border:2px solid var(--border); margin-bottom:16px;">
                         <input type="checkbox" id="includeChecklistToggle" onchange="toggleChecklist()">
                         <div class="custom-checkbox"><svg viewBox="0 0 12 10"><polyline points="1.5 6 4.5 9 10.5 1"></polyline></svg></div>
                         <span style="color:var(--text-main); font-weight:700;">Include Checklist in Report</span>
@@ -431,9 +340,8 @@
 </div>
 
 <script>
-    const STORAGE_KEY = "cutter_reports_v13";
-    const CUSTOM_CHECKS_KEY = "cutter_custom_checks_v2";
-    const LINES = ["1-1", "1-2", "1-3", "1-4", "1-5", "1-H", "2-1", "2-2", "2-3", "2-4", "2-5", "3-1"];
+    const STORAGE_KEY = "cutter_reports_v15";
+    const LINES = ["1-1", "1-2", "1-3", "1-4", "1-5", "1-H", "2-1", "2-2", "2-3", "2-4", "2-5", "3-1", "3-2", "3-3", "3-4", "3-5"];
     const CUTTER_ORDER = ["Upper", "Center", "Final"]; 
     const FORMATS = {
         'Upper': { prefix: 'LCAGHY', suffixes: ['CU656X1.8', 'CL718X0.0'] },
@@ -441,58 +349,17 @@
         'Final': { prefix: 'LCAGHY', suffixes: ['FU656X1.2', 'FL718X0.0'] } 
     };
 
-    // --- CENTRALIZED CHECKLIST CONFIGURATION ---
-    // Modify this array to easily add, update, or remove rules in the future
     const CHECKLIST_RULES = [
-        {
-            // Applied if Upper OR Center is selected
-            condition: (cutters) => cutters.includes("Upper") || cutters.includes("Center"),
-            tasks: [
-                "Cutter Linear Greasing",
-                "Gripper Gap Setting"
-            ]
-        },
-        {
-            // Applied if Upper is selected
-            condition: (cutters) => cutters.includes("Upper"),
-            tasks: [
-                "Cutter Linear Greasing",
-                "STK Blade Removal and Cleaning"
-            ]
-        },
-        {
-            // Applied only if Center is selected
-            condition: (cutters) => cutters.includes("Center"),
-            tasks: [
-                "Ring Blower and Turtle Pump Filter Cleaning",
-                "SRS Autosplicing Cutter and Gripper Cleaning",
-                "Vulkollan Condition Check",
-                "ESP & LAMI Purging"
-            ]
-        },
-        {
-            // Applied only if Final is selected
-            condition: (cutters) => cutters.includes("Final"),
-            tasks: [
-                "Cutter Linear Greasing",
-                "SSSS, Short Check, Vision Linear Greasing",
-                "Vulkollan Tape Replacement",
-                "STK Purging"
-            ]
-        },
-        {
-            // Applied if ANY cutter is selected
-            condition: (cutters) => cutters.length > 0,
-            tasks: [
-                "Guide Master Bolt Check",
-                "Quality Run Prep"
-            ]
-        }
+        { condition: (cutters) => cutters.includes("Upper") || cutters.includes("Center"), tasks: ["Cutter Linear Greasing", "Gripper Gap Setting", "Vulkollan Condition Check"] },
+        { condition: (cutters) => cutters.includes("Upper"), tasks: ["Cutter Linear Greasing", "STK Blade Removal and Cleaning", "STK LM Guide Cleaning", "Taping Tesa Tape Replacement"] },
+        { condition: (cutters) => cutters.includes("Center"), tasks: ["Ring Blower Replacement", "Ring Blower Cleaning", "Turtle Pump Filter Cleaning", "SRS A/S Cutter Cleaning", "SRS A/S Tesa Tape Replacement", "SRS A/S Heat Wire Tension Check", "ESP & LAMI Purging"] },
+        { condition: (cutters) => cutters.includes("Final"), tasks: ["Cutter Linear Greasing", "SSSS, Short Check, Vision Linear Greasing", "Vulkollan Tape Replacement","Vulkollan Insert Prep", "STK Purging"] },
+        { condition: (cutters) => cutters.length > 0, tasks: ["Guide Master Bolt Check", "Quality Run Prep"] }
     ];
 
     let selectedCutters = [];
+    let selectedModules = [];
     let savedReports = [];
-    let customChecks = [];
     let currentReviewText = "";
     let currentReviewLine = "";
     let reviewMode = 'edit'; 
@@ -500,13 +367,42 @@
 
     function init() {
         try { savedReports = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { savedReports = []; }
-        try { customChecks = JSON.parse(localStorage.getItem(CUSTOM_CHECKS_KEY)) || []; } catch(e) { customChecks = []; }
 
         const lineSelect = document.getElementById('lineSelect');
         lineSelect.add(new Option('Select Line', ''));
         lineSelect.options[0].disabled = true;
         lineSelect.options[0].selected = true;
         LINES.forEach(l => lineSelect.add(new Option(`Line ${l}`, l)));
+        
+        // INTERLOCK: Enforce 1-H "Upper" restriction when changing lines
+        lineSelect.addEventListener('change', function() {
+            if (this.value === '1-H') {
+                let kidding = false;
+                if (selectedCutters.includes('Upper')) {
+                    const btn = document.querySelector('.cutter-btn[data-cutter="Upper"]:not(.module-btn)');
+                    selectedCutters = selectedCutters.filter(x => x !== 'Upper');
+                    btn.classList.remove('active');
+                    document.getElementById('old-block-Upper').style.display = 'none';
+                    document.getElementById('new-block-Upper').style.display = 'none';
+                    document.getElementById('old-block-Upper').classList.remove('visible');
+                    document.getElementById('new-block-Upper').classList.remove('visible');
+                    document.getElementById('old-group').style.display = selectedCutters.length > 0 ? 'block' : 'none';
+                    document.getElementById('new-group').style.display = selectedCutters.length > 0 ? 'block' : 'none';
+                    updateChecklistUI();
+                    kidding = true;
+                }
+                if (selectedModules.includes('Upper')) {
+                    const btn = document.querySelector('.module-btn[data-module="Upper"]');
+                    selectedModules = selectedModules.filter(x => x !== 'Upper');
+                    btn.classList.remove('active');
+                    document.getElementById('module-block-Upper').style.display = 'none';
+                    kidding = true;
+                }
+                if (kidding) {
+                    setTimeout(() => alert("Are you kidding me?"), 50);
+                }
+            }
+        });
         
         const timeSelect = document.getElementById('timeInput');
         for (let h = 0; h < 24; h++) {
@@ -538,9 +434,6 @@
 
         const backBtn = document.getElementById('nav-back');
         backBtn.style.visibility = (screenId === 'screen-home') ? 'hidden' : 'visible';
-
-        const settingsBtn = document.getElementById('nav-settings');
-        settingsBtn.style.visibility = (screenId === 'screen-history') ? 'visible' : 'hidden';
     }
 
     function handleBack() {
@@ -551,8 +444,6 @@
             if (confirm("Discard this form and go back?")) { showScreen('screen-home'); }
         } else if (activeScreen === 'screen-history') {
             showScreen('screen-home');
-        } else if (activeScreen === 'screen-settings') {
-            showScreen('screen-history');
         }
     }
 
@@ -584,62 +475,29 @@
         `).join('');
     }
 
-    function showSettings() {
-        renderCustomChecks();
-        showScreen('screen-settings');
-    }
-
-    function renderCustomChecks() {
-        const list = document.getElementById('custom-checks-list');
-        if (customChecks.length === 0) {
-            list.innerHTML = `<div style="text-align:center; padding: 24px; border: 2px dashed var(--border); border-radius: var(--radius-sm); color: var(--text-muted); font-weight: 500;">No custom checklist items.</div>`;
-            return;
-        }
-        list.innerHTML = customChecks.map(c => `
-            <div class="report-item" style="padding: 16px; margin-bottom: 0;">
-                <div style="display:flex; justify-content: space-between; align-items: center;">
-                    <div style="padding-right: 16px;">
-                        <h4 style="font-size: 15px;">${c.title}</h4>
-                        ${c.title !== c.desc ? `<p style="font-size: 13px; color: var(--text-muted); margin-top:4px;">Output: ${c.desc}</p>` : ''}
-                    </div>
-                    <button class="btn-small btn-danger" onclick="deleteCustomCheck(${c.id})">Del</button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function addCustomCheck() {
-        const title = document.getElementById('new-check-title').value.trim();
-        const desc = document.getElementById('new-check-desc').value.trim();
-        if (!title || !desc) { alert("Please provide both a title and a description."); return; }
-
-        customChecks.push({ id: Date.now(), title: title, desc: desc });
-        localStorage.setItem(CUSTOM_CHECKS_KEY, JSON.stringify(customChecks));
-        document.getElementById('new-check-title').value = '';
-        document.getElementById('new-check-desc').value = '';
-        renderCustomChecks();
-        updateChecklistUI();
-    }
-
-    function deleteCustomCheck(id) {
-        if (confirm("Delete this custom checklist item?")) {
-            customChecks = customChecks.filter(c => c.id !== id);
-            localStorage.setItem(CUSTOM_CHECKS_KEY, JSON.stringify(customChecks));
-            renderCustomChecks();
-            updateChecklistUI();
-        }
-    }
-
     function openNewForm() {
         activeEditId = null; 
         document.getElementById('lineSelect').value = "";
         document.getElementById('dateInput').value = new Date().toISOString().split("T")[0];
         document.getElementById('timeInput').value = getNearestTime();
         document.getElementById('remarksInput').value = "";
+        
         document.getElementById('includeChecklistToggle').checked = false;
         toggleChecklist();
+
+        document.getElementById('moduleReplacementToggle').checked = false;
+        toggleModuleReplacement();
+        selectedModules = [];
+        document.querySelectorAll('.module-btn').forEach(btn => btn.classList.remove('active'));
+        CUTTER_ORDER.forEach(mod => {
+            document.getElementById(`module-block-${mod}`).style.display = 'none';
+            document.getElementById(`old-mod-${mod}`).value = "";
+            document.getElementById(`new-mod-${mod}`).value = "";
+            document.getElementById(`reason-mod-${mod}`).value = "";
+        });
+
         selectedCutters = [];
-        document.querySelectorAll('.cutter-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.cutter-btn:not(.module-btn)').forEach(btn => btn.classList.remove('active'));
         document.getElementById('old-group').style.display = 'none';
         document.getElementById('new-group').style.display = 'none';
         document.querySelectorAll('.cutter-block').forEach(block => {
@@ -650,6 +508,7 @@
             input.value = '';
             input.closest('.id-input-wrapper').classList.remove('is-complete');
         });
+
         updateChecklistUI();
         showScreen('screen-form');
     }
@@ -663,11 +522,32 @@
         document.getElementById('dateInput').value = report.date || "";
         document.getElementById('timeInput').value = report.time || "";
         document.getElementById('remarksInput').value = report.remarks || "";
+        
         document.getElementById('includeChecklistToggle').checked = report.includeChecklist || false;
         toggleChecklist();
 
+        document.getElementById('moduleReplacementToggle').checked = report.includeModules || false;
+        toggleModuleReplacement();
+        
+        selectedModules = report.modules || [];
+        document.querySelectorAll('.module-btn').forEach(btn => {
+            btn.classList.toggle('active', selectedModules.includes(btn.dataset.module));
+        });
+        CUTTER_ORDER.forEach(mod => {
+            const isVisible = selectedModules.includes(mod);
+            const modBlock = document.getElementById(`module-block-${mod}`);
+            if (isVisible) {
+                modBlock.style.display = 'block';
+                document.getElementById(`old-mod-${mod}`).value = report.moduleDetails?.[mod]?.old || "";
+                document.getElementById(`new-mod-${mod}`).value = report.moduleDetails?.[mod]?.new || "";
+                document.getElementById(`reason-mod-${mod}`).value = report.moduleDetails?.[mod]?.reason || "";
+            } else {
+                modBlock.style.display = 'none';
+            }
+        });
+
         selectedCutters = report.cutters || [];
-        document.querySelectorAll('.cutter-btn').forEach(btn => {
+        document.querySelectorAll('.cutter-btn:not(.module-btn)').forEach(btn => {
             btn.classList.toggle('active', selectedCutters.includes(btn.dataset.cutter));
         });
 
@@ -715,8 +595,15 @@
     }
 
     function toggleCutter(element) {
-        if (navigator.vibrate) navigator.vibrate(10);
         const c = element.dataset.cutter;
+        
+        // INTERLOCK: Prevent selection if "Upper" and Line 1-H
+        if (!selectedCutters.includes(c) && c === 'Upper' && document.getElementById('lineSelect').value === '1-H') {
+            alert("Are you kidding me?");
+            return;
+        }
+        
+        if (navigator.vibrate) navigator.vibrate(10);
         element.classList.toggle('active');
         
         if (selectedCutters.includes(c)) {
@@ -740,6 +627,38 @@
             else { newBlock.style.display = 'none'; newBlock.classList.remove('visible'); }
         });
         updateChecklistUI();
+    }
+
+    function toggleModuleReplacement() {
+        const isChecked = document.getElementById('moduleReplacementToggle').checked;
+        document.getElementById('moduleReplacementContainer').style.display = isChecked ? 'block' : 'none';
+    }
+
+    function toggleModule(element) {
+        const m = element.dataset.module;
+        
+        // INTERLOCK: Prevent selection if "Upper" and Line 1-H
+        if (!selectedModules.includes(m) && m === 'Upper' && document.getElementById('lineSelect').value === '1-H') {
+            alert("Are you kidding me?");
+            return;
+        }
+
+        if (navigator.vibrate) navigator.vibrate(10);
+        element.classList.toggle('active');
+        
+        if (selectedModules.includes(m)) {
+            selectedModules = selectedModules.filter(x => x !== m);
+        } else { 
+            selectedModules.push(m); 
+            selectedModules.sort((a, b) => CUTTER_ORDER.indexOf(a) - CUTTER_ORDER.indexOf(b)); 
+        }
+
+        CUTTER_ORDER.forEach(mod => {
+            const isVisible = selectedModules.includes(mod);
+            const modBlock = document.getElementById(`module-block-${mod}`);
+            if (isVisible) { modBlock.style.display = 'block'; } 
+            else { modBlock.style.display = 'none'; }
+        });
     }
 
     function toggleChecklist() {
@@ -786,32 +705,46 @@
                 </div>`;
         });
         container.innerHTML = oldHtml + `</div>` + newHtml + `</div>`;
+
+        const modContainer = document.getElementById('dynamic-modules-container');
+        let modHtml = '';
+        CUTTER_ORDER.forEach(m => {
+            modHtml += `
+                <div id="module-block-${m}" class="module-block card" style="display:none; margin-bottom: 16px; padding:16px; border: 1px solid var(--border); box-shadow: none;">
+                    <h3 style="color:var(--text-main); font-size:16px; margin-bottom:12px;">${m} Module Details</h3>
+                    <div class="form-group">
+                        <label>OLD Module ID</label>
+                        <input type="text" class="form-input" id="old-mod-${m}" placeholder="Enter OLD ID">
+                    </div>
+                    <div class="form-group">
+                        <label>NEW Module ID</label>
+                        <input type="text" class="form-input" id="new-mod-${m}" placeholder="Enter NEW ID">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>Reason for Replacement</label>
+                        <textarea id="reason-mod-${m}" style="height:60px;" placeholder="Reason for replacement..."></textarea>
+                    </div>
+                </div>`;
+        });
+        modContainer.innerHTML = modHtml;
     }
 
     function updateChecklistUI() {
         let dynamicTitles = [];
-        
-        // --- NEW CONFIGURATION APPLIED HERE ---
-        // Dynamically apply all checklist rules to gather relevant tasks
         CHECKLIST_RULES.forEach(rule => {
-            if (rule.condition(selectedCutters)) {
-                dynamicTitles.push(...rule.tasks);
-            }
+            if (rule.condition(selectedCutters)) { dynamicTitles.push(...rule.tasks); }
         });
-        // --------------------------------------
         
         dynamicTitles = [...new Set(dynamicTitles)]; 
-        
-        const dynamicItems = dynamicTitles.map(t => ({ id: "dyn_" + t.replace(/\s/g,''), title: t, desc: t }));
-        const allItems = [...dynamicItems, ...customChecks];
+        const allItems = dynamicTitles.map(t => ({ id: "dyn_" + t.replace(/\s/g,''), title: t, desc: t }));
         const container = document.getElementById('checklistItemsContainer');
+        
         if (allItems.length === 0) { container.innerHTML = ""; return; }
 
         container.innerHTML = `<div class="card" style="padding: 8px 20px; margin-bottom: 0;">` + allItems.map((item, index) => `
             <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 0; ${index < allItems.length - 1 ? 'border-bottom: 1px solid var(--border);' : ''}">
                 <div style="display:flex; flex-direction:column; gap:4px; max-width: 65%; padding-right: 12px; cursor: pointer; -webkit-tap-highlight-color: transparent;" onclick="cycleToggle(this.nextElementSibling)">
                     <span style="color:var(--text-main); font-weight:700; font-size:15px; user-select:none;">${item.title}</span>
-                    ${item.title !== item.desc ? `<span style="color:var(--text-muted); font-size:13px; user-select:none;">${item.desc}</span>` : ''}
                 </div>
                 <div class="three-way-toggle check-input-toggle" data-task-id="${item.id}" data-task-desc="${item.desc}" data-state="none" onclick="cycleToggle(this)">
                     <div class="thumb"></div>
@@ -886,8 +819,10 @@
         const line = document.getElementById('lineSelect').value || 'Not Selected';
         const remarks = document.getElementById('remarksInput').value.trim();
         const includeChecklist = document.getElementById('includeChecklistToggle').checked;
+        const includeModules = document.getElementById('moduleReplacementToggle').checked;
 
         let txt = `${month} ${dateObj.getDate()} | ${time}\nLine: ${line}\n\n`;
+        
         const getIDs = (type) => {
             let block = "";
             selectedCutters.forEach(c => {
@@ -901,8 +836,18 @@
 
         if (selectedCutters.length > 0) {
             txt += `OLD Cutter IDs:\n\n${getIDs('old')}\n`;
-            txt += `New Cutter IDs:\n\n${getIDs('new')}\n`;
+            txt += `NEW Cutter IDs:\n\n${getIDs('new')}\n`;
         } else { txt += "No cutters replaced.\n\n"; }
+
+        if (includeModules && selectedModules.length > 0) {
+            txt += `${selectedModules.join(', ')} Module Replaced\n\n`;
+            selectedModules.forEach(m => {
+                const oldMod = document.getElementById(`old-mod-${m}`).value || "N/A";
+                const newMod = document.getElementById(`new-mod-${m}`).value || "N/A";
+                const reasonMod = document.getElementById(`reason-mod-${m}`).value || "N/A";
+                txt += `${m} Module:\nOLD Module ID: ${oldMod}\nNEW Module ID: ${newMod}\nReason for Replacement: ${reasonMod}\n\n`;
+            });
+        }
 
         if (includeChecklist) {
             const toggles = document.querySelectorAll('.check-input-toggle');
@@ -918,6 +863,7 @@
             });
             if (hasAddedItems) txt += checklistText + "\n";
         }
+
         if (remarks) txt += `Remarks:\n${remarks}\n`;
 
         currentReviewText = txt.trim();
@@ -958,7 +904,11 @@
             includeChecklist: document.getElementById('includeChecklistToggle').checked,
             cutters: [...selectedCutters],
             ids: { old: {}, new: {} },
-            taskStates: taskStatesMap
+            taskStates: taskStatesMap,
+            
+            includeModules: document.getElementById('moduleReplacementToggle').checked,
+            modules: [...selectedModules],
+            moduleDetails: {}
         };
 
         selectedCutters.forEach(c => {
@@ -970,6 +920,14 @@
                 document.querySelector(`input[data-type="new"][data-cutter="${c}"][data-idx="0"]`).value,
                 document.querySelector(`input[data-type="new"][data-cutter="${c}"][data-idx="1"]`).value
             ];
+        });
+
+        selectedModules.forEach(m => {
+            stateToSave.moduleDetails[m] = {
+                old: document.getElementById(`old-mod-${m}`).value,
+                new: document.getElementById(`new-mod-${m}`).value,
+                reason: document.getElementById(`reason-mod-${m}`).value
+            };
         });
 
         const existingIdx = savedReports.findIndex(r => r.id === activeEditId);
@@ -990,39 +948,10 @@
             const btn = document.getElementById("copyBtn");
             btn.innerText = "✓ Copied!";
             btn.classList.add("copy-success");
-            if (magicModeActive) triggerConfetti();
             setTimeout(() => {
                 if(btn) { btn.innerText = reviewMode === 'edit' ? "Save & Copy" : "Copy Text"; btn.classList.remove("copy-success"); }
             }, 2000);
         } catch(e) { alert("Failed to copy. Please check browser permissions."); }
-    }
-
-    let titleTapCount = 0, titleTapTimer = null, magicModeActive = false;
-    function handleTitleTap() {
-        titleTapCount++; clearTimeout(titleTapTimer);
-        if (titleTapCount >= 7) {
-            if (navigator.vibrate) navigator.vibrate([30, 50, 30, 50, 50]);
-            document.getElementById('easter-egg-modal').classList.add('show'); titleTapCount = 0;
-        } else titleTapTimer = setTimeout(() => titleTapCount = 0, 1500);
-    }
-    function closeEasterEgg() { document.getElementById('easter-egg-modal').classList.remove('show'); }
-    function activateMagicMode() {
-        magicModeActive = true; document.body.classList.add('magic-theme'); closeEasterEgg();
-        if (navigator.vibrate) navigator.vibrate([20, 50, 20]);
-    }
-    function triggerConfetti() {
-        const colors = ['#9333ea', '#c084fc', '#84CC16', '#FBBF24', '#3B82F6', '#FF5287'];
-        for (let i = 0; i < 40; i++) {
-            const conf = document.createElement('div');
-            conf.style.cssText = `position:fixed; width:${Math.random()*8+6}px; height:${Math.random()*4+8}px; background:${colors[Math.floor(Math.random()*colors.length)]}; bottom:15%; left:50%; z-index:99999; pointer-events:none; border-radius:${Math.random()>0.5?'50%':'2px'};`;
-            document.body.appendChild(conf);
-            const angle = (Math.random()*Math.PI)/2 + Math.PI/4, velocity = 15+Math.random()*25;
-            conf.animate([
-                { transform: `translate(-50%, 0) rotate(0deg) scale(1)`, opacity: 1 },
-                { transform: `translate(calc(-50% + ${Math.cos(angle)*velocity*15}px), ${-Math.sin(angle)*velocity*25}px) rotate(${Math.random()*720}deg) scale(0.5)`, opacity: 0 }
-            ], { duration: 1000+Math.random()*1500, easing: 'cubic-bezier(0.25, 1, 0.5, 1)', fill: 'forwards' });
-            setTimeout(() => conf.remove(), 3000);
-        }
     }
 
     init();
