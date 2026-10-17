@@ -9,7 +9,10 @@
     <meta name="apple-mobile-web-app-title" content="Cutter ID" />
     
     <link rel="manifest" href="manifest-CID.json">
-    <link rel="apple-touch-icon" href="CID-icon-192.png">
+    <link rel="apple-touch-icon" href="CID-icon-180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="CID-icon-app-192.png">
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#FAFAFA" />
     
     <title>Cutter ID Generator</title>
     
@@ -955,6 +958,97 @@
     }
 
     init();
+</script>
+<!-- ===== Install-as-app popup (shown in the browser only, never inside the installed app) ===== -->
+<style>
+    .cid-install-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 1000; display: flex; align-items: flex-end; justify-content: center; opacity: 0; transition: opacity 0.25s ease; }
+    .cid-install-backdrop.show { opacity: 1; }
+    .cid-install-sheet { width: 100%; max-width: 480px; background: var(--card-bg, #fff); border-radius: 28px 28px 0 0; padding: 24px 22px calc(22px + env(safe-area-inset-bottom)); box-shadow: 0 -16px 40px rgba(0,0,0,0.12); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1); font-family: var(--font-sans, -apple-system, sans-serif); color: var(--text-main, #111); box-sizing: border-box; }
+    .cid-install-backdrop.show .cid-install-sheet { transform: translateY(0); }
+    .cid-install-head { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+    .cid-install-head img { width: 56px; height: 56px; border-radius: 14px; flex-shrink: 0; }
+    .cid-install-sheet .cid-install-head h3 { margin: 0; padding: 0; font-size: 19px; font-weight: 800; letter-spacing: -0.3px; text-transform: none; color: var(--text-main, #111); }
+    .cid-install-head p { margin: 3px 0 0; font-size: 14px; color: var(--text-muted, #888); font-weight: 500; }
+    .cid-install-steps { background: #FAFAFA; border: 1px solid var(--border, #EAEAEA); border-radius: 16px; padding: 14px 16px; margin: 0 0 16px; font-size: 14.5px; line-height: 1.55; font-weight: 500; }
+    .cid-install-steps ol { margin: 0; padding-left: 20px; }
+    .cid-install-steps li { margin: 3px 0; }
+    .cid-install-share { display: inline-block; vertical-align: -4px; width: 18px; height: 18px; }
+    .cid-install-btn { display: block; width: 100%; border: none; border-radius: 9999px; padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .cid-install-primary { background: #111; color: #fff; box-shadow: 0 8px 24px rgba(0,0,0,0.12); margin-bottom: 8px; }
+    .cid-install-later { background: transparent; color: var(--text-muted, #888); }
+</style>
+<script>
+(function () {
+    const SNOOZE_KEY = 'cid_install_snooze_until';
+    const INSTALLED_KEY = 'cid_installed';
+    const SNOOZE_DAYS = 7;
+
+    function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+    function read(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+
+    const isStandalone = window.navigator.standalone === true ||
+        (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+    if (isStandalone) { store(INSTALLED_KEY, '1'); return; }       // already running as the app
+    if (read(INSTALLED_KEY) === '1') return;
+    if (Date.now() < parseInt(read(SNOOZE_KEY) || '0', 10)) return; // user tapped "Not now" recently
+
+    const ua = navigator.userAgent;
+    const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    let deferredPrompt = null;
+
+    const shareIcon = '<svg class="cid-install-share" viewBox="0 0 24 24" fill="none" stroke="#007AFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg>';
+
+    function show(mode) {
+        if (document.querySelector('.cid-install-backdrop')) return;
+        const el = document.createElement('div');
+        el.className = 'cid-install-backdrop';
+        const body = mode === 'ios'
+            ? `<div class="cid-install-steps"><ol>
+                   <li>Tap the Share button ${shareIcon} in Safari's toolbar</li>
+                   <li>Scroll down and tap <b>Add to Home Screen</b></li>
+                   <li>Tap <b>Add</b></li>
+               </ol></div>
+               <button class="cid-install-btn cid-install-primary" data-act="ok">Got it</button>`
+            : `<button class="cid-install-btn cid-install-primary" data-act="install">Install App</button>`;
+        el.innerHTML = `
+            <div class="cid-install-sheet" role="dialog" aria-label="Install Cutter ID">
+                <div class="cid-install-head">
+                    <img src="CID-icon-180.png" alt="">
+                    <div><h3>Install Cutter ID</h3><p>Open it from your home screen, full-screen, like a regular app.</p></div>
+                </div>
+                ${body}
+                <button class="cid-install-btn cid-install-later" data-act="later">Not now</button>
+            </div>`;
+        document.body.appendChild(el);
+        requestAnimationFrame(() => el.classList.add('show'));
+
+        function close() { el.classList.remove('show'); setTimeout(() => el.remove(), 300); }
+        function snooze() { store(SNOOZE_KEY, String(Date.now() + SNOOZE_DAYS * 864e5)); }
+
+        el.addEventListener('click', async (e) => {
+            const act = e.target.closest('[data-act]')?.dataset.act;
+            if (e.target === el || act === 'later' || act === 'ok') { snooze(); close(); return; }
+            if (act === 'install' && deferredPrompt) {
+                deferredPrompt.prompt();
+                const choice = await deferredPrompt.userChoice.catch(() => null);
+                if (choice && choice.outcome === 'accepted') store(INSTALLED_KEY, '1'); else snooze();
+                deferredPrompt = null;
+                close();
+            }
+        });
+    }
+
+    // Android / desktop Chrome & Edge: the browser tells us when installing is possible
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        setTimeout(() => show('prompt'), 1200);
+    });
+    window.addEventListener('appinstalled', () => store(INSTALLED_KEY, '1'));
+
+    // iOS has no install API, so show the Add to Home Screen steps instead
+    if (isIOS) window.addEventListener('load', () => setTimeout(() => show('ios'), 1200));
+})();
 </script>
 </body>
 </html>

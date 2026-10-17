@@ -1,12 +1,15 @@
 // A unique name for this cache version. Change the v1 to v2, etc., when you update the app.
-const CACHE_NAME = 'cutter-id-cache-v1';
+const CACHE_NAME = 'cutter-id-cache-v2';
 
 // The exact file names you want to save to the device for offline use
 const ASSETS_TO_CACHE = [
   './', // Caches the root directory
   './Cutter_ID_Generator.html',
   './manifest-CID.json',
-  './CID-icon-192.png'
+  './CID-icon-192.png',
+  './CID-icon-180.png',
+  './CID-icon-app-192.png',
+  './CID-icon-512.png'
 ];
 
 // 1. Install Event: Opens the cache and saves the files
@@ -17,6 +20,7 @@ self.addEventListener('install', (event) => {
         console.log('Files successfully cached for offline use.');
         return cache.addAll(ASSETS_TO_CACHE);
       })
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -43,6 +47,6 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });
