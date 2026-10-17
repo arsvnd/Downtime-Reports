@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JF Downtime Report</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="JF Report">
+    <meta name="theme-color" content="#f1f5f9">
+    <link rel="manifest" href="manifest-JF.json">
+    <link rel="apple-touch-icon" href="JF-icon-180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="JF-icon-192.png">
     <style>
         :root {
             --primary: #2563eb;
@@ -1234,6 +1242,10 @@ ${actionTaken}${downtimeLine}`;
     checkShiftReset();
     renderDashboard();
     setInterval(checkShiftReset, 60000);
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+    }
 </script>
 
 </body>
