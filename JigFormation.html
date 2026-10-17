@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JF Downtime Report</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text: #0f172a;
+            --text4: #383f49;
+            --border: #cbd5e1;
+            --success: #37ab87;
+            --danger: #dc2626;
+            --muted: #64748b;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 15px;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+        }
+
+        h1 { text-align: center; color: var(--primary); margin: 0 0 25px 0; font-size: 1.8rem; }
+        h3 { border-left: 4px solid var(--primary); padding-left: 10px; margin: 25px 0 15px 0; font-size: 1.1rem; }
+
+        /* Dashboard */
+        #reportsList { display: flex; flex-direction: column; gap: 16px; margin-top: 10px; }
+        .report-card {
+            background: #ffffff; border: 1px solid var(--border); border-radius: 14px; padding: 20px;
+            display: flex; flex-direction: column; gap: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: pointer;
+        }
+        .report-info { border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; }
+        .report-title { font-size: 1.1rem; font-weight: 600; color: var(--text4); line-height: 1.3; margin-bottom: 6px; }
+        .report-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 0.85rem; color: #7f8c8d; }
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
+        .status-resolved { background: #dcfce7; color: #166534; }
+        .status-open { background: #fee2e2; color: #991b1b; }
+
+        .btn-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-edit { background: #e9effd; color: #2563eb; border: 1px solid #92b1f5; padding: 12px; border-radius: 8px; cursor: pointer; }
+        .btn-delete { background: #fff1f2; color: #e11d48; border: 1px solid #fecdd3; padding: 12px; border-radius: 8px; cursor: pointer; }
+
+        .btn-main {
+            display: block; width: 100%; background: var(--primary); color: white; padding: 16px; border: none;
+            border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-bottom: 20px;
+        }
+        .btn-back {
+            width: 100%; margin-bottom: 20px; padding: 10px 20px; background: transparent; color: #475569;
+            border: 1px solid #e2e8f0; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px;
+            font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-library {
+            width: 100%; padding: 14px; margin-bottom: 20px; background: #f8fafc; color: var(--primary);
+            border: 1px dashed #92b1f5; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer;
+        }
+
+        /* Form */
+        .form-group { margin-bottom: 18px; }
+        label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #475569; }
+        .block-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px; }
+        .block-options label {
+            border: 1px solid var(--border); padding: 12px 5px; text-align: center; border-radius: 8px; cursor: pointer;
+            background: white; transition: all 0.2s; font-weight: 500; margin: 0;
+        }
+        .block-options input[type="radio"] { display: none; }
+        .block-options label:has(input:checked) {
+            border-color: var(--primary); background-color: #eff6ff; color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary);
+        }
+        .line-grid { grid-template-columns: repeat(4, 1fr); }
+        .line-grid label.idle { color: #94a3b8; border-style: dashed; }
+        input[type="text"], input[type="date"], input[type="time"], select, textarea {
+            width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; box-sizing: border-box; background: #fcfcfc;
+            font-family: inherit;
+        }
+        textarea { min-height: 90px; resize: vertical; }
+        .hidden { display: none !important; }
+        .hint { font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
+        .btn-submit { width: 100%; background: var(--primary); color: white; padding: 16px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        .btn-copy { background: var(--success); color: white; padding: 16px; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
+        #summaryContainer { margin-top: 30px; display: none; }
+        #summaryOutput { background: #f8fafc; padding: 20px; border-radius: 8px; white-space: pre-wrap; font-family: 'Courier New', Courier, monospace; border: 1px solid var(--border); font-size: 0.95rem; line-height: 1.4; }
+        .format-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+        .format-toggle button { padding: 10px; border: 1px solid var(--border); background: white; border-radius: 8px; cursor: pointer; font-weight: 600; color: #475569; }
+        .format-toggle button.active { border-color: var(--primary); background: #eff6ff; color: var(--primary); }
+
+        .zero-state-container { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 10px 20px; min-height: 400px; }
+        .zero-state-image { width: 100%; max-width: 320px; height: auto; margin-bottom: 30px; }
+        .zero-state-text { font-size: 1rem; color: #475569; margin-bottom: 30px; line-height: 1.5; max-width: 300px; }
+        .zero-state-container .btn-main, .zero-state-container .btn-library { max-width: 300px; }
+
+        /* Known Issues Library */
+        .overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.45); display: flex; justify-content: center; align-items: flex-start; padding: 15px; z-index: 50; overflow-y: auto; }
+        .sheet { width: 100%; max-width: 600px; background: var(--card); border-radius: 16px; padding: 20px; box-sizing: border-box; margin: auto 0; }
+        .sheet-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .sheet-head h2 { margin: 0; font-size: 1.25rem; color: var(--primary); }
+        .sheet-close { background: none; border: none; font-size: 1.6rem; color: #64748b; cursor: pointer; line-height: 1; padding: 4px 8px; }
+        .lib-sub { font-size: 0.82rem; color: var(--muted); margin: 0 0 12px 0; }
+        .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 14px; }
+        .chip { padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); background: white; font-size: 0.82rem; cursor: pointer; color: #475569; }
+        .chip.active { background: var(--primary); border-color: var(--primary); color: white; }
+        .issue { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+        .issue-head { padding: 14px; cursor: pointer; display: flex; gap: 10px; align-items: flex-start; }
+        .issue-head:hover { background: #f8fafc; }
+        .issue-main { flex: 1; min-width: 0; }
+        .issue-title { font-weight: 600; color: var(--text4); font-size: 0.95rem; line-height: 1.3; }
+        .issue-meta { font-size: 0.78rem; color: var(--muted); margin-top: 5px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+        .tag { background: #eef2ff; color: #3730a3; border-radius: 6px; padding: 2px 7px; font-size: 0.72rem; font-weight: 600; }
+        .tag.code { background: #f1f5f9; color: #334155; font-family: 'Courier New', monospace; }
+        .tag.hot { background: #fee2e2; color: #991b1b; }
+        .count { min-width: 34px; text-align: center; font-weight: 700; color: var(--primary); font-size: 0.95rem; }
+        .count small { display: block; font-size: 0.65rem; font-weight: 500; color: var(--muted); }
+        .issue-body { border-top: 1px solid #f1f5f9; padding: 14px; background: #fcfdff; }
+        .fix { display: block; border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 8px; background: white; cursor: pointer; font-weight: 400; color: var(--text); }
+        .fix:has(input:checked) { border-color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); background: #eff6ff; }
+        .fix input { display: none; }
+        .fix b { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
+        .fix p { margin: 2px 0 8px; font-size: 0.9rem; line-height: 1.4; }
+        .fix p:last-child { margin-bottom: 0; }
+        .note { background: #fffbeb; border: 1px solid #fde68a; color: #78350f; border-radius: 8px; padding: 10px 12px; font-size: 0.85rem; margin: 6px 0 10px; line-height: 1.4; }
+        .seen { font-size: 0.8rem; color: var(--muted); margin: 8px 0 12px; line-height: 1.5; }
+        .btn-apply { width: 100%; background: var(--primary); color: white; border: none; padding: 13px; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; }
+        /* Line recommendations */
+        .recs { margin-top: 12px; border: 1px solid #dbe5fb; background: #f5f8ff; border-radius: 12px; padding: 14px; }
+        .recs-head { display: flex; flex-wrap: wrap; gap: 4px 10px; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+        .recs-head strong { font-size: 0.92rem; color: var(--text4); }
+        .recs-head span { font-size: 0.75rem; color: var(--muted); }
+        .rec { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: white; border: 1px solid var(--border);
+               border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; font-family: inherit; color: var(--text); }
+        .rec:hover { border-color: var(--primary); }
+        .rec-rank { font-weight: 700; color: var(--primary); width: 18px; flex-shrink: 0; }
+        .rec-main { flex: 1; min-width: 0; }
+        .rec-title { font-size: 0.88rem; font-weight: 600; color: var(--text4); line-height: 1.25; }
+        .rec-sub { font-size: 0.75rem; color: var(--muted); margin-top: 3px; }
+        .rec-bar { height: 4px; background: #e2e8f0; border-radius: 2px; margin-top: 6px; overflow: hidden; }
+        .rec-bar i { display: block; height: 100%; background: var(--primary); border-radius: 2px; }
+        .rec-count { font-weight: 700; font-size: 0.9rem; color: var(--primary); flex-shrink: 0; }
+        .recs-more { background: none; border: none; color: var(--primary); font-weight: 600; font-size: 0.85rem; cursor: pointer; padding: 4px 0 0; }
+        .recs-empty { font-size: 0.85rem; color: var(--muted); }
+        .empty-lib { text-align: center; color: var(--muted); padding: 30px 10px; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>JF Downtime Report</h1>
+
+    <div id="dashboardView">
+        <button class="btn-main" id="dashNewBtn" onclick="createNewReport()">Create New Report</button>
+        <button class="btn-library" id="dashLibBtn" onclick="openLibrary(false)">📖 Known Issues Library</button>
+        <div id="reportsList"></div>
+    </div>
+
+    <div id="formView" class="hidden">
+        <button class="btn-main btn-back" onclick="showDashboard()">← Back to Dashboard</button>
+        <button type="button" class="btn-library" onclick="openLibrary(true)">📖 Fill from Known Issues</button>
+        <input type="hidden" id="editingId">
+
+        <form id="downtimeForm" onsubmit="return false;">
+            <div class="form-group">
+                <label>1. Stop Type:</label>
+                <div class="block-options">
+                    <label><input type="radio" name="stopType" value="BM" required> BM</label>
+                    <label><input type="radio" name="stopType" value="PD"> PD</label>
+                    <label><input type="radio" name="stopType" value="PM"> PM</label>
+                    <label><input type="radio" name="stopType" value="Other"> Other</label>
+                </div>
+                <input type="text" id="otherStopType" class="hidden" placeholder="Specify other stop type..." style="margin-top:10px;">
+            </div>
+
+            <div class="form-group">
+                <label>2. Equipment (J/F Line)</label>
+                <div class="block-options line-grid" id="equipmentGroup"></div>
+                <div class="hint">Dashed = not in mass production yet (1-3, 3-3, 4-3)</div>
+                <div id="lineRecs" class="recs hidden"></div>
+            </div>
+
+            <label>3. Machine Area</label>
+            <div class="form-group">
+                <label>Section:</label>
+                <select id="machine" onchange="updateUnits()">
+                    <option value="" disabled selected>Select Section</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Unit:</label>
+                <select id="unit"><option value="-">-</option></select>
+            </div>
+
+            <div class="form-group">
+                <label>Assembly / Location:</label>
+                <input type="text" id="assembly" placeholder="e.g. HT Jig #8, Ch R26 / Gripper / Drop sensor">
+            </div>
+
+            <div class="form-group">
+                <label>Alarm (code / name):</label>
+                <input type="text" id="alarm" placeholder="e.g. [001431] CELL TRANSFER_PICK & PLACE Cell Sensor">
+            </div>
+
+            <div class="form-group">
+                <label>Date:</label>
+                <input type="date" id="dateInput">
+            </div>
+
+            <div class="form-group">
+                <label>Start Time:</label>
+                <input type="time" id="startTime">
+            </div>
+
+            <div class="form-group">
+                <label>Issue Resolved?</label>
+                <div class="block-options">
+                    <label><input type="radio" name="resolved" value="Yes"> Yes</label>
+                    <label><input type="radio" name="resolved" value="No" checked> No</label>
+                </div>
+            </div>
+
+            <div class="form-group hidden" id="endTimeContainer">
+                <label>End Time:</label>
+                <input type="time" id="endTime">
+            </div>
+
+            <h3>Details</h3>
+            <div class="form-group">
+                <label>5. Phenomenon:</label>
+                <textarea id="phenomenon" placeholder="Describe what happened..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>6. Root Cause:</label>
+                <textarea id="rootCause" placeholder="What caused the issue?"></textarea>
+            </div>
+            <div class="form-group">
+                <label>7. Action Taken:</label>
+                <textarea id="actionTaken" placeholder="How was the issue fixed?"></textarea>
+            </div>
+            <div id="errorMessage" style="color: var(--danger); font-weight: 600; margin-top: 10px; text-align: center; display: none;"></div>
+            <button type="button" class="btn-submit" onclick="generateSummary()">Generate Summary</button>
+        </form>
+
+        <div id="summaryContainer">
+            <label>Generated Summary:</label>
+            <div class="format-toggle">
+                <button type="button" id="fmtFull" class="active" onclick="setFormat('full')">Full Report</button>
+                <button type="button" id="fmtChat" onclick="setFormat('chat')">OEM Chat Format</button>
+            </div>
+            <div id="summaryOutput"></div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn-copy" style="flex: 1; margin-bottom: 0;" onclick="copyToClipboard()">Copy Summary</button>
+                <button class="btn-main btn-back" style="flex: 1; margin-bottom: 0;" onclick="showDashboard()">Back to Dashboard</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Known Issues Library -->
+<div id="libraryOverlay" class="overlay hidden" onclick="if(event.target===this) closeLibrary()">
+    <div class="sheet">
+        <div class="sheet-head">
+            <h2>Known Issues</h2>
+            <button class="sheet-close" onclick="closeLibrary()" aria-label="Close">×</button>
+        </div>
+        <input type="text" id="libSearch" placeholder="Search alarm, code, symptom... (e.g. slip, 001431, dummy)" oninput="renderLibrary()">
+        <div class="chips" id="libChips"></div>
+        <div id="libList"></div>
+    </div>
+</div>
+
+<script>
+    // ===================== CONFIG =====================
+    const STORAGE_KEY = 'jf_storage_v1';
+    const RESET_KEY = 'jf_last_reset';
+
+    const LINES = ['1-1','1-2','1-3','2-1','2-2','2-3','3-1','3-2','3-3','4-1','4-2','4-3'];
+    const IDLE_LINES = ['1-3','3-3','4-3'];
+
+    const SECTIONS = {
+        'Loader': ['A1 Tray Input Conveyor', 'A2 Tray Loader Conveyor', 'A3 Tray Loader Conveyor / Diverter', 'A4 Cell Loader P&P / LD Shuttle',
+                   'A5 Cell Loader P&P [1]', 'A5 Cell Loader P&P [2]', 'Dummy Buffer (DMBF)', 'Load Buffer (LDBF)', 'Load Holder',
+                   'Dummy Conveyor', 'Loader Stacker', 'Loader Cell Guide'],
+        'Main P&P': ['Cell Transfer P&P (Gripper)', 'X-Axis', 'M-Axis', 'Z-Axis', 'LR Pushing Cylinder', 'Drop / Crash Sensors', 'Ball Bush / LM Guide'],
+        'Jig': ['Hot Jig (HT) Press', 'PP Jig', 'Jig Heater / MC', 'Jig Cell Detect Sensor', 'Jig Tilt Sensor', 'Jig Door / Safety', 'Channel Board'],
+        'Unloader': ['ULD Buffer', 'ULD Buffer Conveyor', 'Unloader Shuttle', 'D1 Tray Unloader Stacker', 'D2 Tray Transfer (BCR)', 'D3 Tray / Inner Tray',
+                     'D4 Cell Unloader P&P', 'D5 Cell Unloader P&P', 'B1 Empty Tray Unloader Stacker'],
+        'STK / Logistics': ['STK Interface', 'Tray Input / Discharge', 'Port Lock', 'Light Curtain'],
+        'IT / MES': ['Host / IT Alarm', 'MES Route', 'Master Data (MMD)', 'EIF / Recipe'],
+        'Utility': ['Power / Voltage', 'Communication', 'HVAC / Airflow', 'Fuse / Wiring']
+    };
+
+    // ===================== KNOWN ISSUES (from group chat) =====================
+    // byLine: approx. number of times reported per J/F line in the group chat (Jul 18 – Oct 16). last: last reported date.
+    const ISSUES = [
+        {
+            id: 'mpp-slip-undetect', code: '001431', section: 'Main P&P', unit: 'Cell Transfer P&P (Gripper)',
+            title: 'Main P&P Cell Detect Sensor Undetect (cell slip)',
+            alarm: '[001431] CELL TRANSFER_PICK & PLACE Cell Sensor Undetect',
+            phenomenon: 'After process end, Main P&P picked up cells from jig and Cell Detect Sensor Undetect alarm occurred (cell slipped in gripper).',
+            fixes: [
+                { cause: 'Cell lead stuck to the jig push bar, causing the cell to slip during pick-up.', action: 'Manually repositioned the slipped cell(s) back into the gripper (one person holds deadman, other places cell), verified sensor status and restarted.' },
+                { cause: 'Cell slipped during pick-up (gripper did not hold cell properly).', action: 'Opened the gripper with a wrench, pulled the cell back up into the gripper and clamped it, verified sensor and restarted.' },
+                { cause: 'Insufficient Main P&P gripper tension / worn gripper pads causing cell slip.', action: 'Adjusted gripper joint to compensate tension and re-taught (OEM). Gripper replacement requested at next PM.' }
+            ],
+            note: 'Most frequent J/F alarm — mainly 4-2, also 4-1, 3-1, 1-2. Never jog the P&P down with misaligned cells: on Sep 19 (4-2) this crashed 2 cells into the ULD buffer and leaked electrolyte. If alignment is uncertain, call OEM.',
+            byLine: { '4-2': 45, '4-1': 6, '3-1': 4, '3-2': 2, '1-1': 1, '1-2': 1 }, last: '2026-10-09'
+        },
+        {
+            id: 'mpp-drop', code: '001411', section: 'Main P&P', unit: 'Drop / Crash Sensors',
+            title: 'Main P&P Drop #1 Sensor Detect (cell drop)',
+            alarm: '[001411] CELL TRANSFER_PICK & PLACE_Drop#1 SENSOR Detect',
+            phenomenon: 'Drop sensor detected during Main P&P cell transfer after pick-up from jig.',
+            fixes: [
+                { cause: 'Cell slipped down in gripper during pick-up (lead stuck to push bar).', action: 'Manually re-gripped the slipped cell into the gripper, cleared the condition and restarted.' },
+                { cause: 'Cell slipped during pick-up.', action: 'Jogged cells back into the jig, unclamped/clamped, then jogged back up to Main P&P and restarted.' }
+            ],
+            byLine: { '4-2': 22, '4-1': 2, '3-1': 1 }, last: '2026-10-03'
+        },
+        {
+            id: 'mpp-crash', code: '001410', section: 'Main P&P', unit: 'Drop / Crash Sensors',
+            title: 'Main P&P Crash Sensor Detect Error',
+            alarm: '[001410] JIG_CELL TRANSFER_PICK & PLACE_Crash SENSOR_Detect Error',
+            phenomenon: 'Main P&P crash sensor detected while placing cells onto ULD buffer / jig.',
+            fixes: [
+                { cause: 'Cells slipped/misaligned in gripper interfering with ULD buffer.', action: 'Manually jogged cells down onto ULD buffer (Z-axis), half clamp, pressed ULD position and transferred data. Reset and restarted.' },
+                { cause: 'Bent dummy cell not aligned properly, entered jig misaligned.', action: 'Manually re-seated the dummy cell in the gripper and restarted.' },
+                { cause: 'Crash sensor position (frequent false detect).', action: 'Adjusted crash sensor (left side) position, reset and monitored.' },
+                { cause: 'No abnormality found.', action: 'Checked cells and sensor, reset and restarted.' }
+            ],
+            note: 'If a collision alarm occurs, do NOT force with manual jog until alignment is confirmed.',
+            byLine: { '3-1': 7, '1-1': 2, '4-2': 1 }, last: '2026-10-16'
+        },
+        {
+            id: 'mpp-cyl', code: '', section: 'Main P&P', unit: 'LR Pushing Cylinder',
+            title: 'Main P&P LR Pushing Cylinder Down Error',
+            alarm: 'Main P&P CELL TRANSFER PNP LR Pushing Cylinder Down Error',
+            phenomenon: 'Main P&P LR pushing cylinder down error during cell transfer.',
+            fixes: [{ cause: 'Unknown / cylinder did not reach down position.', action: 'Jogged cells down to buffer, verified data and restarted.' }],
+            byLine: { '3-1': 1 }, last: '2026-09-27'
+        },
+        {
+            id: 'mpp-dog', code: '', section: 'Main P&P', unit: 'Drop / Crash Sensors',
+            title: 'LD BF Main P&P Position Sensor Undetect',
+            alarm: 'LD BF Main P&P Pos Sensor Undetect',
+            phenomenon: 'Main P&P position sensor at load buffer not detected.',
+            fixes: [{ cause: 'Sensor dog bracket deformed (likely stepped on during ball bush replacement).', action: 'Replaced sensor dog (borrowed from 1-3) and restarted.' }],
+            byLine: { '3-1': 1 }, last: '2026-09-18'
+        },
+        {
+            id: 'mpp-maxis', code: '', section: 'Main P&P', unit: 'M-Axis',
+            title: 'Main P&P M-Axis Servo Motor State Error',
+            alarm: 'Main P&P M-axis Servo Motor State Error',
+            phenomenon: 'Main P&P M-axis servo motor state error, P&P stopped.',
+            fixes: [{ cause: 'Connector cable contact failure between motor and drive (top of Main P&P). Could not isolate motor cable vs 33 m cable-carrier extension.', action: 'Replaced motor cable + 33 m extension cable. Restarted and verified.' }],
+            note: 'Long downtime (~11.5 h on 1-2). Also check X-axis servo cable for wear against coupling (found on 2-2, Oct 1).',
+            byLine: { '1-2': 1 }, last: '2026-10-11'
+        },
+        {
+            id: 'mpp-ballbush', code: '', section: 'Main P&P', unit: 'Ball Bush / LM Guide',
+            title: 'Main P&P inspection / ball bush replacement (6-month)',
+            alarm: '',
+            phenomenon: 'Planned Main P&P inspection and X-axis ball bush replacement.',
+            fixes: [{ cause: 'Ball bush replacement cycle reached (inspect/replace every ~6 months).', action: 'Inspected Main P&P and replaced X-axis ball bush (2–3 h per floor, port lock 2 h before).' }],
+            note: 'Done on line 3 (Sep 18). Line 2 pending ball bush material arrival.',
+            byLine: { '3-1': 1, '3-2': 1 }, last: '2026-09-21'
+        },
+        {
+            id: 'mpp-tension', code: '', section: 'Main P&P', unit: 'Cell Transfer P&P (Gripper)',
+            title: 'Load conveyor tension / A5 transfer gripper teaching',
+            alarm: '',
+            phenomenon: 'Repeated alarms at loader side; conveyor tension and transfer gripper position off.',
+            fixes: [{ cause: 'Load conveyor tension loose; A5 transfer gripper teaching off.', action: 'Adjusted conveyor tension, re-taught A5 transfer gripper (dummy, load, shuttle, conveyor positions). ~3 h with reduced logistics.' }],
+            byLine: { '4-2': 1 }, last: '2026-09-17'
+        },
+        {
+            id: 'a5-lead', code: '000799', section: 'Loader', unit: 'A5 Cell Loader P&P [2]',
+            title: 'A5 Cell Loader P&P Cell Detect Sensor Undetect / Mismatch',
+            alarm: 'A5 CELL LOADER_[2] PICK & PLACE_#2 Cell Detect Sensor Undetect / Mismatch',
+            phenomenon: 'A5 Cell Loader P&P could not detect dummy cell when descending to load holder / dummy buffer.',
+            fixes: [
+                { cause: 'Dummy cell lead bent / not aligned.', action: 'Straightened the cell lead, jogged P&P and reset.' },
+                { cause: 'Dummy cell pouch folded on load holder, lead not recognized.', action: 'Straightened pouch and lead, reset and restarted.' },
+                { cause: 'Dummy cell misaligned (skewed to one side) on buffer.', action: 'Manually aligned the dummy cell with the gripper pad and restarted.' },
+                { cause: 'Gripper 2 did not clamp the cell.', action: 'Manually clamped cell, jogged P&P up and verified data.' }
+            ],
+            note: 'Very frequent on 2-3, 3-2, 4-2, 1-2. Root issue is worn/bent dummy cells — replace bad dummies.',
+            byLine: { '2-3': 6, '4-2': 6, '3-2': 5, '1-2': 2, '3-1': 1, '2-1': 1 }, last: '2026-10-15'
+        },
+        {
+            id: 'a5-ldbf', code: '000722', section: 'Loader', unit: 'Load Buffer (LDBF)',
+            title: 'A5 Cell Loader P&P LDBF Crash Sensor Detect',
+            alarm: '[000722] A5 CELL LOADER_[2] PICK & PLACE #1 LDBF Crash Sensor Detect',
+            phenomenon: 'Crash sensor detected while load buffer / A5 P&P descending.',
+            fixes: [
+                { cause: 'Load buffer position (pos 3) teaching misaligned.', action: 'Corrected load buffer teaching (+1 mm), verified and restarted.' },
+                { cause: 'Bent dummy cell / dummy cell alignment.', action: 'Removed or realigned the crashed/bent cell, deleted/moved data and reset.' },
+                { cause: 'LDBF teaching insufficient (crash history).', action: 'Inspected cell guide and re-taught LDBF (preventive).' },
+                { cause: 'No abnormality found.', action: 'Checked, reset and restarted. Monitored for recurrence.' }
+            ],
+            byLine: { '2-3': 4, '4-2': 4, '3-2': 1, '3-1': 1, '1-2': 1 }, last: '2026-10-13'
+        },
+        {
+            id: 'a5-dmbf', code: '000726', section: 'Loader', unit: 'Dummy Buffer (DMBF)',
+            title: 'A5 P&P DMBF Crash Sensor Detect',
+            alarm: '[000726] A5 CELL UNLOADER_[2] PICK & PLACE #1 DMBF Crash Sensor Detect',
+            phenomenon: 'Crash sensor detected while dummy buffer descending.',
+            fixes: [{ cause: 'Caught on cell lead while descending to dummy buffer.', action: 'Straightened the lead and restarted.' }],
+            byLine: { '2-3': 1 }, last: '2026-09-15'
+        },
+        {
+            id: 'a4-ldst', code: '', section: 'Loader', unit: 'A4 Cell Loader P&P / LD Shuttle',
+            title: 'A4 P&P (2) LD Shuttle Crash',
+            alarm: 'A4 P&P (2) LDST Crash',
+            phenomenon: 'A4 P&P crash at loading shuttle.',
+            fixes: [{ cause: 'P&P / shuttle data mismatch.', action: 'Jogged P&P to wait position, moved data to LD shuttle and restarted.' }],
+            byLine: { '2-3': 1 }, last: '2026-10-14'
+        },
+        {
+            id: 'dummy-conv', code: '', section: 'Loader', unit: 'Dummy Conveyor',
+            title: 'Dummy Conveyor Drop Sensor #2 Detect',
+            alarm: 'Dummy Conveyor Drop Sensor #2 Detect',
+            phenomenon: 'Dummy conveyor drop sensor #2 detected.',
+            fixes: [{ cause: 'Dummy conveyor position off.', action: 'Manually jogged dummy conveyor (-) and performed homing.' }],
+            byLine: { '2-1': 1 }, last: '2026-09-19'
+        },
+        {
+            id: 'dummy-data', code: '', section: 'Loader', unit: 'Dummy Buffer (DMBF)',
+            title: 'Dummy Buffer Cell Detect Sensor Mismatch',
+            alarm: 'Dummy Buffer Cell Detect Sensor Mismatch',
+            phenomenon: 'Dummy buffer cell detect sensor data mismatch.',
+            fixes: [{ cause: 'Cell data mismatch for dummy buffer.', action: 'Checked dummy cells on buffer and corrected data through HMI.' }],
+            byLine: { '2-2': 1 }, last: '2026-10-04'
+        },
+        {
+            id: 'dummy-short', code: '', section: 'Loader', unit: 'Dummy Buffer (DMBF)',
+            title: 'Equipment idle — dummy cell shortage',
+            alarm: '',
+            phenomenon: 'Equipment stopped / waiting due to dummy cell shortage.',
+            fixes: [{ cause: 'Many rework cells input at once (single floor), dummy cells ran out.', action: 'Requested process team to space out rework cell input / spread across floors 1–3.' }],
+            byLine: { '2-1': 2, '3-2': 1 }, last: '2026-09-25'
+        },
+        {
+            id: 'loader-guard', code: '', section: 'Loader', unit: 'Loader Cell Guide',
+            title: 'Crash detect on loader cell guard',
+            alarm: 'Loader Cell Guard Crash Detect',
+            phenomenon: 'Crash detected on loader cell guard.',
+            fixes: [{ cause: 'Test cells extremely bent.', action: 'Removed bent cells from equipment and restarted.' }],
+            byLine: { '1-1': 1 }, last: '2026-09-26'
+        },
+        {
+            id: 'buf-conv-crash', code: '', section: 'Loader', unit: 'Load Buffer (LDBF)',
+            title: 'Crash detect under buffer conveyor',
+            alarm: 'Buffer Conveyor Crash Detect',
+            phenomenon: 'Crash detected under buffer conveyor.',
+            fixes: [{ cause: 'Damaged/misplaced cell at buffer conveyor.', action: 'Manually removed the cell, replaced with dummy cell and restarted line.' }],
+            byLine: { '4-1': 1 }, last: '2026-09-19'
+        },
+        {
+            id: 'a2-a3', code: '', section: 'Loader', unit: 'A2 Tray Loader Conveyor',
+            title: 'Tray Loader Conveyor Power Motor Timeout (A2→A3)',
+            alarm: 'Loader Tray Loader Conveyor Power Motor Timeout',
+            phenomenon: 'Tray on A2 loader conveyor moved only halfway onto A3 conveyor and stopped.',
+            fixes: [{ cause: 'Tray did not fully transfer from A2 to A3 conveyor.', action: 'Manually moved tray onto A3 conveyor, transferred tray data A2→A3, aligned and restarted.' }],
+            byLine: { '4-2': 1 }, last: '2026-09-18'
+        },
+        {
+            id: 'a3-diverter', code: '', section: 'Loader', unit: 'A3 Tray Loader Conveyor / Diverter',
+            title: 'A3 Tray Loader Diverter Edge Sensor Detect',
+            alarm: 'A3 TRAY LOADER DIVERTER Edge Sensor Detect',
+            phenomenon: 'Edge sensor detected at A3 tray loader diverter.',
+            fixes: [{ cause: 'Manually inserted tray loaded in wrong direction.', action: 'Rotated tray to correct direction and restarted.' }],
+            byLine: { '2-3': 1 }, last: '2026-10-14'
+        },
+        {
+            id: 'ld-stacker-lift', code: '', section: 'Loader', unit: 'Loader Stacker',
+            title: 'Loader Tray Unloader Stacker Lift Cylinder Up Error',
+            alarm: 'Loader Tray Unloader Stacker Lift Cylinder Up Error',
+            phenomenon: 'Error after stacker lift raised tray.',
+            fixes: [{ cause: 'Cylinder sensor position.', action: 'Adjusted cylinder sensor and restarted.' }],
+            byLine: { '4-2': 1 }, last: '2026-09-18'
+        },
+        {
+            id: 'ld-sensor-short', code: '', section: 'Utility', unit: 'Fuse / Wiring',
+            title: 'Loader buffer position sensor short — safety down',
+            alarm: '',
+            phenomenon: 'Equipment stopped ~1 h; safety circuit dead.',
+            fixes: [{ cause: 'During alarm recovery, operator\'s foot caught loader buffer position sensor cable, causing a short and blowing the fuse.', action: 'Replaced fuse (from 3rd floor) and damaged cable, checked teaching, restarted. Operator training requested.' }],
+            byLine: { '3-1': 1 }, last: '2026-08-19'
+        },
+        {
+            id: 'jig-detect', code: '', section: 'Jig', unit: 'Jig Cell Detect Sensor',
+            title: 'Jig Press Heating & Formation Cell Detect Sensor Mismatch',
+            alarm: 'JIG PRESS [n] HEATING & FORMATION Cell Detect Sensor Mismatch',
+            phenomenon: 'Jig cell detect sensor data mismatch (cell not detected, or detected when empty).',
+            fixes: [
+                { cause: 'Cell pouch swells after process, sensor reflects diffusely off pouch.', action: 'Adjusted sensor angle and sensitivity, verified and restarted.' },
+                { cause: 'Sensor position off (not detecting cell).', action: 'Repositioned sensor and reset.' },
+                { cause: 'Sensor detected cell in empty jig (temporary).', action: 'Checked sensor — no abnormality — reset and restarted. No recurrence.' },
+                { cause: 'Jig detected cells even after unloading.', action: 'Checked sensor and adjusted position, reset.' }
+            ],
+            byLine: { '4-2': 5, '4-1': 2, '3-2': 2 }, last: '2026-10-10'
+        },
+        {
+            id: 'jig-mc', code: '', section: 'Jig', unit: 'Jig Heater / MC',
+            title: 'Jig Press Heating & Formation Main MC Off',
+            alarm: 'Jig Press [n] Heating & Formation Main MC Off',
+            phenomenon: 'MC trip, jig paused process.',
+            fixes: [{ cause: 'MC trip (cause not verified).', action: 'Cells manually taken out, jig left in maintenance mode, OEM notified.' }],
+            byLine: { '4-2': 1 }, last: '2026-09-18'
+        },
+        {
+            id: 'jig-tilt', code: '', section: 'Jig', unit: 'Jig Tilt Sensor',
+            title: 'Jig Tilt Sensor Detect Error',
+            alarm: 'Jig Press [n] HEATING & FORMATION Jig Tilt Sensor Detect Error',
+            phenomenon: 'Tilt sensor detected while P&P placed cell into jig; cell damaged.',
+            fixes: [{ cause: 'Cell did not seat correctly in channel while being placed.', action: 'Put jig in maintenance, removed cell, inspected channel, replaced damaged cell with dummy and adjusted data.' }],
+            note: 'Tilt sensors adjusted on 2-1 (PP2, jigs 14–19) Sep 23.',
+            byLine: { '1-2': 1 }, last: '2026-10-10'
+        },
+        {
+            id: 'jig-toomany', code: '', section: 'Jig', unit: 'Hot Jig (HT) Press',
+            title: 'Jig "Too Many Channel" Alarm',
+            alarm: 'Jig [n] Too Many Channel Alarm',
+            phenomenon: 'Jig too-many-channel alarm.',
+            fixes: [{ cause: 'Cells sitting too far left in the jig.', action: 'Jogged and centered cells in jig, then continuous-restarted jig.' }],
+            byLine: { '4-2': 1 }, last: '2026-10-07'
+        },
+        {
+            id: 'jig-door', code: '', section: 'Jig', unit: 'Jig Door / Safety',
+            title: 'Jig Door / Safety Signal Alarm',
+            alarm: 'HT JIG Door Safety Alarm',
+            phenomenon: 'Safety alarm from jig door signal; door would not close / signal abnormal.',
+            fixes: [
+                { cause: 'Temporary safety signal fault.', action: 'Reset the safety terminal. Escalate inspection if it recurs.' },
+                { cause: 'Door would not close after alarm recovery.', action: 'Called OEM for support.' }
+            ],
+            byLine: { '3-1': 2 }, last: '2026-09-20'
+        },
+        {
+            id: 'it-alarm-jig', code: '', section: 'IT / MES', unit: 'Host / IT Alarm',
+            title: 'IT Alarm — all jigs stopped, heater off',
+            alarm: 'IT Alarm',
+            phenomenon: 'All jigs stopped by IT alarm; jigs opened and heaters off.',
+            fixes: [{ cause: 'IT/host communication issue.', action: 'Notified process/IT team; restarted after IT recovery.' }],
+            byLine: { '2-1': 1, '2-2': 1, '2-3': 1, '3-1': 1, '3-2': 1 }, last: '2026-09-01'
+        },
+        {
+            id: 'uld-bearing', code: '', section: 'Unloader', unit: 'ULD Buffer',
+            title: 'ULD Buffer bearing failure / Cell-in-position limit sensor error',
+            alarm: 'ULD BF Cell in Position Limit Sensor Error',
+            phenomenon: 'ULD buffer conveyor misaligned; grip alarm during Main P&P descent.',
+            fixes: [{ cause: 'C-ring holding the ULD buffer ball bearing broke, bearing damaged, conveyor misaligned.', action: 'Replaced ball bearing + servo motor + conveyor pulley assembly (from 1-3), replaced 2 limit sensors, re-taught and monitored cell drop alignment.' }],
+            byLine: { '2-1': 1 }, last: '2026-10-16'
+        },
+        {
+            id: 'uld-sensor', code: '', section: 'Unloader', unit: 'ULD Buffer Conveyor',
+            title: 'ULD Buffer Conveyor Cell Sensor Undetect / Mismatch',
+            alarm: 'ULD BF CELL LOADER LOADING CONVEYOR Cell in Position Sensor Undetect',
+            phenomenon: 'ULD buffer conveyor cell sensor not detected / data mismatch.',
+            fixes: [
+                { cause: 'Sensor position misaligned, conveyor could not return to work position.', action: 'Adjusted and aligned sensor, restarted.' },
+                { cause: 'Cell pouch bent during Main P&P pick-up.', action: 'Adjusted cell pouch and restarted.' }
+            ],
+            byLine: { '2-1': 1, '3-1': 1, '4-2': 1 }, last: '2026-10-16'
+        },
+        {
+            id: 'shuttle-bcr', code: '001288', section: 'Unloader', unit: 'Unloader Shuttle',
+            title: 'Cell BCR Reading Error',
+            alarm: '[001288] CELL UNLOADER SHUTTLE 2 Cell BCR Reading Error',
+            phenomenon: 'Cell barcode not read.',
+            fixes: [
+                { cause: 'BCR did not read normally.', action: 'Checked barcode condition (OK), read manually and restarted.' },
+                { cause: 'Cell placed in tray in opposite direction.', action: 'Turned cell to correct orientation and checked all cells in tray.' },
+                { cause: 'Temporary reading error.', action: 'Reset.' }
+            ],
+            byLine: { '4-1': 1, '2-2': 1, '3-1': 1 }, last: '2026-09-18'
+        },
+        {
+            id: 'd2-bcr', code: '', section: 'Unloader', unit: 'D2 Tray Transfer (BCR)',
+            title: 'D2 Tray BCR Reading Error',
+            alarm: 'D2 Tray BCR Reading Error',
+            phenomenon: 'Tray BCR could not be read at D2.',
+            fixes: [{ cause: 'Tray BCR label attached too low, hidden by roller guide bar.', action: 'Adjusted BCR reader angle and position.' }],
+            byLine: { '2-3': 1 }, last: '2026-09-18'
+        },
+        {
+            id: 'd3-tray', code: '', section: 'Unloader', unit: 'D3 Tray / Inner Tray',
+            title: 'D3 Tray Cell Crash — new tray assembly defect',
+            alarm: 'D3 Tray Cell Crash Sensor Detect',
+            phenomenon: 'Crash sensor detected while placing cells into tray at D3 (inner tray interference).',
+            fixes: [
+                { cause: 'New tray assembly defect — inner tray spacing ~3 mm off (stickered trays from PKG).', action: 'Manually ejected tray and handed over to local technician / process team.' },
+                { cause: 'New tray assembly defect.', action: 'Manually jogged cell into the tray, flagged tray for removal.' },
+                { cause: 'Inner tray spacing defect.', action: 'Re-checked and re-taught D3/D4 position, auto restart.' }
+            ],
+            note: 'Charged cells can be dented/damaged here — fire risk. Defective trays were shipped back for inner-tray replacement; temporary teaching (-3 mm pocket 1, -1 mm all channels) restored Sep 25. Report tray ID to process team.',
+            byLine: { '4-2': 3, '3-1': 2, '2-1': 1, '3-2': 1, '4-1': 1 }, last: '2026-10-10'
+        },
+        {
+            id: 'd4-nail', code: '', section: 'Unloader', unit: 'D4 Cell Unloader P&P',
+            title: 'D4 Tray Crash Error',
+            alarm: 'D4 Cell Unloader P&P Tray Crash Sensor Detect',
+            phenomenon: 'D4 tray crash error when unloading cells into tray.',
+            fixes: [
+                { cause: 'Nail found in tray.', action: 'Removed nail, checked teaching (slot 8, 11 position +0.5) and verified by jogging P&P.' },
+                { cause: 'Manually input rework tray was damaged, carried through to D3/D4.', action: 'Local operator manually ejected cells, cleaned and restarted.' },
+                { cause: 'Tray not in proper position.', action: 'Manually aligned tray and restarted.' }
+            ],
+            note: 'Take a photo of the tray ID — process team asks for it.',
+            byLine: { '2-3': 1, '4-1': 1, '3-1': 1, '1-1': 1 }, last: '2026-10-13'
+        },
+        {
+            id: 'd4-lm', code: '001313', section: 'Unloader', unit: 'D4 Cell Unloader P&P',
+            title: 'D4 Cell Unloader P&P Drop Sensor Detect',
+            alarm: '[001313] D4 CELL UNLOADER 1 PICK & PLACE #1 Drop Sensor Detect',
+            phenomenon: 'D4 P&P could not lift properly; drop sensor detected.',
+            fixes: [{ cause: 'Ball fell out of D4 gripper cylinder LM guide.', action: 'Replaced cylinder LM guide, checked teaching and restarted.' }],
+            byLine: { '3-2': 1 }, last: '2026-09-14'
+        },
+        {
+            id: 'd5-undetect', code: '001131', section: 'Unloader', unit: 'D5 Cell Unloader P&P',
+            title: 'D5 Cell Unloader P&P Cell Detect Sensor Undetect',
+            alarm: '[001131] D5 CELL UNLOADER [1] PICK & PLACE #1 Cell Detect Sensor Undetect',
+            phenomenon: 'D5 cell unloader P&P did not detect cell at unload holder.',
+            fixes: [
+                { cause: 'Lead not detected in unload holder (pouch/lead bent).', action: 'Straightened pouch and lead, restarted.' },
+                { cause: 'Dummy cell skewed while ULD holder descending.', action: 'Manually straightened dummy cell pouch and restarted.' },
+                { cause: 'Bottom of dummy cell bent, alignment failure.', action: 'Aligned bent dummy pouch and restarted.' }
+            ],
+            byLine: { '2-1': 2, '4-2': 2, '3-2': 1, '1-1': 1 }, last: '2026-10-16'
+        },
+        {
+            id: 'd5-crash', code: '', section: 'Unloader', unit: 'D5 Cell Unloader P&P',
+            title: 'D5 Cell Unloader P&P Crash / Drop Sensor Detect',
+            alarm: 'D5 CELL UNLOADER 1 P&P ULDBF Crash / Drop Sensor Detect',
+            phenomenon: 'D5 unloader P&P crash or drop sensor detected.',
+            fixes: [
+                { cause: 'Sensor misdetecting (dirty).', action: 'Checked and cleaned drop sensor.' },
+                { cause: 'No abnormality found.', action: 'Checked, reset and restarted.' }
+            ],
+            byLine: { '4-1': 2, '4-2': 1 }, last: '2026-10-16'
+        },
+        {
+            id: 'd1-clamp', code: '', section: 'Unloader', unit: 'D1 Tray Unloader Stacker',
+            title: 'D1 Tray Unloader Stacker Clamp Cylinder Forward Error',
+            alarm: 'D1 TRAY UNLOADER STACKER Clamp Cylinder Forward Error',
+            phenomenon: 'Clamp cylinder failed to reach forward position within set time.',
+            fixes: [{ cause: 'Forward position sensor detection.', action: 'Verified and realigned forward position sensor.' }],
+            byLine: { '4-2': 1 }, last: '2026-09-16'
+        },
+        {
+            id: 'b1-align', code: '', section: 'Unloader', unit: 'B1 Empty Tray Unloader Stacker',
+            title: 'B1 Empty Tray Stacker Upper Align Cylinder Forward Error',
+            alarm: 'B1 EMPTY TRAY UNLOADER STACKER Upper Align Cylinder Forward Error',
+            phenomenon: 'Upper align cylinder forward error.',
+            fixes: [{ cause: 'Cylinder did not complete forward stroke.', action: 'Jogged cylinder forward/backward to verify operation, reset.' }],
+            byLine: { '1-2': 1 }, last: '2026-10-16'
+        },
+        {
+            id: 'fa-stop', code: '', section: 'STK / Logistics', unit: 'STK Interface',
+            title: 'FA cycle stop — stacker area sensor / tray data mismatch',
+            alarm: 'D1 / D2 / C3 Tray Data Sensor Mismatch',
+            phenomenon: 'On FA cycle stop, loader/unloader stacker area sensor triggered, causing D1, D2 and C3 tray data mismatch.',
+            fixes: [{ cause: 'FA cycle stop triggered stacker area sensor.', action: 'Contacted FA, verified tray data and jogged trays to verified positions.' }],
+            byLine: { '4-1': 1 }, last: '2026-09-18'
+        },
+        {
+            id: 'stk-discharge', code: '', section: 'STK / Logistics', unit: 'Tray Input / Discharge',
+            title: 'Trays not discharging to STK / not entering J/F',
+            alarm: '',
+            phenomenon: 'Finished trays waiting at unloader (D1) not taken by STK / trays from STK not entering J/F.',
+            fixes: [
+                { cause: 'J/F↔STK interface signal normal; STK not issuing command.', action: 'Requested FA team to manually eject trays from STK; IT notified.' },
+                { cause: 'Route not registered for tray (IT).', action: 'Contacted IT/process team to register route.' },
+                { cause: 'Tray master data not registered for line.', action: 'Process team added tray master data.' }
+            ],
+            note: 'J/F forced discharge only goes as far as D1 — STK must be operated manually by FA.',
+            byLine: { '1-1': 3, '1-2': 3, '2-1': 1, '2-2': 1, '2-3': 1 }, last: '2026-10-14'
+        },
+        {
+            id: 'it-host', code: '', section: 'IT / MES', unit: 'Host / IT Alarm',
+            title: 'IT Host Alarm — cell ID mismatch',
+            alarm: 'IT Host Alarm Message',
+            phenomenon: 'IT host alarm, process stopped.',
+            fixes: [
+                { cause: 'Cell ID mismatch between cell in tray and MES.', action: 'Contacted process team and IT.' },
+                { cause: 'After PH step, OCV recipe not received from host (EIF spec).', action: 'Escalated to MES/EIF owner; waiting on spec/PLC change.' }
+            ],
+            byLine: { '3-1': 2, '1-1': 2 }, last: '2026-09-23'
+        },
+        {
+            id: 'comm-all', code: '', section: 'Utility', unit: 'Communication',
+            title: 'Communication error on all lines simultaneously',
+            alarm: 'Communication Error',
+            phenomenon: 'All running J/F lines showed the same communication error at once.',
+            fixes: [{ cause: 'Plant-wide communication interruption.', action: 'Reset each line; escalated remaining line to OEM.' }],
+            byLine: { '2-1': 1, '2-2': 1, '2-3': 1, '3-1': 1, '3-2': 1, '4-1': 1, '4-2': 1 }, last: '2026-09-23'
+        },
+        {
+            id: 'power-dip', code: '', section: 'Utility', unit: 'Power / Voltage',
+            title: 'Voltage drop / power outage on jig power',
+            alarm: 'Jig Power Voltage Drop',
+            phenomenon: 'Voltage drop detected on J/F jig power supply (multiple times), process stopped.',
+            fixes: [{ cause: 'Plant power outage / voltage dip.', action: 'Recovered with power-failure recovery program, checked equipment for damage, restarted.' }],
+            note: 'Report as: line, each stop window (min), normal-run start time, remarks.',
+            byLine: { '2-1': 1, '2-2': 1, '2-3': 1, '3-1': 1, '3-2': 1 }, last: '2026-09-03'
+        },
+        {
+            id: 'hvac', code: '', section: 'Utility', unit: 'HVAC / Airflow',
+            title: 'Channel board temperature high — weak HVAC airflow',
+            alarm: '',
+            phenomenon: 'Channel board temperature up to 60 °C (spec ≤ 50 °C).',
+            fixes: [{ cause: 'Low HVAC air supply volume in corridor/channel board area.', action: 'Reported to UT team for damper/airflow adjustment; monitoring.' }],
+            byLine: { '2-1': 1, '3-1': 1 }, last: '2026-10-15'
+        },
+        {
+            id: 'grease', code: '', section: 'Main P&P', unit: 'Ball Bush / LM Guide',
+            title: 'Excess grease after PM',
+            alarm: '',
+            phenomenon: 'Too much grease applied at PM (4 locations).',
+            fixes: [{ cause: 'Over-greasing during PM; grease can drip into jig and contaminate cells.', action: 'Cleaned excess grease; apply moderate amount at next PM.' }],
+            byLine: { '4-1': 1, '4-2': 1 }, last: '2026-09-18'
+        }
+    ];
+
+    ISSUES.forEach(i => {
+        i.lines = Object.keys(i.byLine).sort((a, b) => i.byLine[b] - i.byLine[a]);
+        i.seen = Object.values(i.byLine).reduce((a, b) => a + b, 0);
+    });
+    const lineCount = (i, line) => (line && i.byLine[line]) || 0;
+
+    // ===================== STATE =====================
+    let reports = [];
+    try { reports = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch (e) { reports = []; }
+    let lastSummary = { full: '', chat: '' };
+    let currentFormat = 'full';
+    let libApplyMode = false;
+    let libFilter = 'All';
+    let openIssueId = null;
+
+    function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(reports)); } catch (e) {} }
+
+    // ===================== BUILD STATIC UI =====================
+    function buildLines() {
+        const g = document.getElementById('equipmentGroup');
+        g.innerHTML = LINES.map(l =>
+            `<label class="${IDLE_LINES.includes(l) ? 'idle' : ''}"><input type="radio" name="equipment" value="${l}" onchange="renderLineRecs()"> ${l}</label>`
+        ).join('');
+    }
+
+    function buildSections() {
+        const sel = document.getElementById('machine');
+        Object.keys(SECTIONS).forEach(s => {
+            const o = document.createElement('option'); o.value = s; o.textContent = s; sel.appendChild(o);
+        });
+    }
+
+    function updateUnits() {
+        const sec = document.getElementById('machine').value;
+        const unitSelect = document.getElementById('unit');
+        const options = SECTIONS[sec] ? [' ', ...SECTIONS[sec]] : ['-'];
+        unitSelect.innerHTML = '';
+        options.forEach(opt => {
+            const el = document.createElement('option'); el.textContent = opt; el.value = opt; unitSelect.appendChild(el);
+        });
+    }
+
+    // ===================== LINE RECOMMENDATIONS =====================
+    function renderLineRecs() {
+        const box = document.getElementById('lineRecs');
+        const line = document.querySelector('input[name="equipment"]:checked')?.value;
+        if (!line) { box.classList.add('hidden'); return; }
+        const top = ISSUES.filter(i => lineCount(i, line) > 0)
+            .sort((a, b) => lineCount(b, line) - lineCount(a, line) || b.seen - a.seen);
+        box.classList.remove('hidden');
+        if (!top.length) {
+            box.innerHTML = `<div class="recs-empty">No alarm history for J/F ${line} yet — use the library or fill manually.</div>`;
+            return;
+        }
+        const total = top.reduce((a, i) => a + lineCount(i, line), 0);
+        const max = lineCount(top[0], line);
+        box.innerHTML = `
+            <div class="recs-head"><strong>Most common on J/F ${line}</strong><span>${total} reports since Jul</span></div>
+            ${top.slice(0, 5).map((i, n) => {
+                const c = lineCount(i, line);
+                return `<button type="button" class="rec" onclick="openLibrary(true, '${i.id}')">
+                    <span class="rec-rank">${n + 1}</span>
+                    <span class="rec-main">
+                        <span class="rec-title" style="display:block">${esc(i.title)}</span>
+                        <span class="rec-sub" style="display:block">${i.code ? i.code + ' · ' : ''}${esc(i.unit)} · ${Math.round(c / total * 100)}% of ${line}'s alarms</span>
+                        <span class="rec-bar" style="display:block"><i style="width:${Math.max(6, c / max * 100)}%"></i></span>
+                    </span>
+                    <span class="rec-count">${c}×</span>
+                </button>`;
+            }).join('')}
+            ${top.length > 5 ? `<button type="button" class="recs-more" onclick="openLibrary(true)">See all ${top.length} issues seen on ${line} →</button>` : ''}`;
+    }
+
+    // ===================== SHIFT RESET (6:00 / 18:00) =====================
+    function checkShiftReset() {
+        const lastReset = localStorage.getItem(RESET_KEY);
+        const now = new Date();
+        const sixAM = new Date(); sixAM.setHours(6, 0, 0, 0);
+        const sixPM = new Date(); sixPM.setHours(18, 0, 0, 0);
+        let lastResetPoint;
+        if (now >= sixPM) lastResetPoint = sixPM.getTime();
+        else if (now >= sixAM) lastResetPoint = sixAM.getTime();
+        else { const y = new Date(); y.setDate(y.getDate() - 1); y.setHours(18, 0, 0, 0); lastResetPoint = y.getTime(); }
+
+        if (!lastReset || parseInt(lastReset) < lastResetPoint) {
+            if (reports.length > 0) { reports = []; save(); }
+            localStorage.setItem(RESET_KEY, Date.now());
+            if (!document.getElementById('dashboardView').classList.contains('hidden')) renderDashboard();
+        }
+    }
+
+    // ===================== DASHBOARD =====================
+    function renderDashboard() {
+        const list = document.getElementById('reportsList');
+        list.innerHTML = '';
+        const newBtn = document.getElementById('dashNewBtn');
+        const libBtn = document.getElementById('dashLibBtn');
+
+        if (reports.length === 0) {
+            newBtn.style.display = 'none';
+            libBtn.style.display = 'none';
+            list.innerHTML = `
+                <div class="zero-state-container">
+                    <img src="https://illustrations.popsy.co/blue/business-presentation.svg" alt="No reports" class="zero-state-image" onerror="this.onerror=null; this.style.display='none'">
+                    <div class="zero-state-text">Create a new report by clicking the button below to track your downtime.</div>
+                    <button class="btn-main" onclick="createNewReport()">Create New Report</button>
+                    <button class="btn-library" onclick="openLibrary(false)">📖 Known Issues Library</button>
+                </div>`;
+            return;
+        }
+
+        newBtn.style.display = 'block';
+        libBtn.style.display = 'block';
+
+        const resetNote = document.createElement('p');
+        resetNote.style = "text-align:center; font-size:0.8rem; color:#94a3b8; margin-bottom: 15px;";
+        resetNote.innerText = "Dashboard resets automatically at 6:00";
+        list.appendChild(resetNote);
+
+        [...reports].sort((a, b) => b.id - a.id).forEach(report => {
+            const card = document.createElement('div');
+            card.className = 'report-card';
+            card.onclick = () => editReport(report.id);
+            const statusClass = report.resolved === 'Yes' ? 'status-resolved' : 'status-open';
+            const statusText = report.resolved === 'Yes' ? 'Resolved' : 'Open';
+            card.innerHTML = `
+                <div class="report-info">
+                    <div class="report-title">${esc(report.equipment || 'Unknown')} | ${esc(report.phenomenon)}</div>
+                    <div class="report-meta">
+                        <span>${formatDate(report.dateRaw)}</span><span>•</span><span>${formatTime(report.startRaw)}</span>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                </div>
+                <div class="btn-actions">
+                    <button class="btn-edit">Edit</button>
+                    <button class="btn-delete" onclick="event.stopPropagation(); deleteReport(${report.id})">Delete</button>
+                </div>`;
+            list.appendChild(card);
+        });
+    }
+
+    function resetForm() {
+        document.getElementById('editingId').value = '';
+        document.getElementById('downtimeForm').reset();
+        updateUnits();
+        const now = new Date();
+        document.getElementById('dateInput').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+        document.getElementById('startTime').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+        document.getElementById('endTimeContainer').classList.add('hidden');
+        document.getElementById('otherStopType').classList.add('hidden');
+        document.getElementById('summaryContainer').style.display = 'none';
+        document.getElementById('errorMessage').style.display = 'none';
+        renderLineRecs();
+    }
+
+    function createNewReport() { resetForm(); showForm(); }
+
+    function showForm() {
+        document.getElementById('dashboardView').classList.add('hidden');
+        document.getElementById('formView').classList.remove('hidden');
+        window.scrollTo(0, 0);
+    }
+
+    function showDashboard() {
+        document.getElementById('dashboardView').classList.remove('hidden');
+        document.getElementById('formView').classList.add('hidden');
+        renderDashboard();
+        window.scrollTo(0, 0);
+    }
+
+    function deleteReport(id) {
+        if (confirm('Are you sure you want to delete this report?')) {
+            reports = reports.filter(r => r.id !== id);
+            save();
+            renderDashboard();
+        }
+    }
+
+    function editReport(id) {
+        const r = reports.find(x => x.id === id);
+        if (!r) return;
+        resetForm();
+        document.getElementById('editingId').value = id;
+
+        if (r.stopTypeVal) {
+            const radio = document.querySelector(`input[name="stopType"][value="${r.stopTypeVal}"]`);
+            if (radio) radio.checked = true;
+            document.getElementById('otherStopType').classList.toggle('hidden', r.stopTypeVal !== 'Other');
+            document.getElementById('otherStopType').value = r.otherStopType || '';
+        }
+        if (r.equipment) {
+            const eq = document.querySelector(`input[name="equipment"][value="${r.equipment}"]`);
+            if (eq) eq.checked = true;
+            renderLineRecs();
+        }
+        document.getElementById('machine').value = r.machine || '';
+        updateUnits();
+        document.getElementById('unit').value = r.unit || ' ';
+        document.getElementById('assembly').value = r.assembly || '';
+        document.getElementById('alarm').value = r.alarm || '';
+        document.getElementById('dateInput').value = r.dateRaw || '';
+        document.getElementById('startTime').value = r.startRaw || '';
+        const res = document.querySelector(`input[name="resolved"][value="${r.resolved}"]`);
+        if (res) { res.checked = true; document.getElementById('endTimeContainer').classList.toggle('hidden', r.resolved !== 'Yes'); }
+        document.getElementById('endTime').value = r.endRaw || '';
+        document.getElementById('phenomenon').value = r.phenomenon || '';
+        document.getElementById('rootCause').value = r.rootCause || '';
+        document.getElementById('actionTaken').value = r.actionTaken || '';
+        showForm();
+    }
+
+    // ===================== HELPERS =====================
+    function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return "";
+        const d = new Date(dateStr + 'T12:00:00');
+        return `${d.getDate()} ${d.toLocaleString('en-US', { month: 'long' })} ${d.getFullYear()}`;
+    }
+    function formatShortDate(dateStr) {
+        if (!dateStr) return "";
+        const d = new Date(dateStr + 'T12:00:00');
+        return d.toLocaleString('en-US', { month: 'short', day: 'numeric' });
+    }
+    function formatTime(timeStr) {
+        if (!timeStr) return "";
+        let [h, m] = timeStr.split(':');
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+        return `${String(h).padStart(2, '0')}:${m} ${ampm}`;
+    }
+    function minutesBetween(a, b) {
+        const s = new Date(`2000-01-01T${a}`); let e = new Date(`2000-01-01T${b}`);
+        if (e < s) e.setDate(e.getDate() + 1);
+        return Math.floor((e - s) / 60000);
+    }
+
+    // ===================== SUMMARY =====================
+    function generateSummary() {
+        const phenomenon = document.getElementById('phenomenon').value.trim();
+        const rootCause = document.getElementById('rootCause').value.trim();
+        const actionTaken = document.getElementById('actionTaken').value.trim();
+        const errorEl = document.getElementById('errorMessage');
+        const fail = msg => { errorEl.innerText = msg; errorEl.style.display = 'block'; };
+
+        const equipment = document.querySelector('input[name="equipment"]:checked')?.value || "";
+        const stopTypeVal = document.querySelector('input[name="stopType"]:checked')?.value;
+        if (!stopTypeVal) return fail("Please select Stop Type");
+        if (!equipment) return fail("Please select Equipment (J/F Line)");
+        if (!phenomenon) return fail("Please enter Phenomenon");
+        if (!rootCause) return fail("Please enter Root Cause");
+        if (!actionTaken) return fail("Please enter Action Taken");
+
+        const editingId = document.getElementById('editingId').value ? parseInt(document.getElementById('editingId').value) : null;
+        const startRaw = document.getElementById('startTime').value;
+        const isDuplicate = reports.some(r => r.id !== editingId && r.equipment === equipment &&
+            r.phenomenon.trim().toLowerCase() === phenomenon.toLowerCase() && r.startRaw === startRaw);
+        if (isDuplicate) return fail("Error: Report already exists.");
+        errorEl.style.display = 'none';
+
+        const resolved = document.querySelector('input[name="resolved"]:checked').value;
+        const endRaw = document.getElementById('endTime').value;
+        const otherStop = document.getElementById('otherStopType').value.trim();
+
+        const r = {
+            id: editingId || Date.now(),
+            stopTypeVal, otherStopType: otherStop,
+            stopType: stopTypeVal === 'Other' ? (otherStop || 'Other') : stopTypeVal,
+            equipment,
+            machine: document.getElementById('machine').value,
+            unit: document.getElementById('unit').value,
+            assembly: document.getElementById('assembly').value.trim(),
+            alarm: document.getElementById('alarm').value.trim(),
+            dateRaw: document.getElementById('dateInput').value,
+            startRaw, endRaw, resolved, phenomenon, rootCause, actionTaken
+        };
+
+        const idx = reports.findIndex(x => x.id === r.id);
+        if (idx > -1) reports[idx] = r; else reports.push(r);
+        save();
+        document.getElementById('editingId').value = r.id;
+
+        let downtimeLine = "", chatDowntime = `${startRaw || '--:--'}~`;
+        if (resolved === 'Yes' && startRaw && endRaw) {
+            const diff = minutesBetween(startRaw, endRaw);
+            downtimeLine = `\n\nTotal Downtime: ${Math.floor(diff / 60)}h ${diff % 60}m`;
+            chatDowntime = `${startRaw}~${endRaw} (${diff} min)`;
+        } else {
+            chatDowntime += ' (ongoing)';
+        }
+
+        const unitTxt = (r.unit || '').trim() || '-';
+        lastSummary.full = `1. Stop Type:
+${r.stopType}
+
+2. Equipment:
+J/F ${r.equipment}
+
+3. Machine Area:
+    Section: ${r.machine || '-'}
+    Unit: ${unitTxt}
+    Assembly: ${r.assembly || '-'}
+    Alarm: ${r.alarm || '-'}
+
+4.  Date: ${formatDate(r.dateRaw)}
+    Start Time: ${formatTime(r.startRaw)}
+    End Time: ${resolved === 'Yes' ? formatTime(endRaw) : "-"}
+    Issue Resolved: ${resolved === 'Yes' ? "Yes ✅" : "No"}
+
+5. Phenomenon:
+${phenomenon}
+
+6. Root Cause:
+${rootCause}
+
+7. Action taken:
+${actionTaken}${downtimeLine}`;
+
+        // Format requested by OEM / NSE for the J/F group chat
+        lastSummary.chat = `#${r.equipment}
+- Type : ${r.stopType}
+- Phenomenon : ${r.alarm ? r.alarm + ' — ' : ''}${phenomenon}
+- Cause : ${rootCause}
+- Action : ${actionTaken}
+- Downtime : ${chatDowntime}${resolved === 'Yes' ? '' : '\n- Status : Not resolved'}`;
+
+        setFormat(currentFormat);
+        const c = document.getElementById('summaryContainer');
+        c.style.display = 'block';
+        setTimeout(() => c.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+    }
+
+    function setFormat(f) {
+        currentFormat = f;
+        document.getElementById('fmtFull').classList.toggle('active', f === 'full');
+        document.getElementById('fmtChat').classList.toggle('active', f === 'chat');
+        document.getElementById('summaryOutput').innerText = lastSummary[f] || '';
+    }
+
+    function copyToClipboard() {
+        const text = document.getElementById('summaryOutput').innerText;
+        const btn = document.querySelector('.btn-copy');
+        const done = () => { btn.innerText = "✓ Copied!"; setTimeout(() => { btn.innerText = "Copy Summary"; }, 2000); };
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+        } else fallbackCopy(text, done);
+    }
+    function fallbackCopy(text, done) {
+        const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta);
+        ta.select(); try { document.execCommand('copy'); done(); } catch (e) {} ta.remove();
+    }
+
+    // ===================== KNOWN ISSUES LIBRARY =====================
+    function openLibrary(applyMode, focusId) {
+        libApplyMode = applyMode;
+        openIssueId = focusId || null;
+        document.getElementById('libSearch').value = '';
+        // Pre-filter to the section already chosen in the form (unless opening a specific issue)
+        const sec = applyMode && !focusId ? document.getElementById('machine').value : '';
+        libFilter = SECTIONS[sec] ? sec : 'All';
+        renderChips();
+        renderLibrary();
+        document.getElementById('libraryOverlay').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        const ov = document.getElementById('libraryOverlay');
+        ov.scrollTop = 0;
+        if (focusId) setTimeout(() => {
+            const el = document.querySelector(`[data-issue="${focusId}"]`);
+            if (el) el.scrollIntoView({ block: 'start' });
+        }, 30);
+    }
+    function closeLibrary() {
+        document.getElementById('libraryOverlay').classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    function renderChips() {
+        const cats = ['All', ...Object.keys(SECTIONS).filter(s => ISSUES.some(i => i.section === s))];
+        document.getElementById('libChips').innerHTML = cats.map(c => {
+            const n = c === 'All' ? ISSUES.length : ISSUES.filter(i => i.section === c).length;
+            return `<button class="chip ${c === libFilter ? 'active' : ''}" onclick="libFilter='${c}'; renderChips(); renderLibrary();">${c} (${n})</button>`;
+        }).join('');
+    }
+
+    function renderLibrary() {
+        const q = document.getElementById('libSearch').value.trim().toLowerCase();
+        const line = document.querySelector('input[name="equipment"]:checked')?.value;
+        let items = ISSUES.filter(i => libFilter === 'All' || i.section === libFilter);
+        if (q) {
+            const words = q.split(/\s+/);
+            items = items.filter(i => {
+                const hay = [i.title, i.code, i.alarm, i.phenomenon, i.unit, i.section, i.note || '', i.lines.join(' '),
+                             ...i.fixes.map(f => f.cause + ' ' + f.action)].join(' ').toLowerCase();
+                return words.every(w => hay.includes(w));
+            });
+        }
+        // Sort: most frequent on the selected line first, then overall frequency
+        items.sort((a, b) => {
+            if (libApplyMode && line) {
+                const d = lineCount(b, line) - lineCount(a, line);
+                if (d) return d;
+            }
+            return b.seen - a.seen;
+        });
+
+        const el = document.getElementById('libList');
+        if (!items.length) { el.innerHTML = `<div class="empty-lib">No known issue matches. Fill the report manually.</div>`; return; }
+
+        el.innerHTML = items.map(i => {
+            const isOpen = openIssueId === i.id;
+            const hot = i.seen >= 10;
+            const onLine = libApplyMode && lineCount(i, line) > 0;
+            return `
+            <div class="issue" data-issue="${i.id}">
+                <div class="issue-head" onclick="toggleIssue('${i.id}')">
+                    <div class="issue-main">
+                        <div class="issue-title">${esc(i.title)}</div>
+                        <div class="issue-meta">
+                            ${i.code ? `<span class="tag code">${i.code}</span>` : ''}
+                            <span class="tag">${esc(i.section)}</span>
+                            ${hot ? `<span class="tag hot">Frequent</span>` : ''}
+                            ${onLine ? `<span class="tag hot">${lineCount(i, line)}× on ${line}</span>` : ''}
+                            <span>Lines: ${i.lines.map(l => `${l} (${i.byLine[l]})`).join(', ')}</span>
+                        </div>
+                    </div>
+                    <div class="count">${i.seen}<small>reports</small></div>
+                </div>
+                ${isOpen ? `
+                <div class="issue-body">
+                    ${i.alarm ? `<div style="font-size:0.82rem;color:#475569;margin-bottom:8px;"><b>Alarm:</b> ${esc(i.alarm)}</div>` : ''}
+                    <div style="font-size:0.82rem;color:#475569;margin-bottom:10px;"><b>Unit:</b> ${esc(i.unit)}</div>
+                    ${i.note ? `<div class="note">⚠️ ${esc(i.note)}</div>` : ''}
+                    <label style="margin-top:4px;">Pick the cause that matches:</label>
+                    ${i.fixes.map((f, n) => `
+                        <label class="fix">
+                            <input type="radio" name="fix_${i.id}" value="${n}" ${n === 0 ? 'checked' : ''}>
+                            <b>Cause</b><p>${esc(f.cause)}</p>
+                            <b>Action</b><p>${esc(f.action)}</p>
+                        </label>`).join('')}
+                    <div class="seen">Last reported ${formatShortDate(i.last)} 2026</div>
+                    <button class="btn-apply" onclick="applyIssue('${i.id}')">${libApplyMode ? 'Fill Report With This' : 'Start Report With This'}</button>
+                </div>` : ''}
+            </div>`;
+        }).join('');
+    }
+
+    function toggleIssue(id) {
+        openIssueId = openIssueId === id ? null : id;
+        renderLibrary();
+    }
+
+    function applyIssue(id) {
+        const i = ISSUES.find(x => x.id === id);
+        if (!i) return;
+        const n = parseInt(document.querySelector(`input[name="fix_${id}"]:checked`)?.value || '0');
+        const fix = i.fixes[n];
+
+        if (!libApplyMode) resetForm();
+
+        if (!document.querySelector('input[name="stopType"]:checked')) {
+            const bm = document.querySelector('input[name="stopType"][value="BM"]'); if (bm) bm.checked = true;
+        }
+        document.getElementById('machine').value = i.section;
+        updateUnits();
+        document.getElementById('unit').value = i.unit;
+        if (i.alarm) document.getElementById('alarm').value = i.alarm;
+        document.getElementById('phenomenon').value = i.phenomenon;
+        document.getElementById('rootCause').value = fix.cause;
+        document.getElementById('actionTaken').value = fix.action;
+        document.getElementById('summaryContainer').style.display = 'none';
+
+        closeLibrary();
+        if (!libApplyMode) showForm();
+        // Point the user at what still needs filling
+        const missingLine = !document.querySelector('input[name="equipment"]:checked');
+        const target = missingLine ? document.getElementById('equipmentGroup') : document.getElementById('assembly');
+        setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
+    }
+
+    // ===================== EVENTS / INIT =====================
+    document.getElementsByName('stopType').forEach(el => el.addEventListener('change', () => {
+        document.getElementById('otherStopType').classList.toggle('hidden', el.value !== 'Other');
+    }));
+    document.getElementsByName('resolved').forEach(el => el.addEventListener('change', () => {
+        document.getElementById('endTimeContainer').classList.toggle('hidden', el.value !== 'Yes');
+        if (el.value === 'Yes' && !document.getElementById('endTime').value) {
+            const now = new Date();
+            document.getElementById('endTime').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+        }
+    }));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLibrary(); });
+
+    buildLines();
+    buildSections();
+    checkShiftReset();
+    renderDashboard();
+    setInterval(checkShiftReset, 60000);
+</script>
+
+</body>
+</html>
