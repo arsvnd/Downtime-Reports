@@ -193,7 +193,7 @@
             </div>
 
             <div class="form-group">
-                <label>2. Equipment (J/F Line)</label>
+                <label>2. Equipment (JF Line)</label>
                 <div class="block-options line-grid" id="equipmentGroup"></div>
                 <div class="hint">Dashed = not in mass production yet (1-3, 3-3, 4-3)</div>
                 <div id="lineRecs" class="recs hidden"></div>
@@ -312,7 +312,7 @@
     };
 
     // ===================== KNOWN ISSUES (from group chat) =====================
-    // byLine: approx. number of times reported per J/F line in the group chat (Jul 18 – Oct 16). last: last reported date.
+    // byLine: approx. number of times reported per JF line in the group chat (Jul 18 – Oct 16). last: last reported date.
     const ISSUES = [
         {
             id: 'mpp-slip-undetect', code: '001431', section: 'Main P&P', unit: 'Cell Transfer P&P (Gripper)',
@@ -324,7 +324,7 @@
                 { cause: 'Cell slipped during pick-up (gripper did not hold cell properly).', action: 'Opened the gripper with a wrench, pulled the cell back up into the gripper and clamped it, verified sensor and restarted.' },
                 { cause: 'Insufficient Main P&P gripper tension / worn gripper pads causing cell slip.', action: 'Adjusted gripper joint to compensate tension and re-taught (OEM). Gripper replacement requested at next PM.' }
             ],
-            note: 'Most frequent J/F alarm — mainly 4-2, also 4-1, 3-1, 1-2. Never jog the P&P down with misaligned cells: on Sep 19 (4-2) this crashed 2 cells into the ULD buffer and leaked electrolyte. If alignment is uncertain, call OEM.',
+            note: 'Most frequent JF alarm — mainly 4-2, also 4-1, 3-1, 1-2. Never jog the P&P down with misaligned cells: on Sep 19 (4-2) this crashed 2 cells into the ULD buffer and leaked electrolyte. If alignment is uncertain, call OEM.',
             byLine: { '4-2': 45, '4-1': 6, '3-1': 4, '3-2': 2, '1-1': 1, '1-2': 1 }, last: '2026-10-09'
         },
         {
@@ -688,15 +688,15 @@
         },
         {
             id: 'stk-discharge', code: '', section: 'STK / Logistics', unit: 'Tray Input / Discharge',
-            title: 'Trays not discharging to STK / not entering J/F',
+            title: 'Trays not discharging to STK / not entering JF',
             alarm: '',
-            phenomenon: 'Finished trays waiting at unloader (D1) not taken by STK / trays from STK not entering J/F.',
+            phenomenon: 'Finished trays waiting at unloader (D1) not taken by STK / trays from STK not entering JF.',
             fixes: [
-                { cause: 'J/F↔STK interface signal normal; STK not issuing command.', action: 'Requested FA team to manually eject trays from STK; IT notified.' },
+                { cause: 'JF↔STK interface signal normal; STK not issuing command.', action: 'Requested FA team to manually eject trays from STK; IT notified.' },
                 { cause: 'Route not registered for tray (IT).', action: 'Contacted IT/process team to register route.' },
                 { cause: 'Tray master data not registered for line.', action: 'Process team added tray master data.' }
             ],
-            note: 'J/F forced discharge only goes as far as D1 — STK must be operated manually by FA.',
+            note: 'JF forced discharge only goes as far as D1 — STK must be operated manually by FA.',
             byLine: { '1-1': 3, '1-2': 3, '2-1': 1, '2-2': 1, '2-3': 1 }, last: '2026-10-14'
         },
         {
@@ -714,7 +714,7 @@
             id: 'comm-all', code: '', section: 'Utility', unit: 'Communication',
             title: 'Communication error on all lines simultaneously',
             alarm: 'Communication Error',
-            phenomenon: 'All running J/F lines showed the same communication error at once.',
+            phenomenon: 'All running JF lines showed the same communication error at once.',
             fixes: [{ cause: 'Plant-wide communication interruption.', action: 'Reset each line; escalated remaining line to OEM.' }],
             byLine: { '2-1': 1, '2-2': 1, '2-3': 1, '3-1': 1, '3-2': 1, '4-1': 1, '4-2': 1 }, last: '2026-09-23'
         },
@@ -722,7 +722,7 @@
             id: 'power-dip', code: '', section: 'Utility', unit: 'Power / Voltage',
             title: 'Voltage drop / power outage on jig power',
             alarm: 'Jig Power Voltage Drop',
-            phenomenon: 'Voltage drop detected on J/F jig power supply (multiple times), process stopped.',
+            phenomenon: 'Voltage drop detected on JF jig power supply (multiple times), process stopped.',
             fixes: [{ cause: 'Plant power outage / voltage dip.', action: 'Recovered with power-failure recovery program, checked equipment for damage, restarted.' }],
             note: 'Report as: line, each stop window (min), normal-run start time, remarks.',
             byLine: { '2-1': 1, '2-2': 1, '2-3': 1, '3-1': 1, '3-2': 1 }, last: '2026-09-03'
@@ -796,13 +796,13 @@
             .sort((a, b) => lineCount(b, line) - lineCount(a, line) || b.seen - a.seen);
         box.classList.remove('hidden');
         if (!top.length) {
-            box.innerHTML = `<div class="recs-empty">No alarm history for J/F ${line} yet — use the library or fill manually.</div>`;
+            box.innerHTML = `<div class="recs-empty">No alarm history for JF ${line} yet — use the library or fill manually.</div>`;
             return;
         }
         const total = top.reduce((a, i) => a + lineCount(i, line), 0);
         const max = lineCount(top[0], line);
         box.innerHTML = `
-            <div class="recs-head"><strong>Most common on J/F ${line}</strong><span>${total} reports since Jul</span></div>
+            <div class="recs-head"><strong>Most common on JF ${line}</strong><span>${total} reports since Jul</span></div>
             ${top.slice(0, 5).map((i, n) => {
                 const c = lineCount(i, line);
                 return `<button type="button" class="rec" onclick="openLibrary(true, '${i.id}')">
@@ -993,7 +993,7 @@
         const equipment = document.querySelector('input[name="equipment"]:checked')?.value || "";
         const stopTypeVal = document.querySelector('input[name="stopType"]:checked')?.value;
         if (!stopTypeVal) return fail("Please select Stop Type");
-        if (!equipment) return fail("Please select Equipment (J/F Line)");
+        if (!equipment) return fail("Please select Equipment (JF Line)");
         if (!phenomenon) return fail("Please enter Phenomenon");
         if (!rootCause) return fail("Please enter Root Cause");
         if (!actionTaken) return fail("Please enter Action Taken");
@@ -1041,7 +1041,7 @@
 ${r.stopType}
 
 2. Equipment:
-J/F ${r.equipment}
+JF ${r.equipment}
 
 3. Machine Area:
     Section: ${r.machine || '-'}
@@ -1063,7 +1063,7 @@ ${rootCause}
 7. Action taken:
 ${actionTaken}${downtimeLine}`;
 
-        // Format requested by OEM / NSE for the J/F group chat
+        // Format requested by OEM / NSE for the JF group chat
         lastSummary.chat = `#${r.equipment}
 - Type : ${r.stopType}
 - Phenomenon : ${r.alarm ? r.alarm + ' — ' : ''}${phenomenon}
@@ -1177,13 +1177,12 @@ ${actionTaken}${downtimeLine}`;
                     ${i.alarm ? `<div style="font-size:0.82rem;color:#475569;margin-bottom:8px;"><b>Alarm:</b> ${esc(i.alarm)}</div>` : ''}
                     <div style="font-size:0.82rem;color:#475569;margin-bottom:10px;"><b>Unit:</b> ${esc(i.unit)}</div>
                     ${i.note ? `<div class="note">⚠️ ${esc(i.note)}</div>` : ''}
-                    <label style="margin-top:4px;">Pick the cause that matches:</label>
-                    ${i.fixes.map((f, n) => `
-                        <label class="fix">
-                            <input type="radio" name="fix_${i.id}" value="${n}" ${n === 0 ? 'checked' : ''}>
+                    <label style="margin-top:4px;">Past causes &amp; actions (for reference):</label>
+                    ${i.fixes.map(f => `
+                        <div class="fix" style="cursor:default;">
                             <b>Cause</b><p>${esc(f.cause)}</p>
                             <b>Action</b><p>${esc(f.action)}</p>
-                        </label>`).join('')}
+                        </div>`).join('')}
                     <div class="seen">Last reported ${formatShortDate(i.last)} 2026</div>
                     <button class="btn-apply" onclick="applyIssue('${i.id}')">${libApplyMode ? 'Fill Report With This' : 'Start Report With This'}</button>
                 </div>` : ''}
@@ -1199,9 +1198,6 @@ ${actionTaken}${downtimeLine}`;
     function applyIssue(id) {
         const i = ISSUES.find(x => x.id === id);
         if (!i) return;
-        const n = parseInt(document.querySelector(`input[name="fix_${id}"]:checked`)?.value || '0');
-        const fix = i.fixes[n];
-
         if (!libApplyMode) resetForm();
 
         if (!document.querySelector('input[name="stopType"]:checked')) {
@@ -1212,15 +1208,13 @@ ${actionTaken}${downtimeLine}`;
         document.getElementById('unit').value = i.unit;
         if (i.alarm) document.getElementById('alarm').value = i.alarm;
         document.getElementById('phenomenon').value = i.phenomenon;
-        document.getElementById('rootCause').value = fix.cause;
-        document.getElementById('actionTaken').value = fix.action;
         document.getElementById('summaryContainer').style.display = 'none';
 
         closeLibrary();
         if (!libApplyMode) showForm();
         // Point the user at what still needs filling
         const missingLine = !document.querySelector('input[name="equipment"]:checked');
-        const target = missingLine ? document.getElementById('equipmentGroup') : document.getElementById('assembly');
+        const target = missingLine ? document.getElementById('equipmentGroup') : document.getElementById('rootCause');
         setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
     }
 
