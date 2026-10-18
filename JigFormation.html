@@ -215,7 +215,7 @@
 
         <div id="adminSetup" class="hidden">
             <h3>Admin Setup</h3>
-            <div class="setup-box">Paste the two Power Automate links. They are saved on this device only and never in the page itself.</div>
+            <div class="setup-box">Paste the two Power Automate links. Reports are saved as .json files in your OneDrive folder. The links are kept on this device only, never in the page itself.</div>
             <div class="form-group">
                 <label>Save link (flow "JF Save Report"):</label>
                 <input type="text" id="cfgSave" placeholder="https://...">
@@ -231,10 +231,10 @@
         <div id="adminMain" class="hidden">
             <h3>End of Shift</h3>
             <div class="admin-row">
-                <input type="date" id="admDate" onchange="renderAdmin()">
+                <input type="date" id="admDate" onchange="loadAdmin()">
                 <div class="block-options">
-                    <label><input type="radio" name="admShift" value="Day" onchange="renderAdmin()"> Day</label>
-                    <label><input type="radio" name="admShift" value="Night" onchange="renderAdmin()"> Night</label>
+                    <label><input type="radio" name="admShift" value="Day" onchange="loadAdmin()"> Day</label>
+                    <label><input type="radio" name="admShift" value="Night" onchange="loadAdmin()"> Night</label>
                 </div>
             </div>
             <div class="admin-stats" id="admStats"></div>
@@ -1116,9 +1116,10 @@
         };
 
         const idx = reports.findIndex(x => x.id === r.id);
+        const prev = idx > -1 ? reports[idx] : null;
         if (idx > -1) reports[idx] = r; else reports.push(r);
         save();
-        queueSync(r, false);
+        queueSync(r, false, prev);
         document.getElementById('editingId').value = r.id;
 
         let downtimeLine = "", chatDowntime = `${startRaw || '--:--'}~`;
@@ -1395,15 +1396,25 @@ ${actionTaken}${downtimeLine}${r.tech ? `\n\nReported by: ${r.tech}` : ''}`;
             actionTaken: r.actionTaken || '', deleted: deleted ? 'TRUE' : ''
         };
         COLS.forEach(k => { if (row[k] == null) row[k] = ''; });
+        const sh = shiftOf(row.date, row.start) || { date: row.date || 'nodate', shift: 'Day' };
+        row.shiftKey = `JF_${sh.date}_${sh.shift}`;
+        row.fileName = `${row.shiftKey}_${row.line || 'x'}_${row.id}_${row.submittedAt.replace(/[-:.]/g, '')}.json`;
         return row;
     }
-    function queueSync(r, deleted) {
+    function queueSync(r, deleted, prev) {
         if (!getSaveUrl()) return;
-        // A delete only matters if the report already left this phone
+        const row = toRow(r, deleted);
+        // Drop older unsent copies of this report for the same shift
+        let box = lsJSON(OUTBOX_KEY, []).filter(x => !(x.id === row.id && x.shiftKey === row.shiftKey));
         const sent = lsJSON(SENT_KEY, []);
-        let box = lsJSON(OUTBOX_KEY, []).filter(x => x.id !== String(r.id));
-        if (deleted && !sent.includes(String(r.id))) { lsSet(OUTBOX_KEY, JSON.stringify(box)); renderTopbar(); return; }
-        box.push(toRow(r, deleted));
+        // A delete only matters if the report already left this phone
+        if (deleted && !sent.includes(row.id)) { lsSet(OUTBOX_KEY, JSON.stringify(box)); renderTopbar(); return; }
+        // If an edit moved the report to another shift, remove it from the old shift
+        if (prev && !deleted && sent.includes(row.id)) {
+            const old = toRow(prev, true);
+            if (old.shiftKey !== row.shiftKey) box.push(old);
+        }
+        box.push(row);
         lsSet(OUTBOX_KEY, JSON.stringify(box));
         renderTopbar();
         flushOutbox();
@@ -1420,7 +1431,7 @@ ${actionTaken}${downtimeLine}${r.tech ? `\n\nReported by: ${r.tech}` : ''}`;
                 // text/plain keeps this a "simple" request, so no CORS preflight is needed
                 const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(row) });
                 if (!res.ok) break;
-                box = lsJSON(OUTBOX_KEY, []).filter(x => !(x.id === row.id && x.submittedAt === row.submittedAt));
+                box = lsJSON(OUTBOX_KEY, []).filter(x => x.fileName !== row.fileName);
                 lsSet(OUTBOX_KEY, JSON.stringify(box));
                 const sent = lsJSON(SENT_KEY, []).filter(i => i !== row.id); sent.push(row.id);
                 lsSet(SENT_KEY, JSON.stringify(sent.slice(-300)));
@@ -1505,10 +1516,12 @@ ${actionTaken}${downtimeLine}${r.tech ? `\n\nReported by: ${r.tech}` : ''}`;
         const list = document.getElementById('admList');
         list.innerHTML = '<div class="admin-msg">Loading reports…</div>';
         try {
-            const res = await fetch(getReadUrl(), { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: '{}' });
+            const key = `JF_${document.getElementById('admDate').value}_${document.querySelector('input[name="admShift"]:checked')?.value}`;
+            const res = await fetch(getReadUrl(), { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ key }) });
             if (!res.ok) throw new Error('HTTP ' + res.status);
             let data = await res.json();
             if (data && !Array.isArray(data)) data = data.value || data.body || [];
+            data = data.map(parseFileItem).filter(Boolean);
             // Keep the latest version of each report; drop deleted ones
             const latest = {};
             data.forEach(raw => {
@@ -1522,6 +1535,17 @@ ${actionTaken}${downtimeLine}${r.tech ? `\n\nReported by: ${r.tech}` : ''}`;
         } catch (e) {
             list.innerHTML = `<div class="admin-msg err">Couldn't load reports (${esc(e.message)}). Check the Read link and that the flow is turned on.</div>`;
         }
+    }
+    // OneDrive may hand file content back as an object, a string, or base64 ($content)
+    function parseFileItem(x) {
+        try {
+            if (x && typeof x === 'object' && x.$content) {
+                const bin = atob(x.$content);
+                x = new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0)));
+            }
+            if (typeof x === 'string') x = JSON.parse(x);
+            return x && typeof x === 'object' ? x : null;
+        } catch (e) { return null; }
     }
     function shiftRows() {
         const date = document.getElementById('admDate').value;
