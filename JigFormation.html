@@ -340,10 +340,6 @@
 
         <div id="summaryContainer">
             <label>Generated Summary:</label>
-            <div class="format-toggle">
-                <button type="button" id="fmtFull" class="active" onclick="setFormat('full')">Full Report</button>
-                <button type="button" id="fmtChat" onclick="setFormat('chat')">OEM Chat Format</button>
-            </div>
             <div id="summaryOutput"></div>
             <div style="display: flex; gap: 10px; margin-top: 20px;">
                 <button class="btn-copy" style="flex: 1; margin-bottom: 0;" onclick="copyToClipboard()">Copy Summary</button>
@@ -841,8 +837,6 @@
     // ===================== STATE =====================
     let reports = [];
     try { reports = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch (e) { reports = []; }
-    let lastSummary = { full: '', chat: '' };
-    let currentFormat = 'full';
     let libApplyMode = false;
     let libFilter = 'All';
     let openIssueId = null;
@@ -1122,61 +1116,41 @@
         queueSync(r, false, prev);
         document.getElementById('editingId').value = r.id;
 
-        let downtimeLine = "", chatDowntime = `${startRaw || '--:--'}~`;
-        if (resolved === 'Yes' && startRaw && endRaw) {
-            const diff = minutesBetween(startRaw, endRaw);
-            downtimeLine = `\n\nTotal Downtime: ${Math.floor(diff / 60)}h ${diff % 60}m`;
-            chatDowntime = `${startRaw}~${endRaw} (${diff} min)`;
-        } else {
-            chatDowntime += ' (ongoing)';
-        }
-
-        const unitTxt = (r.unit || '').trim() || '-';
-        lastSummary.full = `1. Stop Type:
-${r.stopType}
-
-2. Equipment:
-JF ${r.equipment}
-
-3. Machine Area:
-    Section: ${r.machine || '-'}
-    Unit: ${unitTxt}
-    Assembly: ${r.assembly || '-'}
-    Alarm: ${r.alarm || '-'}
-
-4.  Date: ${formatDate(r.dateRaw)}
-    Start Time: ${formatTime(r.startRaw)}
-    End Time: ${resolved === 'Yes' ? formatTime(endRaw) : "-"}
-    Issue Resolved: ${resolved === 'Yes' ? "Yes ✅" : "No"}
-
-5. Phenomenon:
-${phenomenon}
-
-6. Root Cause:
-${rootCause}
-
-7. Action taken:
-${actionTaken}${downtimeLine}${r.tech ? `\n\nReported by: ${r.tech}` : ''}`;
-
-        // Format requested by OEM / NSE for the JF group chat
-        lastSummary.chat = `#${r.equipment}
-- Type : ${r.stopType}
-- Phenomenon : ${r.alarm ? r.alarm + ' — ' : ''}${phenomenon}
-- Cause : ${rootCause}
-- Action : ${actionTaken}
-- Downtime : ${chatDowntime}${resolved === 'Yes' ? '' : '\n- Status : Not resolved'}`;
-
-        setFormat(currentFormat);
+        const out = formatReport({
+            type: r.stopType, line: r.equipment, machine: r.machine, unit: r.unit, assy: r.assembly,
+            date: r.dateRaw, start: startRaw, end: endRaw, resolved, alarm: r.alarm,
+            issue: phenomenon, cause: rootCause, action: actionTaken
+        });
+        document.getElementById('summaryOutput').innerText = out;
         const c = document.getElementById('summaryContainer');
         c.style.display = 'block';
         setTimeout(() => c.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
     }
 
-    function setFormat(f) {
-        currentFormat = f;
-        document.getElementById('fmtFull').classList.toggle('active', f === 'full');
-        document.getElementById('fmtChat').classList.toggle('active', f === 'chat');
-        document.getElementById('summaryOutput').innerText = lastSummary[f] || '';
+    // The one report format used everywhere (single report + end-of-shift report)
+    function formatReport(x) {
+        const dash = v => (String(v ?? '').trim() || '-');
+        const at = (d, t) => [d, t].filter(Boolean).join(' ') || '-';
+        let resolution = 'Not resolved';
+        if (x.resolved === 'Yes' && x.start && x.end) {
+            const mins = minutesBetween(x.start, x.end);
+            let endDate = x.date;
+            if (x.date && x.end < x.start) { const d = new Date(x.date + 'T12:00:00'); d.setDate(d.getDate() + 1); endDate = ymd(d); }
+            resolution = `${at(endDate, x.end)} (Downtime ${Math.floor(mins / 60)}h ${mins % 60}m)`;
+        }
+        const issue = (x.alarm ? `${x.alarm} — ` : '') + dash(x.issue);
+        return `■ Equipment Downtime Report – JF ${dash(x.line)} Line
+
+1. Type : ${dash(x.type)}
+2. Line No. : JF ${dash(x.line)}
+3-1. Machine : ${dash(x.machine)}
+3-2. Unit : ${dash(x.unit)}
+3-3. Ass'y : ${dash(x.assy)}
+4-1. Occurrence Time : ${at(x.date, x.start)}
+4-2. Resolution Time : ${resolution}
+5. Issue Description : ${issue}
+6. Root Cause : ${dash(x.cause)}
+7. Corrective Actions : ${dash(x.action)}`;
     }
 
     function copyToClipboard() {
@@ -1593,16 +1567,12 @@ ${actionTaken}${downtimeLine}${r.tech ? `\n\nReported by: ${r.tech}` : ''}`;
         let t = `JF End of Shift Report\n${shift} Shift · ${formatDate(date)} (${shift === 'Day' ? '06:00–18:00' : '18:00–06:00'})\n`;
         t += `Issues: ${rows.length} · Open: ${open} · Total downtime: ${fmtMin(mins)}\n`;
         if (!rows.length) return t + '\nNo issues reported.';
-        const byLine = {};
-        rows.forEach(r => (byLine[r.line] = byLine[r.line] || []).push(r));
-        Object.keys(byLine).forEach(line => {
-            t += `\n#${line}\n`;
-            byLine[line].forEach((r, n) => {
-                const dt = r.resolved === 'Yes' && r.end ? `${r.start}~${r.end}${r.downtimeMin ? ` (${r.downtimeMin} min)` : ''}` : `${r.start}~ (ongoing)`;
-                t += `${n + 1}) ${r.stopType} | ${dt} | ${r.tech || '-'}\n`;
-                t += `- Phenomenon : ${r.alarm ? r.alarm + ' — ' : ''}${r.phenomenon}\n- Cause : ${r.rootCause}\n- Action : ${r.actionTaken}\n`;
-                if (r.resolved !== 'Yes') t += `- Status : Not resolved\n`;
-            });
+        rows.forEach(r => {
+            t += '\n' + formatReport({
+                type: r.stopType, line: r.line, machine: r.section, unit: r.unit, assy: r.assembly,
+                date: r.date, start: r.start, end: r.end, resolved: r.resolved, alarm: r.alarm,
+                issue: r.phenomenon, cause: r.rootCause, action: r.actionTaken
+            }) + '\n';
         });
         return t.trimEnd();
     }
