@@ -1130,7 +1130,13 @@
     // The one report format used everywhere (single report + end-of-shift report)
     function formatReport(x) {
         const dash = v => (String(v ?? '').trim() || '-');
-        const at = (d, t) => [d, t].filter(Boolean).join(' ') || '-';
+        // 19/10/26 11:50PM
+        const at = (d, t) => {
+            const dd = d ? `${d.slice(8, 10)}/${d.slice(5, 7)}/${d.slice(2, 4)}` : '';
+            let tt = '';
+            if (t) { const [h, m] = t.split(':').map(Number); tt = `${String(h % 12 || 12).padStart(2, '0')}:${String(m).padStart(2, '0')}${h < 12 ? 'AM' : 'PM'}`; }
+            return [dd, tt].filter(Boolean).join(' ') || '-';
+        };
         let resolution = 'Not resolved';
         if (x.resolved === 'Yes' && x.start && x.end) {
             const mins = minutesBetween(x.start, x.end);
@@ -1139,15 +1145,15 @@
             resolution = `${at(endDate, x.end)} (Downtime ${Math.floor(mins / 60)}h ${mins % 60}m)`;
         }
         const issue = (x.alarm ? `${x.alarm} — ` : '') + dash(x.issue);
-        return `■ Equipment Downtime Report – JF ${dash(x.line)} Line
+        return `■ Equipment Downtime Report – JF ${dash(x.line)}
 
 1. Type : ${dash(x.type)}
-2. Line No. : JF ${dash(x.line)}
-3-1. Machine : ${dash(x.machine)}
-3-2. Unit : ${dash(x.unit)}
-3-3. Ass'y : ${dash(x.assy)}
-4-1. Occurrence Time : ${at(x.date, x.start)}
-4-2. Resolution Time : ${resolution}
+2. Line No. : ${dash(x.line)}
+3.1. Machine : ${dash(x.machine)}
+3.2. Unit : ${dash(x.unit)}
+3.3. Ass'y : ${dash(x.assy)}
+4.1. Occurrence Time : ${at(x.date, x.start)}
+4.2. Resolution Time : ${resolution}
 5. Issue Description : ${issue}
 6. Root Cause : ${dash(x.cause)}
 7. Corrective Actions : ${dash(x.action)}`;
