@@ -2,8 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Major Downtime Report</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>LNS Major Downtime Report</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="LNS Report">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="theme-color" content="#f1f5f9">
+    <link rel="manifest" href="manifest-LNS.json">
+    <link rel="apple-touch-icon" href="LNS-icon-180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="LNS-icon-192.png">
     <style>
         :root {
             --primary: #2563eb;
@@ -14,16 +23,23 @@
             --border: #cbd5e1;
             --success: #37ab87;
             --danger: #dc2626;
+            --warn-bg: #fffbeb;
+            --warn-text: #92400e;
+            --muted: #64748b;
         }
+
+        * { -webkit-tap-highlight-color: transparent; }
+        html { -webkit-text-size-adjust: 100%; }
 
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background-color: var(--bg);
             color: var(--text);
-            padding: 15px;
+            padding: max(15px, env(safe-area-inset-top)) max(15px, env(safe-area-inset-right)) max(15px, env(safe-area-inset-bottom)) max(15px, env(safe-area-inset-left));
             margin: 0;
             display: flex;
             justify-content: center;
+            touch-action: manipulation;
         }
 
         .container {
@@ -33,186 +49,111 @@
             padding: 25px;
             border-radius: 16px;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
         }
+        @media (max-width: 420px) { .container { padding: 20px 16px; } }
 
         h1 { text-align: center; color: var(--primary); margin: 0 0 25px 0; font-size: 1.8rem; }
         h3 { border-left: 4px solid var(--primary); padding-left: 10px; margin: 25px 0 15px 0; font-size: 1.1rem; }
 
-        /* Dashboard Styles */
-        #reportsList {
-    display: flex;
-    flex-direction: column;
-    gap: 16px; /* Spacing between cards */
-    margin-top: 10px;
-}
+        /* Dashboard */
+        #reportsList { display: flex; flex-direction: column; gap: 16px; margin-top: 10px; }
         .report-card {
-    background: #ffffff;
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column; /* Stack vertically on mobile */
-    gap: 15px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.report-info {
-    border-bottom: 1px solid #f1f5f9;
-    padding-bottom: 12px;
-}
-        .report-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text4);
-    line-height: 1.3;
-    margin-bottom: 6px;
-}
-
-.report-meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.85rem;
-    color: #7f8c8d;
-}
-        .status-badge {
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-}
+            background: #ffffff; border: 1px solid var(--border); border-radius: 14px; padding: 20px;
+            display: flex; flex-direction: column; gap: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: pointer;
+        }
+        .report-info { border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; }
+        .report-title { font-size: 1.1rem; font-weight: 600; color: var(--text4); line-height: 1.3; margin-bottom: 6px; word-break: break-word; }
+        .report-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 0.85rem; color: #7f8c8d; }
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
         .status-resolved { background: #dcfce7; color: #166534; }
         .status-open { background: #fee2e2; color: #991b1b; }
 
-        .btn-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr; 
-    gap: 12px;
-}
-        .btn-edit { 
-            background: #e9effd; 
-            color: #2563eb;
-            border: 1px solid #92b1f5; 
-            padding: 12px; 
-            border-radius: 8px; 
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-        }
-
-        .btn-delete { 
-            background: #fff1f2;
-            color: #e11d48; 
-            border: 1px solid #fecdd3; 
-            padding: 12px; 
-            border-radius: 8px; 
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
+        .btn-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-edit { background: #e9effd; color: #2563eb; border: 1px solid #92b1f5; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 1rem; }
+        .btn-delete { background: #fff1f2; color: #e11d48; border: 1px solid #fecdd3; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 1rem; }
 
         .btn-main {
-            display: block;
-            width: 100%;
-            background: var(--primary);
-            color: white;
-            padding: 16px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin-bottom: 20px;
+            display: block; width: 100%; background: var(--primary); color: white; padding: 16px; border: none;
+            border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-bottom: 20px;
         }
         .btn-back {
-  /* Layout & Sizing */
-  width: 100%;
-  margin-bottom: 20px;
-  padding: 10px 20px;
-  
-  /* Modern "Clear" Styling */
-  background: transparent;      /* Makes the button clear */
-  color: #475569;               /* A soft, modern slate gray for text */
-  border: 1px solid #e2e8f0;    /* Light, clean border color */
-  border-radius: 8px;           /* Modern rounded corners */
-  
-  /* Typography */
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  
-  /* Interaction */
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;                
-}
+            width: 100%; margin-bottom: 20px; padding: 10px 20px; background: transparent; color: #475569;
+            border: 1px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: 500;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
 
-        /* Form Styles */
+        /* Form */
         .form-group { margin-bottom: 18px; }
         label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; color: #475569; }
-        .block-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px; }
-        .block-options label {
-            border: 1px solid var(--border);
-            padding: 12px 5px;
-            text-align: center;
-            border-radius: 8px;
-            cursor: pointer;
-            background: white;
-            transition: all 0.2s;
-            font-weight: 500;
-            margin: 0;
+        .section-label { display: block; font-weight: 600; margin: 0 0 10px; font-size: 0.9rem; color: #475569; }
+        .block-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); gap: 8px; }
+        #machineGroup { grid-template-columns: repeat(3, 1fr); }
+        .line-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 8px; }
+        .block-options label, .line-grid label, .pos-grid label {
+            border: 1px solid var(--border); padding: 12px 4px; text-align: center; border-radius: 8px; cursor: pointer;
+            background: white; transition: all 0.15s; font-weight: 500; margin: 0; color: var(--text); font-size: 0.95rem;
+            -webkit-user-select: none; user-select: none;
         }
-        .block-options input[type="radio"] { display: none; }
-        .block-options label:has(input:checked) {
-            border-color: var(--primary);
-            background-color: #eff6ff;
-            color: var(--primary);
-            box-shadow: inset 0 0 0 1px var(--primary);
+        .block-options input[type="radio"], .line-grid input[type="radio"], .pos-grid input[type="radio"] { display: none; }
+        .block-options label:has(input:checked), .line-grid label:has(input:checked), .pos-grid label:has(input:checked) {
+            border-color: var(--primary); background-color: #eff6ff; color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary);
         }
+        .block-options label.off, .pos-grid label.off { display: none; }
+        .pos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 8px; }
+        .pos-grid label { padding: 10px 4px; font-size: 0.9rem; }
+
         input[type="text"], input[type="date"], input[type="time"], select, textarea {
-            width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; box-sizing: border-box; background: #fcfcfc;
+            width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 16px;
+            box-sizing: border-box; background: #fcfcfc; color: var(--text); font-family: inherit;
+            -webkit-appearance: none; appearance: none; min-height: 48px;
         }
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 14px center; padding-right: 38px;
+        }
+        select:disabled { color: #94a3b8; background-color: #f1f5f9; }
+        input[type="date"], input[type="time"] { display: block; text-align: left; }
+        input::-webkit-date-and-time-value { text-align: left; }
         textarea { min-height: 90px; resize: vertical; }
-        .hidden { display: none; }
+        .hidden { display: none !important; }
+
+        .time-row { display: flex; gap: 8px; }
+        .time-row input { flex: 1; min-width: 0; }
+        .btn-now {
+            flex: 0 0 auto; padding: 0 20px; min-height: 48px; border-radius: 8px; border: 1px solid var(--primary);
+            background: #eff6ff; color: var(--primary); font-weight: 700; font-size: 1rem; cursor: pointer; font-family: inherit;
+        }
+        .btn-now:active { background: var(--primary); color: #fff; }
+
+        .duration-note { margin-top: 8px; font-size: 0.88rem; font-weight: 600; color: var(--muted); }
+        .duration-note.short { color: var(--warn-text); background: var(--warn-bg); border: 1px solid #fde68a; padding: 8px 10px; border-radius: 8px; font-weight: 500; }
+
         .btn-submit { width: 100%; background: var(--primary); color: white; padding: 16px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 20px; }
-        .btn-copy { background: var(--success); color: white; padding: 16px; border: none; border-radius: 6px; font-family: 'Inter', sans-serif;
-  font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
+        .btn-copy { background: var(--success); color: white; padding: 16px; border: none; border-radius: 6px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
         #summaryContainer { margin-top: 30px; display: none; }
-        #summaryOutput { background: #f8fafc; padding: 20px; border-radius: 8px; white-space: pre-wrap; font-family: 'Courier New', Courier, monospace; border: 1px solid var(--border); font-size: 0.95rem; line-height: 1.4; }
-.zero-state-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 10px 20px;
-    min-height: 400px;
-}
+        #summaryOutput { background: #f8fafc; padding: 20px; border-radius: 8px; white-space: pre-wrap; font-family: 'Courier New', Courier, monospace; border: 1px solid var(--border); font-size: 0.95rem; line-height: 1.4; word-break: break-word; -webkit-user-select: text; user-select: text; }
 
-.zero-state-image {
-    width: 100%;
-    max-width: 320px;
-    height: auto;
-    margin-bottom: 30px;
-}
+        .zero-state-container { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 10px 20px; min-height: 400px; }
+        .zero-state-image { width: 100%; max-width: 320px; height: auto; margin-bottom: 30px; }
+        .zero-state-text { font-size: 1rem; color: #475569; margin-bottom: 30px; line-height: 1.5; max-width: 300px; }
+        .zero-state-container .btn-main { max-width: 300px; }
 
-.zero-state-text {
-    font-size: 1rem;
-    color: #475569;
-    margin-bottom: 30px;
-    line-height: 1.5;
-    max-width: 300px;
-}
-
-.zero-state-container .btn-main {
-    max-width: 300px;
-}
-
+        /* Install-as-app sheet (browser only, never inside the installed app) */
+        .lns-install-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 1000; display: flex; align-items: flex-end; justify-content: center; opacity: 0; transition: opacity 0.25s ease; }
+        .lns-install-backdrop.show { opacity: 1; }
+        .lns-install-sheet { width: 100%; max-width: 480px; background: #fff; border-radius: 28px 28px 0 0; padding: 24px 22px calc(22px + env(safe-area-inset-bottom)); box-shadow: 0 -16px 40px rgba(0,0,0,0.12); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1); box-sizing: border-box; }
+        .lns-install-backdrop.show .lns-install-sheet { transform: translateY(0); }
+        .lns-install-head { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+        .lns-install-head img { width: 56px; height: 56px; border-radius: 14px; flex-shrink: 0; }
+        .lns-install-head h4 { margin: 0; font-size: 19px; font-weight: 800; }
+        .lns-install-head p { margin: 3px 0 0; font-size: 14px; color: var(--muted); }
+        .lns-install-steps { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 14px 16px; margin: 0 0 16px; font-size: 14.5px; line-height: 1.55; }
+        .lns-install-steps ol { margin: 0; padding-left: 20px; }
+        .lns-install-share { display: inline-block; vertical-align: -4px; width: 18px; height: 18px; }
+        .lns-install-btn { display: block; width: 100%; border: none; border-radius: 9999px; padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
+        .lns-install-primary { background: var(--primary); color: #fff; margin-bottom: 8px; }
+        .lns-install-later { background: transparent; color: var(--muted); }
     </style>
 </head>
 <body>
@@ -228,13 +169,14 @@
     <div id="formView" class="hidden">
         <button class="btn-main btn-back" onclick="showDashboard()">← Back to Dashboard</button>
         <input type="hidden" id="editingId">
-        
-        <form id="downtimeForm">
+
+        <form id="downtimeForm" onsubmit="return false;">
             <div class="form-group">
                 <label>1. Stop Type:</label>
                 <div class="block-options">
                     <label><input type="radio" name="stopType" value="BM" required> BM</label>
                     <label><input type="radio" name="stopType" value="PD"> PD</label>
+                    <label><input type="radio" name="stopType" value="PM"> PM</label>
                     <label><input type="radio" name="stopType" value="Other" id="otherToggle"> Other</label>
                 </div>
                 <input type="text" id="otherStopType" class="hidden" placeholder="Specify other stop type..." style="margin-top:10px;">
@@ -242,56 +184,42 @@
 
             <div class="form-group">
                 <label>2. Equipment</label>
-                <div class="block-options" id="equipmentGroup">
-                    <label><input type="radio" name="equipment" value="1-1" required onchange="filterMachines()"> 1-1</label>
-                    <label><input type="radio" name="equipment" value="1-2" onchange="filterMachines()"> 1-2</label>
-                    <label><input type="radio" name="equipment" value="1-3" onchange="filterMachines()"> 1-3</label>
-                    <label><input type="radio" name="equipment" value="1-4" onchange="filterMachines()"> 1-4</label>
-                    <label><input type="radio" name="equipment" value="1-5" onchange="filterMachines()"> 1-5</label>
-                    <label><input type="radio" name="equipment" value="1-H" onchange="filterMachines()"> 1-H</label>
-                    <label><input type="radio" name="equipment" value="2-1" onchange="filterMachines()"> 2-1</label>
-                    <label><input type="radio" name="equipment" value="2-2" onchange="filterMachines()"> 2-2</label>
-                    <label><input type="radio" name="equipment" value="2-3" onchange="filterMachines()"> 2-3</label>
-                    <label><input type="radio" name="equipment" value="2-4" onchange="filterMachines()"> 2-4</label>
-                    <label><input type="radio" name="equipment" value="2-5" onchange="filterMachines()"> 2-5</label>
-                    <label><input type="radio" name="equipment" value="3-1" onchange="filterMachines()"> 3-1</label>
-                </div>
+                <div id="equipmentGroup"></div>
             </div>
 
-            <label>3. Machine Area</label>
+            <span class="section-label">3. Machine Area</span>
             <div class="form-group">
                 <label>Machine:</label>
-                <select id="machine" required onchange="updateUnits()">
-                    <option value="" disabled selected>Select Machine</option>
-                    <option value="ESP">ESP</option>
-                    <option value="Lamination">LAMI</option>
-                    <option value="D-STK">D-STK</option>
-                    <option value="HalfCell/Taping">HC/TAPING</option>
-                    <option value="Inspection">INSP</option>
-                    <option value="Unloader">UNL</option>
+                <div class="block-options" id="machineGroup"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="unit">Unit:</label>
+                <select id="unit" onchange="updateAssemblies()" disabled>
+                    <option value="">Select machine first</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label>Unit:</label>
-                <select id="unit">
-                    <option value="-">-</option>
+                <label for="assemblySelect">Assembly:</label>
+                <select id="assemblySelect" onchange="onAssemblyChange()" disabled>
+                    <option value="">Select unit first</option>
                 </select>
+                <div id="posContainer" class="hidden" style="margin-top:10px;">
+                    <label style="font-weight:500;">Position:</label>
+                    <div class="pos-grid" id="posGroup"></div>
+                </div>
+                <input type="text" id="assembly" class="hidden" placeholder="e.g. Center/Upper Electrode Cutter" style="margin-top:10px;">
             </div>
 
             <div class="form-group">
-                <label>Assembly:</label>
-                <input type="text" id="assembly" placeholder="e.g. Center/Upper Electrode Cutter">
-            </div>
-
-            <div class="form-group">
-                <label>Date:</label>
+                <label for="dateInput">Date:</label>
                 <input type="date" id="dateInput">
             </div>
 
             <div class="form-group">
-                <label>Start Time:</label>
-                <input type="time" id="startTime">
+                <label for="startTime">Start Time:</label>
+                <input type="time" id="startTime" oninput="updateDurationNote()">
             </div>
 
             <div class="form-group">
@@ -303,314 +231,585 @@
             </div>
 
             <div class="form-group hidden" id="endTimeContainer">
-                <label>End Time:</label>
-                <input type="time" id="endTime">
+                <label for="endTime">End Time:</label>
+                <div class="time-row">
+                    <input type="time" id="endTime" oninput="updateDurationNote()">
+                    <button type="button" class="btn-now" onclick="setEndNow()">Now</button>
+                </div>
+                <div id="durationNote" class="duration-note hidden"></div>
             </div>
 
             <h3>Details</h3>
             <div class="form-group">
-                <label>5. Phenomenon:</label>
+                <label for="phenomenon">5. Phenomenon:</label>
                 <textarea id="phenomenon" placeholder="Describe what happened..."></textarea>
             </div>
             <div class="form-group">
-                <label>6. Root Cause:</label>
+                <label for="rootCause">6. Root Cause:</label>
                 <textarea id="rootCause" placeholder="What caused the issue?"></textarea>
             </div>
             <div class="form-group">
-                <label>7. Action Taken:</label>
+                <label for="actionTaken">7. Action Taken:</label>
                 <textarea id="actionTaken" placeholder="How was the issue fixed?"></textarea>
             </div>
             <div id="errorMessage" style="color: var(--danger); font-weight: 600; margin-top: 10px; text-align: center; display: none;"></div>
             <button type="button" class="btn-submit" onclick="generateSummary()">Generate Summary</button>
-            
         </form>
 
         <div id="summaryContainer">
-    <label>Generated Summary:</label>
-    <div id="summaryOutput"></div>
-    
-    <div style="display: flex; gap: 10px; margin-top: 20px;">
-        <button class="btn-copy" style="flex: 1; margin-bottom: 0;" onclick="copyToClipboard()">Copy Summary</button>
-        <button class="btn-main btn-back" style="flex: 1; margin-bottom: 0;" onclick="showDashboard()">Back to Dashboard</button>
-    </div>
-</div>
+            <label>Generated Summary:</label>
+            <div id="summaryOutput"></div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn-copy" style="flex: 1; margin-bottom: 0;" onclick="copyToClipboard()">Copy Summary</button>
+                <button class="btn-main btn-back" style="flex: 1; margin-bottom: 0;" onclick="showDashboard()">Back to Dashboard</button>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
-    let reports = JSON.parse(localStorage.getItem('lns_storage_v1') || '[]');
+    // ================= EQUIPMENT DATA =================
+    // Lines as they appear in MES (LAM #01-01 ... LAM #03-04, #01-00 / #02-00 LAM HALF)
+    const LINE_ROWS = [
+        ['1-1', '1-2', '1-3', '1-4', '1-5', '1-H'],
+        ['2-1', '2-2', '2-3', '2-4', '2-5', '2-H'],
+        ['3-1', '3-2', '3-3', '3-4']
+    ];
+    // Half-cell lamination lines only have electrode supply + lamination
+    const HALF_LINE_MACHINES = ['ESP', 'Lamination'];
+
+    const MACHINES = [
+        { value: 'ESP',             label: 'ESP' },
+        { value: 'Lamination',      label: 'LAMI' },
+        { value: 'D-STK',           label: 'D-STK' },
+        { value: 'HalfCell/Taping', label: 'HC/TAPING' },
+        { value: 'Inspection',      label: 'INSP' }
+    ];
+
+    // Assembly entry: plain string, or { n: name, p: [positions] } — position is written as "[pos] name"
+    const UNWINDER_POS = ['01/A', '01/B', '02/A', '02/B', '03/A', '03/B', '04/A', '04/B'];
+    const SEPA_POS = ['01/Upper', '01/Lower', '02/Upper', '02/Lower'];
+    const TAPE_POS = ['01', '02', '03', '04', '05', '06'];
+
+    // Units and assemblies are ordered by how often they show up in long (30+ min) stops
+    const UNITS = {
+        'ESP': {
+            'Pancake Loader': [
+                { n: 'Pancake. Unwinder', p: UNWINDER_POS },
+                { n: 'Dancer. Roller', p: UNWINDER_POS },
+                { n: 'Electrode. EPC', p: UNWINDER_POS },
+                { n: 'Electrode. Auto Splicer', p: UNWINDER_POS },
+                { n: 'Pancake. Conveyor', p: UNWINDER_POS },
+                'Pancake. Hoist',
+                'Electrode. Tape Feeder'
+            ]
+        },
+        'Lamination': {
+            'Electrode/Separator Combiner': [
+                '[Upper] Electrode. Cutter',
+                '[Center] Electrode. Cutter',
+                '[Upper] Electrode Cutting Linear',
+                '[02] Electrode / Separator. Temporary Heating Roller',
+                '[01] Electrode / Separator. Temporary Heating Roller',
+                '[01] Electrode / Separator. Nip Roller',
+                '[02] Electrode / Separator. Nip Roller',
+                '[Upper] Separator. EPC',
+                '[Lower] Separator. EPC',
+                '[Upper] Electrode. EPC',
+                '[Center] Electrode. EPC',
+                '[Upper] Electrode. Feeding Roller',
+                '[Center] Electrode. Feeding Roller',
+                '[Upper] PET (Separator). Idle Roller',
+                '[Upper] Separator. Idle Roller',
+                '[Lower] Separator. Idle Roller',
+                '[Upper] Separator. Dancer'
+            ],
+            'Laminator': [
+                'Separator. Sealer',
+                '[Upper] Lamination Roller',
+                '[Lower] Lamination Roller',
+                '[Upper] Separator. Longside Sealer',
+                '[Upper] Sub Heater',
+                '[Lower] Sub Heater',
+                'Separator. Sealing Linear',
+                '[Upper] PET. Unwinder',
+                '[Upper] PET. Winder',
+                '[Lower] PET. Splicer(Manual)',
+                'Heating Zone',
+                'Uncut Cell. Air Blow/Suction',
+                'Uncut Cell. Union Vision'
+            ],
+            'Cell Inspector': [
+                'Cell. Short Inspector',
+                'Cell. Vision Inspector',
+                'Cell. Suction Conveyor',
+                'Final Lami Vision',
+                'Long Side Sealing Vision',
+                'Merge Vision',
+                'Mono Sepa Vision',
+                'NG Mark Vision'
+            ],
+            'Cell Final Cutter': [
+                'Uncut Cell. Conveyor',
+                'Cell. Cutter',
+                'Electrode. Cutting Linear'
+            ],
+            'Separator/PET Unwinder': [
+                { n: 'Separator. Unwinder', p: SEPA_POS },
+                { n: 'Separator. PET. Winder', p: SEPA_POS },
+                { n: 'Separator. Auto Splicer', p: SEPA_POS }
+            ],
+            'Cell Unloader': [
+                'Magazine',
+                'Cell. Suction Conveyor',
+                'OK Cell. Pusher',
+                'NG Cell. Pusher',
+                'NG Cell Box'
+            ],
+            'Cell Tracking System': []
+        },
+        'D-STK': {
+            'Cell Stacker[01]': ['Cell. Align Vision', { n: 'Cell. Gripper', p: ['A', 'B'] }, 'Cell. Pusher', 'Cell. Stack Vision', 'Cell. Align Table', 'Table Transfer Linear'],
+            'Cell Stacker[02]': ['Cell. Align Vision', { n: 'Cell. Gripper', p: ['A', 'B'] }, 'Cell. Pusher', 'Cell. Stack Vision', 'Cell. Align Table', 'Table Transfer Linear'],
+            'Cell Stacker[03]': ['Cell. Align Vision', { n: 'Cell. Gripper', p: ['A', 'B'] }, 'Cell. Pusher', 'Cell. Stack Vision', 'Cell. Align Table', 'Table Transfer Linear'],
+            'Cell Stacker[All]': ['Cell. Align Vision', 'Cell. Gripper', 'Cell. Pusher', 'Cell. Stack Vision', 'Cell. Align Table'],
+            'Cell Loading C/V[01]': ['[Lower] Cell. Loading C/V', 'Cell. Lower Separator Vision'],
+            'Cell Loading C/V[02]': ['[Upper] Cell. Loading C/V', 'Cell. Lower Separator Vision'],
+            'Stacked Cell Transfer': ['Stacked Cell. Gripper']
+        },
+        'HalfCell/Taping': {
+            'Stacked Cell Taper[01]': [
+                { n: 'Tape. Attacher', p: TAPE_POS },
+                { n: 'Tape. Cutter', p: TAPE_POS },
+                { n: 'Tape. Tape Supply', p: TAPE_POS },
+                { n: 'Tape. Upper Clamp', p: TAPE_POS },
+                { n: 'Tape. Lower Clamp', p: TAPE_POS },
+                'Stacked Cell. Press'
+            ],
+            'Stacked Cell Taper[02]': [
+                { n: 'Tape. Attacher', p: TAPE_POS },
+                { n: 'Tape. Cutter', p: TAPE_POS },
+                { n: 'Tape. Tape Supply', p: TAPE_POS },
+                { n: 'Tape. Upper Clamp', p: TAPE_POS },
+                { n: 'Tape. Lower Clamp', p: TAPE_POS },
+                'Stacked Cell. Press'
+            ],
+            'LMS': ['Stacked Cell. Shuttle', 'Stacked Cell. NG Pick & Place', 'Stacked Cell. NG Box', 'LMS. Stacked Cell Clamp Air Supply', 'Shuttle. In Lift'],
+            'HalfCell Stack': ['Half Cell. Scara Robot', 'Half Cell. Vision'],
+            'Half Cell Loading': ['Half Cell. Vibrator', { n: 'Half Cell. Magazine', p: ['A', 'B', 'C'] }, 'Half Cell. Rotate']
+        },
+        'Inspection': {
+            'Taped Cell Short Inspector': ['Taped Cell. Short, Thickness Inspector', 'Taped Cell. Shuttle'],
+            'Taped Cell Vision': ['[Upper/Lower] Taped Cell. Vision', 'Final Stack Vision', '[4-Side] Taped Cell. Vision', 'Taped Cell. Pick & Place', 'Taped Cell. Rotating Table'],
+            'Taped Cell Transfer': ['OK Taped Cell. Transfer', 'NG Taped Cell. Transfer', 'Taped Cell. Conveyor'],
+            'Taped Cell Unloader': ['Taped Cell. Pick & Place', 'Tray(Empty). Conveyor'],
+            'Cell Tracking System': []
+        }
+    };
+    const WHOLE = '-';           // whole machine / not specific
+    const OTHER = '__other__';   // free text
+
+    // ================= STORAGE =================
+    const STORE_KEY = 'lns_storage_v1';
+    const RESET_KEY = 'lns_last_reset';
+    function readStore(k, fallback) { try { const v = localStorage.getItem(k); return v === null ? fallback : v; } catch (e) { return fallback; } }
+    function writeStore(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+    let reports = [];
+    try { reports = JSON.parse(readStore(STORE_KEY, '[]')) || []; } catch (e) { reports = []; }
+    function saveReports() { writeStore(STORE_KEY, JSON.stringify(reports)); }
+
+    function currentShiftStart() {
+        const now = new Date();
+        const p = new Date(now);
+        if (now.getHours() >= 18) p.setHours(18, 0, 0, 0);
+        else if (now.getHours() >= 6) p.setHours(6, 0, 0, 0);
+        else { p.setDate(p.getDate() - 1); p.setHours(18, 0, 0, 0); }
+        return p.getTime();
+    }
 
     function checkShiftReset() {
-        const lastReset = localStorage.getItem('lns_last_reset');
-        const now = new Date();
-    const sixAM = new Date();
-    sixAM.setHours(6, 0, 0, 0);
-    const sixPM = new Date();
-    sixPM.setHours(18, 0, 0, 0);
-    let lastResetPoint;
-    if (now >= sixPM) {
-        lastResetPoint = sixPM.getTime();
-    } else if (now >= sixAM) {
-        lastResetPoint = sixAM.getTime();
-    } else {
-        // If it's before 6am today, the last reset point was 6pm yesterday
-        const yesterdaySixPM = new Date();
-        yesterdaySixPM.setDate(yesterdaySixPM.getDate() - 1);
-        yesterdaySixPM.setHours(18, 0, 0, 0);
-        lastResetPoint = yesterdaySixPM.getTime();
-    }
-    if (!lastReset || parseInt(lastReset) < lastResetPoint) {
-        if (reports.length > 0) {
-            reports = [];
-            localStorage.setItem('lns_storage_v1', JSON.stringify(reports));
-            localStorage.setItem('lns_last_reset', Date.now());
-            renderDashboard();
-            console.log("Shift change detected: Dashboard cleared.");
+        const lastReset = parseInt(readStore(RESET_KEY, '0'), 10) || 0;
+        const shiftStart = currentShiftStart();
+        if (lastReset < shiftStart) {
+            if (reports.length > 0) {
+                reports = [];
+                saveReports();
+                if (!document.getElementById('dashboardView').classList.contains('hidden')) renderDashboard();
+            }
+            writeStore(RESET_KEY, String(Date.now()));
         }
     }
-}
 
-    // --- DASHBOARD LOGIC ---
+    // ================= BUILD STATIC CHIPS =================
+    function buildEquipment() {
+        const wrap = document.getElementById('equipmentGroup');
+        wrap.innerHTML = LINE_ROWS.map(row =>
+            `<div class="line-grid">${row.map(l =>
+                `<label><input type="radio" name="equipment" value="${l}" onchange="filterMachines()"> ${l}</label>`).join('')}</div>`
+        ).join('');
+    }
+
+    function buildMachines() {
+        document.getElementById('machineGroup').innerHTML = MACHINES.map(m =>
+            `<label data-machine="${m.value}"><input type="radio" name="machine" value="${m.value}" onchange="updateUnits()"> ${m.label}</label>`
+        ).join('');
+    }
+
+    function getMachine() { return document.querySelector('input[name="machine"]:checked')?.value || ''; }
+    function getEquipment() { return document.querySelector('input[name="equipment"]:checked')?.value || ''; }
+
+    function filterMachines() {
+        const eq = getEquipment();
+        const half = eq.endsWith('-H');
+        document.querySelectorAll('#machineGroup label').forEach(lbl => {
+            const show = !half || HALF_LINE_MACHINES.includes(lbl.dataset.machine);
+            lbl.classList.toggle('off', !show);
+            if (!show) {
+                const input = lbl.querySelector('input');
+                if (input.checked) { input.checked = false; updateUnits(); }
+            }
+        });
+    }
+
+    // ================= UNIT / ASSEMBLY =================
+    function fillSelect(sel, items, placeholder) {
+        sel.innerHTML = '';
+        const ph = document.createElement('option');
+        ph.value = ''; ph.textContent = placeholder; ph.disabled = true; ph.selected = true;
+        sel.appendChild(ph);
+        items.forEach(([value, text]) => {
+            const o = document.createElement('option');
+            o.value = value; o.textContent = text; sel.appendChild(o);
+        });
+    }
+
+    function updateUnits() {
+        const machine = getMachine();
+        const unitSel = document.getElementById('unit');
+        if (!machine) {
+            fillSelect(unitSel, [], 'Select machine first');
+            unitSel.disabled = true;
+        } else {
+            const units = Object.keys(UNITS[machine] || {});
+            fillSelect(unitSel, [...units.map(u => [u, u]), [WHOLE, '- (Whole machine)']], 'Select Unit');
+            unitSel.disabled = false;
+        }
+        updateAssemblies();
+    }
+
+    function assemblyList() {
+        const machine = getMachine();
+        const unit = document.getElementById('unit').value;
+        return (UNITS[machine] && UNITS[machine][unit]) || [];
+    }
+    function asmName(a) { return typeof a === 'string' ? a : a.n; }
+
+    function updateAssemblies() {
+        const unit = document.getElementById('unit').value;
+        const sel = document.getElementById('assemblySelect');
+        if (!unit) {
+            fillSelect(sel, [], 'Select unit first');
+            sel.disabled = true;
+        } else {
+            const list = assemblyList().map((a, i) => [String(i), asmName(a)]);
+            fillSelect(sel, [...list, [WHOLE, '- (Whole unit / N/A)'], [OTHER, 'Other (type it in)…']], 'Select Assembly');
+            sel.disabled = false;
+            if (list.length === 0) sel.value = WHOLE;
+        }
+        onAssemblyChange();
+    }
+
+    function onAssemblyChange() {
+        const sel = document.getElementById('assemblySelect');
+        const other = document.getElementById('assembly');
+        const posBox = document.getElementById('posContainer');
+        const v = sel.value;
+        other.classList.toggle('hidden', v !== OTHER);
+        const a = /^\d+$/.test(v) ? assemblyList()[+v] : null;
+        if (a && typeof a !== 'string' && a.p) {
+            document.getElementById('posGroup').innerHTML = a.p.map(p =>
+                `<label><input type="radio" name="asmPos" value="${p}"> ${p}</label>`).join('');
+            posBox.classList.remove('hidden');
+        } else {
+            document.getElementById('posGroup').innerHTML = '';
+            posBox.classList.add('hidden');
+        }
+    }
+
+    function currentAssembly() {
+        const v = document.getElementById('assemblySelect').value;
+        if (v === OTHER) return document.getElementById('assembly').value.trim();
+        if (v === WHOLE || v === '') return '-';
+        const a = assemblyList()[+v];
+        if (!a) return '-';
+        const pos = document.querySelector('input[name="asmPos"]:checked')?.value;
+        return pos ? `[${pos}] ${asmName(a)}` : asmName(a);
+    }
+
+    // Restore a saved assembly string into the select / position chips / free text
+    function restoreAssembly(saved) {
+        const sel = document.getElementById('assemblySelect');
+        if (sel.disabled) return;
+        if (!saved || saved === '-') { sel.value = WHOLE; onAssemblyChange(); return; }
+        const list = assemblyList();
+        let idx = list.findIndex(a => asmName(a) === saved);
+        let pos = null;
+        if (idx < 0) {
+            const m = saved.match(/^\[([^\]]+)\]\s*(.+)$/);
+            if (m) {
+                const i = list.findIndex(a => typeof a !== 'string' && a.n === m[2] && a.p.includes(m[1]));
+                if (i >= 0) { idx = i; pos = m[1]; }
+            }
+        }
+        if (idx >= 0) {
+            sel.value = String(idx);
+            onAssemblyChange();
+            if (pos) { const r = document.querySelector(`input[name="asmPos"][value="${CSS.escape(pos)}"]`); if (r) r.checked = true; }
+        } else {
+            sel.value = OTHER;
+            onAssemblyChange();
+            document.getElementById('assembly').value = saved;
+        }
+    }
+
+    // ================= TIME HELPERS =================
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function nowHHMM() { const d = new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+    function todayISO() { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
+
+    function diffMinutes(startRaw, endRaw) {
+        if (!startRaw || !endRaw) return null;
+        const [sh, sm] = startRaw.split(':').map(Number);
+        const [eh, em] = endRaw.split(':').map(Number);
+        let d = (eh * 60 + em) - (sh * 60 + sm);
+        if (d < 0) d += 1440; // crossed midnight
+        return d;
+    }
+
+    function setEndNow() {
+        document.getElementById('endTime').value = nowHHMM();
+        updateDurationNote();
+    }
+
+    function updateDurationNote() {
+        const note = document.getElementById('durationNote');
+        const resolved = document.querySelector('input[name="resolved"]:checked')?.value === 'Yes';
+        const d = diffMinutes(document.getElementById('startTime').value, document.getElementById('endTime').value);
+        if (!resolved || d === null) { note.classList.add('hidden'); return; }
+        note.classList.remove('hidden');
+        if (d < 30) {
+            note.className = 'duration-note short';
+            note.textContent = `Downtime: ${Math.floor(d / 60)}h ${d % 60}m. This report is usually only needed for stops over 30 min.`;
+        } else {
+            note.className = 'duration-note';
+            note.textContent = `Downtime: ${Math.floor(d / 60)}h ${d % 60}m`;
+        }
+    }
+
+    // ================= DASHBOARD =================
+    function escapeHTML(s) {
+        return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
     function renderDashboard() {
-    const list = document.getElementById('reportsList');
-    const dashboardView = document.getElementById('dashboardView');
-    
-    // Clear existing content
-    list.innerHTML = '';
-    
-    if (reports.length === 0) {
-        document.querySelector('#dashboardView .btn-main').style.display = 'none';
-        
-        list.innerHTML = `
-            <div class="zero-state-container">
-                <img src="https://illustrations.popsy.co/blue/business-presentation.svg" alt="No reports" class="zero-state-image">
-                
-                <div class="zero-state-text">
-                    Create a new report by clicking the button below to track your downtime.
-                </div>
-                
-                <button class="btn-main" onclick="createNewReport()">Create New Report</button>
-            </div>
-        `;
-    } else {
-        
-        document.querySelector('#dashboardView .btn-main').style.display = 'block';
+        const list = document.getElementById('reportsList');
+        const topBtn = document.querySelector('#dashboardView > .btn-main');
+        list.innerHTML = '';
 
-        const sortedReports = [...reports].sort((a, b) => b.id - a.id);
-        
-        // Add reset note
+        if (reports.length === 0) {
+            topBtn.style.display = 'none';
+            list.innerHTML = `
+                <div class="zero-state-container">
+                    <img src="https://illustrations.popsy.co/blue/business-presentation.svg" alt="" class="zero-state-image" onerror="this.remove()">
+                    <div class="zero-state-text">Create a new report by clicking the button below to track your downtime.</div>
+                    <button class="btn-main" onclick="createNewReport()">Create New Report</button>
+                </div>`;
+            return;
+        }
+
+        topBtn.style.display = 'block';
         const resetNote = document.createElement('p');
-        resetNote.style = "text-align:center; font-size:0.8rem; color:#94a3b8; margin-bottom: 15px;";
-        resetNote.innerText = "Dashboard resets automatically at 6:00";
+        resetNote.style = "text-align:center; font-size:0.8rem; color:#94a3b8; margin: 0 0 5px;";
+        resetNote.innerText = "Dashboard resets automatically at shift change (6:00 / 18:00)";
         list.appendChild(resetNote);
 
-        sortedReports.forEach(report => {
+        [...reports].sort((a, b) => b.id - a.id).forEach(report => {
             const card = document.createElement('div');
             card.className = 'report-card';
             card.onclick = () => editReport(report.id);
-
-            const statusClass = report.resolved === 'Yes' ? 'status-resolved' : 'status-open';
-            const statusText = report.resolved === 'Yes' ? 'Resolved' : 'Open';
-            
+            const resolved = report.resolved === 'Yes';
+            const d = resolved ? diffMinutes(report.startRaw, report.endRaw) : null;
             card.innerHTML = `
                 <div class="report-info">
-                    <div class="report-title">${report.equipment || 'Unknown'} | ${report.phenomenon}</div>
+                    <div class="report-title">${escapeHTML(report.equipment || 'Unknown')} | ${escapeHTML(report.phenomenon)}</div>
                     <div class="report-meta">
                         <span>${formatDate(report.dateRaw)}</span>
                         <span>•</span>
                         <span>${formatTime(report.startRaw)}</span>
-                        <span class="status-badge ${statusClass}">${statusText}</span>
+                        ${d !== null ? `<span>•</span><span>${Math.floor(d / 60)}h ${d % 60}m</span>` : ''}
+                        <span class="status-badge ${resolved ? 'status-resolved' : 'status-open'}">${resolved ? 'Resolved' : 'Open'}</span>
                     </div>
                 </div>
                 <div class="btn-actions">
                     <button class="btn-edit">Edit</button>
                     <button class="btn-delete" onclick="event.stopPropagation(); deleteReport(${report.id})">Delete</button>
-                </div>
-            `;
+                </div>`;
             list.appendChild(card);
         });
     }
-}
+
+    function resetFormUI() {
+        document.getElementById('downtimeForm').reset();
+        document.getElementById('errorMessage').style.display = 'none';
+        document.getElementById('otherStopType').classList.add('hidden');
+        document.getElementById('endTimeContainer').classList.add('hidden');
+        document.getElementById('summaryContainer').style.display = 'none';
+        filterMachines();
+        updateUnits();
+        updateDurationNote();
+    }
 
     function createNewReport() {
         document.getElementById('editingId').value = '';
-        document.getElementById('downtimeForm').reset();
-        
-        // Reset dynamic fields
-        const now = new Date();
-const year = now.getFullYear();
-const month = String(now.getMonth() + 1).padStart(2, '0');
-const day = String(now.getDate()).padStart(2, '0');
-
-document.getElementById('dateInput').value = `${year}-${month}-${day}`;
-        document.getElementById('startTime').value = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-        document.getElementById('endTimeContainer').classList.add('hidden');
-        document.getElementById('otherStopType').classList.add('hidden');
-        document.getElementById('summaryContainer').style.display = 'none';
-        
+        resetFormUI();
+        document.getElementById('dateInput').value = todayISO();
+        document.getElementById('startTime').value = nowHHMM();
         showForm();
     }
 
     function showForm() {
         document.getElementById('dashboardView').classList.add('hidden');
         document.getElementById('formView').classList.remove('hidden');
+        window.scrollTo(0, 0);
     }
 
     function showDashboard() {
         document.getElementById('dashboardView').classList.remove('hidden');
         document.getElementById('formView').classList.add('hidden');
         renderDashboard();
+        window.scrollTo(0, 0);
     }
 
     function deleteReport(id) {
         if (confirm('Are you sure you want to delete this report?')) {
             reports = reports.filter(r => r.id !== id);
-            localStorage.setItem('lns_storage_v1', JSON.stringify(reports));
+            saveReports();
             renderDashboard();
+        }
+    }
+
+    function ensureOption(sel, value) {
+        if (value && ![...sel.options].some(o => o.value === value)) {
+            const o = document.createElement('option'); o.value = value; o.textContent = value; sel.appendChild(o);
         }
     }
 
     function editReport(id) {
         const report = reports.find(r => r.id === id);
         if (!report) return;
-
         document.getElementById('editingId').value = id;
-        
-        // Populate inputs
+        resetFormUI();
+
         if (report.stopTypeVal) {
-            const radio = document.querySelector(`input[name="stopType"][value="${report.stopTypeVal}"]`);
+            const radio = document.querySelector(`input[name="stopType"][value="${CSS.escape(report.stopTypeVal)}"]`);
             if (radio) radio.checked = true;
             document.getElementById('otherStopType').classList.toggle('hidden', report.stopTypeVal !== 'Other');
             document.getElementById('otherStopType').value = report.otherStopType || '';
         }
 
         if (report.equipment) {
-            const eqRadio = document.querySelector(`input[name="equipment"][value="${report.equipment}"]`);
+            const eqRadio = document.querySelector(`input[name="equipment"][value="${CSS.escape(report.equipment)}"]`);
             if (eqRadio) eqRadio.checked = true;
         }
+        filterMachines();
 
-        document.getElementById('machine').value = report.machine;
+        let machine = report.machine;
+        if (machine === 'Unloader') machine = 'Inspection'; // older reports
+        const mRadio = document.querySelector(`input[name="machine"][value="${CSS.escape(machine || '')}"]`);
+        if (mRadio) mRadio.checked = true;
         updateUnits();
-        document.getElementById('unit').value = report.unit;
-        document.getElementById('assembly').value = report.assembly;
-        document.getElementById('dateInput').value = report.dateRaw;
-        document.getElementById('startTime').value = report.startRaw;
-        
+
+        const unitSel = document.getElementById('unit');
+        if (report.unit && !unitSel.disabled) {
+            ensureOption(unitSel, report.unit);
+            unitSel.value = report.unit;
+        }
+        updateAssemblies();
+        restoreAssembly(report.assembly);
+
+        document.getElementById('dateInput').value = report.dateRaw || '';
+        document.getElementById('startTime').value = report.startRaw || '';
         const resRadio = document.querySelector(`input[name="resolved"][value="${report.resolved}"]`);
-        if (resRadio) {
-            resRadio.checked = true;
-            document.getElementById('endTimeContainer').classList.toggle('hidden', report.resolved !== 'Yes');
-        }
-        document.getElementById('endTime').value = report.endRaw;
-        document.getElementById('phenomenon').value = report.phenomenon;
-        document.getElementById('rootCause').value = report.rootCause;
-        document.getElementById('actionTaken').value = report.actionTaken;
-
-        document.getElementById('summaryContainer').style.display = 'none';
+        if (resRadio) resRadio.checked = true;
+        document.getElementById('endTimeContainer').classList.toggle('hidden', report.resolved !== 'Yes');
+        document.getElementById('endTime').value = report.endRaw || '';
+        document.getElementById('phenomenon').value = report.phenomenon || '';
+        document.getElementById('rootCause').value = report.rootCause || '';
+        document.getElementById('actionTaken').value = report.actionTaken || '';
+        updateDurationNote();
         showForm();
-    }
-
-    // --- YOUR ORIGINAL LOGIC (Preserved) ---
-    function filterMachines() {
-        const equipment = document.querySelector('input[name="equipment"]:checked')?.value;
-        const machineSelect = document.getElementById('machine');
-        const options = machineSelect.options;
-        for (let i = 1; i < options.length; i++) {
-            const val = options[i].value;
-            if (equipment === '1-H') {
-                options[i].style.display = (val === 'ESP' || val === 'Lamination' || val === 'Unloader') ? 'block' : 'none';
-            } else {
-                options[i].style.display = 'block';
-            }
-        }
-        if (machineSelect.selectedOptions[0].style.display === 'none') {
-            machineSelect.selectedIndex = 0;
-            updateUnits();
-        }
-    }
-
-    function updateUnits() {
-        const process = document.getElementById('machine').value;
-        const unitSelect = document.getElementById('unit');
-        let options = ['-'];
-        if (process === 'ESP') options = [' ', 'Cathode Unwinder', 'Anode Unwinder', 'ATR', 'Crane'];
-        else if (process === 'Lamination') options = [' ', 'Separator/PET Unwinder', 'Electrode/Separator Combiner', 'Heating/Laminator', 'Cell Final Cutter', 'Cell Tracking System', 'Cell Inspector', 'Cell Unloader'];
-        else if (process === 'D-STK') options = [' ', 'Cell Loading C/V[1]', 'Cell Loading C/V[2]', 'Stacking Table[01]', 'Stacking Table[02]', 'Stacking Table[03]', 'Stacked Cell Transfer'];
-        else if (process === 'HalfCell/Taping') options = [' ', 'Half Cell Loading', 'HalfCell Stack', 'LMS', 'Taping[01]', 'Taping[02]'];
-        else if (process === 'Inspection') options = [' ', 'Taped Cell Vision', 'Taped Cell Rotate', 'Taped Cell ', 'Cell Tracking System', 'Taped Cell Transfer'];
-        else if (process === 'Unloader') options = [' ', 'Taped Cell Unloader'];
-
-        unitSelect.innerHTML = '';
-        options.forEach(opt => {
-            const el = document.createElement('option');
-            el.textContent = opt; el.value = opt; unitSelect.appendChild(el);
-        });
     }
 
     function formatDate(dateStr) {
         if (!dateStr) return "";
-        const date = new Date(dateStr + 'T12:00:00'); 
-        return `${date.getDate()} ${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`;
+        const date = new Date(dateStr + 'T12:00:00');
+        return `${date.getDate()} ${date.toLocaleString('en-US', { month: 'long' })} ${date.getFullYear()}`;
     }
 
     function formatTime(timeStr) {
         if (!timeStr) return "";
         let [hours, minutes] = timeStr.split(':');
-        let ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = parseInt(hours, 10);
+        const ampm = hours >= 12 ? 'PM' : 'AM';
         hours = hours % 12 || 12;
-        return `${hours.toString().padStart(2, '0')}:${minutes} ${ampm}`;
+        return `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
     }
 
-    // --- MODIFIED GENERATE SUMMARY (Now saves automatically) ---
+    // ================= SUMMARY =================
+    function showError(msg) {
+        const el = document.getElementById('errorMessage');
+        el.innerText = msg; el.style.display = 'block';
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
     function generateSummary() {
         const phenomenon = document.getElementById('phenomenon').value.trim();
         const rootCause = document.getElementById('rootCause').value.trim();
         const actionTaken = document.getElementById('actionTaken').value.trim();
-        const errorEl = document.getElementById('errorMessage');
-
-        // 1. Mandatory Validation
-        if (!phenomenon) { errorEl.innerText = "Please enter Phenomenon"; errorEl.style.display = 'block'; return; }
-        if (!rootCause) { errorEl.innerText = "Please enter Root Cause"; errorEl.style.display = 'block'; return; }
-        if (!actionTaken) { errorEl.innerText = "Please enter Action Taken"; errorEl.style.display = 'block'; return; }
-        
-        // 2. DUPLICATE PREVENTION CHECK
-        const currentEquipment = document.querySelector('input[name="equipment"]:checked')?.value || "";
-        const currentEditingId = document.getElementById('editingId').value ? parseInt(document.getElementById('editingId').value) : null;
-
-        const isDuplicate = reports.some(report => {
-            // Check if another report has the same Equipment AND Phenomenon
-            // We exclude the current report if we are in "Edit" mode (matching IDs)
-            return report.id !== currentEditingId && 
-                   report.equipment === currentEquipment && 
-                   report.phenomenon.trim().toLowerCase() === phenomenon.toLowerCase();
-        });
-
-        if (isDuplicate) {
-            errorEl.innerText = "Error: Report already exists.";
-            errorEl.style.display = 'block';
-            return;
-        }
-
-        errorEl.style.display = 'none';
-
-        // 3. CAPTURE AND SAVE DATA (Original Logic)
-        const stopTypeVal = document.querySelector('input[name="stopType"]:checked')?.value;
         const resolved = document.querySelector('input[name="resolved"]:checked').value;
         const startRaw = document.getElementById('startTime').value;
         const endRaw = document.getElementById('endTime').value;
+
+        if (!phenomenon) return showError("Please enter Phenomenon");
+        if (!rootCause) return showError("Please enter Root Cause");
+        if (!actionTaken) return showError("Please enter Action Taken");
+        if (resolved === 'Yes' && !endRaw) return showError("Please enter End Time (or tap Now)");
+
+        const currentEquipment = getEquipment();
+        const currentEditingId = document.getElementById('editingId').value ? parseInt(document.getElementById('editingId').value, 10) : null;
+        const isDuplicate = reports.some(r =>
+            r.id !== currentEditingId &&
+            r.equipment === currentEquipment &&
+            (r.phenomenon || '').trim().toLowerCase() === phenomenon.toLowerCase());
+        if (isDuplicate) return showError("Error: Report already exists.");
+        document.getElementById('errorMessage').style.display = 'none';
+
+        const stopTypeVal = document.querySelector('input[name="stopType"]:checked')?.value;
+        const unitVal = document.getElementById('unit').value || '-';
 
         const reportData = {
             id: currentEditingId || Date.now(),
             stopTypeVal: stopTypeVal,
             otherStopType: document.getElementById('otherStopType').value,
-            stopType: stopTypeVal === 'Other' ? document.getElementById('otherStopType').value : stopTypeVal,
+            stopType: stopTypeVal === 'Other' ? document.getElementById('otherStopType').value : (stopTypeVal || ''),
             equipment: currentEquipment,
-            machine: document.getElementById('machine').value,
-            unit: document.getElementById('unit').value,
-            assembly: document.getElementById('assembly').value,
+            machine: getMachine(),
+            unit: unitVal,
+            assembly: currentAssembly(),
             dateRaw: document.getElementById('dateInput').value,
             startRaw: startRaw,
-            endRaw: endRaw,
+            endRaw: resolved === 'Yes' ? endRaw : '',
             resolved: resolved,
             phenomenon: phenomenon,
             rootCause: rootCause,
@@ -618,19 +817,13 @@ document.getElementById('dateInput').value = `${year}-${month}-${day}`;
         };
 
         const index = reports.findIndex(r => r.id === reportData.id);
-        if (index > -1) reports[index] = reportData;
-        else reports.push(reportData);
-        localStorage.setItem('lns_storage_v1', JSON.stringify(reports));
+        if (index > -1) reports[index] = reportData; else reports.push(reportData);
+        saveReports();
+        document.getElementById('editingId').value = reportData.id;
 
-        // 4. DOWNTIME CALCULATION & SUMMARY GENERATION
         let downtimeLine = "";
-        if (resolved === 'Yes' && startRaw && endRaw) {
-            const start = new Date(`2000-01-01T${startRaw}`);
-            let end = new Date(`2000-01-01T${endRaw}`);
-            if (end < start) end.setDate(end.getDate() + 1);
-            const diff = Math.floor((end - start) / 60000);
-            downtimeLine = `\n\nTotal Downtime: ${Math.floor(diff/60)}h ${diff%60}m`;
-        }
+        const diff = resolved === 'Yes' ? diffMinutes(startRaw, endRaw) : null;
+        if (diff !== null) downtimeLine = `\n\nTotal Downtime: ${Math.floor(diff / 60)}h ${diff % 60}m`;
 
         const summary = `1. Stop Type:
 ${reportData.stopType}
@@ -642,7 +835,7 @@ ${reportData.equipment}
     Machine: ${reportData.machine}
     Unit: ${reportData.unit}
     Assembly: ${reportData.assembly}
-    
+
 4.  Date: ${formatDate(reportData.dateRaw)}
     Start Time: ${formatTime(reportData.startRaw)}
     End Time: ${resolved === 'Yes' ? formatTime(endRaw) : "-"}
@@ -657,24 +850,33 @@ ${rootCause}
 7. Action taken:
 ${actionTaken}${downtimeLine}`;
 
+        const container = document.getElementById('summaryContainer');
         document.getElementById('summaryOutput').innerText = summary;
-        document.getElementById('summaryContainer').style.display = 'block';
-        document.getElementById('summaryContainer').scrollIntoView({ behavior: 'smooth' });
-        setTimeout(() => {
-        container.scrollIntoView({ behavior: 'smooth', block: 'end' });
-    }, 100);
+        container.style.display = 'block';
+        setTimeout(() => container.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
     }
 
     function copyToClipboard() {
         const text = document.getElementById('summaryOutput').innerText;
-        navigator.clipboard.writeText(text).then(() => {
-            const btn = document.querySelector('.btn-copy');
-            btn.innerText = "✓ Copied!";
-            setTimeout(() => { btn.innerText = "Copy Summary"; }, 2000);
-        });
+        const btn = document.querySelector('.btn-copy');
+        const done = () => { btn.innerText = "✓ Copied!"; setTimeout(() => { btn.innerText = "Copy Summary"; }, 2000); };
+        const fallback = () => {
+            const ta = document.createElement('textarea');
+            ta.value = text; ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed'; ta.style.top = '0'; ta.style.opacity = '0'; ta.style.fontSize = '16px';
+            document.body.appendChild(ta);
+            ta.focus(); ta.setSelectionRange(0, text.length);
+            try { document.execCommand('copy'); done(); } catch (e) { alert('Copy failed — press and hold the summary to copy it.'); }
+            ta.remove();
+        };
+        if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback);
+        else fallback();
     }
 
-    // --- EVENT LISTENERS ---
+    // ================= EVENTS =================
+    buildEquipment();
+    buildMachines();
+
     document.getElementsByName('stopType').forEach(el => {
         el.addEventListener('change', () => {
             document.getElementById('otherStopType').classList.toggle('hidden', el.value !== 'Other');
@@ -683,15 +885,88 @@ ${actionTaken}${downtimeLine}`;
 
     document.getElementsByName('resolved').forEach(el => {
         el.addEventListener('change', () => {
-            document.getElementById('endTimeContainer').classList.toggle('hidden', el.value !== 'Yes');
+            const yes = el.value === 'Yes';
+            document.getElementById('endTimeContainer').classList.toggle('hidden', !yes);
+            updateDurationNote();
         });
     });
 
-    // Init
     checkShiftReset();
     renderDashboard();
     setInterval(checkShiftReset, 60000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) checkShiftReset(); });
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+    }
 </script>
 
+<script>
+// Install-as-app popup (shown in the browser only, never inside the installed app)
+(function () {
+    const SNOOZE_KEY = 'lns_install_snooze_until';
+    const INSTALLED_KEY = 'lns_installed';
+    const SNOOZE_DAYS = 7;
+    function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+    function read(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+
+    const isStandalone = window.navigator.standalone === true ||
+        (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+    if (isStandalone) { store(INSTALLED_KEY, '1'); return; }
+    if (read(INSTALLED_KEY) === '1') return;
+    if (Date.now() < parseInt(read(SNOOZE_KEY) || '0', 10)) return;
+
+    const ua = navigator.userAgent;
+    const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    let deferredPrompt = null;
+    const shareIcon = '<svg class="lns-install-share" viewBox="0 0 24 24" fill="none" stroke="#007AFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg>';
+
+    function show(mode) {
+        if (document.querySelector('.lns-install-backdrop')) return;
+        const el = document.createElement('div');
+        el.className = 'lns-install-backdrop';
+        const body = mode === 'ios'
+            ? `<div class="lns-install-steps"><ol>
+                   <li>Tap the Share button ${shareIcon} in Safari's toolbar</li>
+                   <li>Scroll down and tap <b>Add to Home Screen</b></li>
+                   <li>Tap <b>Add</b></li>
+               </ol></div>
+               <button class="lns-install-btn lns-install-primary" data-act="ok">Got it</button>`
+            : `<button class="lns-install-btn lns-install-primary" data-act="install">Install App</button>`;
+        el.innerHTML = `
+            <div class="lns-install-sheet" role="dialog" aria-label="Install LNS Report">
+                <div class="lns-install-head">
+                    <img src="LNS-icon-180.png" alt="">
+                    <div><h4>Install LNS Report</h4><p>Open it from your home screen, full-screen, like a regular app.</p></div>
+                </div>
+                ${body}
+                <button class="lns-install-btn lns-install-later" data-act="later">Not now</button>
+            </div>`;
+        document.body.appendChild(el);
+        requestAnimationFrame(() => el.classList.add('show'));
+        function close() { el.classList.remove('show'); setTimeout(() => el.remove(), 300); }
+        function snooze() { store(SNOOZE_KEY, String(Date.now() + SNOOZE_DAYS * 864e5)); }
+        el.addEventListener('click', async (e) => {
+            const act = e.target.closest('[data-act]')?.dataset.act;
+            if (e.target === el || act === 'later' || act === 'ok') { snooze(); close(); return; }
+            if (act === 'install' && deferredPrompt) {
+                deferredPrompt.prompt();
+                const choice = await deferredPrompt.userChoice.catch(() => null);
+                if (choice && choice.outcome === 'accepted') store(INSTALLED_KEY, '1'); else snooze();
+                deferredPrompt = null;
+                close();
+            }
+        });
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        setTimeout(() => show('prompt'), 1200);
+    });
+    window.addEventListener('appinstalled', () => store(INSTALLED_KEY, '1'));
+    if (isIOS) window.addEventListener('load', () => setTimeout(() => show('ios'), 1200));
+})();
+</script>
 </body>
 </html>
