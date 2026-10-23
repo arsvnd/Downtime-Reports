@@ -176,7 +176,6 @@
                 <div class="block-options">
                     <label><input type="radio" name="stopType" value="BM" required> BM</label>
                     <label><input type="radio" name="stopType" value="PD"> PD</label>
-                    <label><input type="radio" name="stopType" value="PM"> PM</label>
                     <label><input type="radio" name="stopType" value="Other" id="otherToggle"> Other</label>
                 </div>
                 <input type="text" id="otherStopType" class="hidden" placeholder="Specify other stop type..." style="margin-top:10px;">
@@ -291,119 +290,113 @@
     const SEPA_POS = ['01/Upper', '01/Lower', '02/Upper', '02/Lower'];
     const TAPE_POS = ['01', '02', '03', '04', '05', '06'];
 
-    // Units and assemblies are ordered by how often they show up in long (30+ min) stops
+    const STACKER = ['Cell. Align Table', 'Cell. Align Vision', { n: 'Cell. Gripper', p: ['A', 'B'] }, 'Cell. Pusher', 'Table Transfer Linear', 'Cell. Stack Vision'];
+    const TAPER = [
+        { n: 'Tape. Tape Supply', p: TAPE_POS },
+        { n: 'Tape. Cutter', p: TAPE_POS },
+        { n: 'Tape. Attacher', p: TAPE_POS },
+        { n: 'Tape. Upper Clamp', p: TAPE_POS },
+        { n: 'Tape. Lower Clamp', p: TAPE_POS },
+        'Stacked Cell. Press'
+    ];
+
+    // Units and assemblies follow the process flow
     const UNITS = {
         'ESP': {
             'Pancake Loader': [
-                { n: 'Pancake. Unwinder', p: UNWINDER_POS },
-                { n: 'Dancer. Roller', p: UNWINDER_POS },
-                { n: 'Electrode. EPC', p: UNWINDER_POS },
-                { n: 'Electrode. Auto Splicer', p: UNWINDER_POS },
-                { n: 'Pancake. Conveyor', p: UNWINDER_POS },
                 'Pancake. Hoist',
-                'Electrode. Tape Feeder'
+                { n: 'Pancake. Conveyor', p: UNWINDER_POS },
+                { n: 'Pancake. Unwinder', p: UNWINDER_POS },
+                { n: 'Electrode. Auto Splicer', p: UNWINDER_POS },
+                'Electrode. Tape Feeder',
+                { n: 'Dancer. Roller', p: UNWINDER_POS },
+                { n: 'Electrode. EPC', p: UNWINDER_POS }
             ]
         },
         'Lamination': {
+            'Separator Unwinder': [
+                { n: 'Separator. Unwinder', p: SEPA_POS },
+                { n: 'Separator. Auto Splicer', p: SEPA_POS },
+                { n: 'Separator. PET. Winder', p: SEPA_POS }
+            ],
             'Electrode/Separator Combiner': [
-                '[Upper] Electrode. Cutter',
-                '[Center] Electrode. Cutter',
-                '[Upper] Electrode Cutting Linear',
-                '[02] Electrode / Separator. Temporary Heating Roller',
-                '[01] Electrode / Separator. Temporary Heating Roller',
-                '[01] Electrode / Separator. Nip Roller',
-                '[02] Electrode / Separator. Nip Roller',
+                '[Upper] Separator. Dancer',
+                '[Upper] Separator. Idle Roller',
+                '[Lower] Separator. Idle Roller',
+                '[Upper] PET (Separator). Idle Roller',
                 '[Upper] Separator. EPC',
                 '[Lower] Separator. EPC',
                 '[Upper] Electrode. EPC',
                 '[Center] Electrode. EPC',
                 '[Upper] Electrode. Feeding Roller',
                 '[Center] Electrode. Feeding Roller',
-                '[Upper] PET (Separator). Idle Roller',
-                '[Upper] Separator. Idle Roller',
-                '[Lower] Separator. Idle Roller',
-                '[Upper] Separator. Dancer'
+                '[Upper] Electrode. Cutter',
+                '[Center] Electrode. Cutter',
+                '[Upper] Electrode Cutting Linear',
+                '[01] Electrode / Separator. Nip Roller',
+                '[01] Electrode / Separator. Temporary Heating Roller',
+                '[02] Electrode / Separator. Nip Roller',
+                '[02] Electrode / Separator. Temporary Heating Roller'
             ],
             'Laminator': [
-                'Separator. Sealer',
-                '[Upper] Lamination Roller',
-                '[Lower] Lamination Roller',
-                '[Upper] Separator. Longside Sealer',
+                'Heating Zone',
                 '[Upper] Sub Heater',
                 '[Lower] Sub Heater',
-                'Separator. Sealing Linear',
+                '[Upper] Lamination Roller',
+                '[Lower] Lamination Roller',
                 '[Upper] PET. Unwinder',
                 '[Upper] PET. Winder',
                 '[Lower] PET. Splicer(Manual)',
-                'Heating Zone',
-                'Uncut Cell. Air Blow/Suction',
-                'Uncut Cell. Union Vision'
+                'Separator. Sealer',
+                'Separator. Sealing Linear',
+                '[Upper] Separator. Longside Sealer',
+                'Uncut Cell. Union Vision',
+                'Uncut Cell. Air Blow/Suction'
+            ],
+            'Cell Final Cutter': [
+                'Uncut Cell. Conveyor',
+                'Electrode. Cutting Linear',
+                'Cell. Cutter'
             ],
             'Cell Inspector': [
-                'Cell. Short Inspector',
-                'Cell. Vision Inspector',
                 'Cell. Suction Conveyor',
                 'Final Lami Vision',
                 'Long Side Sealing Vision',
                 'Merge Vision',
                 'Mono Sepa Vision',
+                'Cell. Vision Inspector',
+                'Cell. Short Inspector',
                 'NG Mark Vision'
             ],
-            'Cell Final Cutter': [
-                'Uncut Cell. Conveyor',
-                'Cell. Cutter',
-                'Electrode. Cutting Linear'
-            ],
-            'Separator/PET Unwinder': [
-                { n: 'Separator. Unwinder', p: SEPA_POS },
-                { n: 'Separator. PET. Winder', p: SEPA_POS },
-                { n: 'Separator. Auto Splicer', p: SEPA_POS }
-            ],
             'Cell Unloader': [
-                'Magazine',
                 'Cell. Suction Conveyor',
                 'OK Cell. Pusher',
                 'NG Cell. Pusher',
-                'NG Cell Box'
-            ],
-            'Cell Tracking System': []
+                'NG Cell Box',
+                'Magazine'
+            ]
         },
         'D-STK': {
-            'Cell Stacker[01]': ['Cell. Align Vision', { n: 'Cell. Gripper', p: ['A', 'B'] }, 'Cell. Pusher', 'Cell. Stack Vision', 'Cell. Align Table', 'Table Transfer Linear'],
-            'Cell Stacker[02]': ['Cell. Align Vision', { n: 'Cell. Gripper', p: ['A', 'B'] }, 'Cell. Pusher', 'Cell. Stack Vision', 'Cell. Align Table', 'Table Transfer Linear'],
-            'Cell Stacker[03]': ['Cell. Align Vision', { n: 'Cell. Gripper', p: ['A', 'B'] }, 'Cell. Pusher', 'Cell. Stack Vision', 'Cell. Align Table', 'Table Transfer Linear'],
-            'Cell Stacker[All]': ['Cell. Align Vision', 'Cell. Gripper', 'Cell. Pusher', 'Cell. Stack Vision', 'Cell. Align Table'],
             'Cell Loading C/V[01]': ['[Lower] Cell. Loading C/V', 'Cell. Lower Separator Vision'],
             'Cell Loading C/V[02]': ['[Upper] Cell. Loading C/V', 'Cell. Lower Separator Vision'],
+            'Cell Stacker[01]': STACKER,
+            'Cell Stacker[02]': STACKER,
+            'Cell Stacker[03]': STACKER,
+            'Cell Stacker[All]': STACKER,
             'Stacked Cell Transfer': ['Stacked Cell. Gripper']
         },
         'HalfCell/Taping': {
-            'Stacked Cell Taper[01]': [
-                { n: 'Tape. Attacher', p: TAPE_POS },
-                { n: 'Tape. Cutter', p: TAPE_POS },
-                { n: 'Tape. Tape Supply', p: TAPE_POS },
-                { n: 'Tape. Upper Clamp', p: TAPE_POS },
-                { n: 'Tape. Lower Clamp', p: TAPE_POS },
-                'Stacked Cell. Press'
-            ],
-            'Stacked Cell Taper[02]': [
-                { n: 'Tape. Attacher', p: TAPE_POS },
-                { n: 'Tape. Cutter', p: TAPE_POS },
-                { n: 'Tape. Tape Supply', p: TAPE_POS },
-                { n: 'Tape. Upper Clamp', p: TAPE_POS },
-                { n: 'Tape. Lower Clamp', p: TAPE_POS },
-                'Stacked Cell. Press'
-            ],
-            'LMS': ['Stacked Cell. Shuttle', 'Stacked Cell. NG Pick & Place', 'Stacked Cell. NG Box', 'LMS. Stacked Cell Clamp Air Supply', 'Shuttle. In Lift'],
-            'HalfCell Stack': ['Half Cell. Scara Robot', 'Half Cell. Vision'],
-            'Half Cell Loading': ['Half Cell. Vibrator', { n: 'Half Cell. Magazine', p: ['A', 'B', 'C'] }, 'Half Cell. Rotate']
+            'LMS': ['Shuttle. In Lift', 'Stacked Cell. Shuttle', 'LMS. Stacked Cell Clamp Air Supply', 'Stacked Cell. NG Pick & Place', 'Stacked Cell. NG Box'],
+            'Half Cell Loading': [{ n: 'Half Cell. Magazine', p: ['A', 'B', 'C'] }, 'Half Cell. Vibrator', 'Half Cell. Rotate'],
+            'Half Cell Stack': ['Half Cell. Vision', 'Half Cell. Scara Robot'],
+            'Stacked Cell Taper[01]': TAPER,
+            'Stacked Cell Taper[02]': TAPER
         },
         'Inspection': {
-            'Taped Cell Short Inspector': ['Taped Cell. Short, Thickness Inspector', 'Taped Cell. Shuttle'],
-            'Taped Cell Vision': ['[Upper/Lower] Taped Cell. Vision', 'Final Stack Vision', '[4-Side] Taped Cell. Vision', 'Taped Cell. Pick & Place', 'Taped Cell. Rotating Table'],
-            'Taped Cell Transfer': ['OK Taped Cell. Transfer', 'NG Taped Cell. Transfer', 'Taped Cell. Conveyor'],
-            'Taped Cell Unloader': ['Taped Cell. Pick & Place', 'Tray(Empty). Conveyor'],
-            'Cell Tracking System': []
+            'Taped Cell Vision': ['Taped Cell. Rotating Table', 'Taped Cell. Pick & Place', '[Upper/Lower] Taped Cell. Vision', '[4-Side] Taped Cell. Vision', 'Final Stack Vision'],
+            'Taped Cell Short Inspector': ['Taped Cell. Shuttle', 'Taped Cell. Short, Thickness Inspector'],
+            'Taped Cell Transfer': ['Taped Cell. Conveyor', 'OK Taped Cell. Transfer', 'NG Taped Cell. Transfer'],
+            'Taped Cell Unloader': ['Taped Cell. Pick & Place', 'Tray(Empty). Conveyor']
         }
     };
     const WHOLE = '-';           // whole machine / not specific
