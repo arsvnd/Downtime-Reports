@@ -278,7 +278,7 @@
         #screen-home { overflow: hidden; }
         .home-stage { position: absolute; inset: 0; display: grid; grid-template-rows: minmax(0, 1fr) auto minmax(0, 1fr); padding: 0 20px; }
         .home-top { display: flex; flex-direction: column; min-height: 0; padding: calc(env(safe-area-inset-top) + 14px) 0 14px; }
-        .home-title { font-size: clamp(26px, 8.2vw, 32px); line-height: 1.1; letter-spacing: -0.035em; font-weight: 600; margin: 0 2px 6px; flex-shrink: 0; }
+        .home-title { font-size: clamp(26px, 8.2vw, 32px); line-height: 1.1; letter-spacing: -0.035em; font-weight: 600; margin: 0 2px 6px; flex-shrink: 0; text-align: center; }
         .home-title .soft { color: #98A199; font-weight: 500; }
         .home-illus { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; margin: 0 -20px; }
         .home-illus .illus { width: 100%; height: 100%; max-height: 320px; display: block; overflow: visible; }
@@ -1747,23 +1747,6 @@
     }
 
     async function saveAndCopy() {
-        if (currentIssues.length) {
-            const n = currentIssues.length;
-            const shown = currentIssues.slice(0, 4).map(x => `<li>${esc(x.msg)}</li>`).join('');
-            const more = n > 4 ? `<li class="more">+ ${n - 4} more</li>` : '';
-            const choice = await showSheet({
-                title: `This report has ${n} gap${n > 1 ? 's' : ''}`,
-                message: 'Missing IDs will show up as ____ or N/A in the group chat.',
-                bodyHtml: `<ul class="sheet-list">${shown}${more}</ul>`,
-                actions: [
-                    { label: 'Go back and fix', value: 'fix', kind: 'primary' },
-                    { label: 'Save & copy anyway', value: 'send', kind: 'danger' }
-                ]
-            });
-            if (choice === 'fix') { goToIssue(0); return; }
-            if (choice !== 'send') return;
-        }
-
         const existing = savedReports.find(r => r.id === activeEditId);
         const stateToSave = {
             ...getFormState(),
