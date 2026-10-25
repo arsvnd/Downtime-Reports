@@ -403,7 +403,7 @@
         <div id="screen-home" class="screen active">
             <div class="home-stage" id="home-stage">
                 <div class="home-top">
-                    <h2 class="home-title">Another day,<br><span class="soft">another</span> cutter.</h2>
+                    <h2 class="home-title" id="home-title">Another day,<br><span class="soft">another</span> cutter.</h2>
                     <div class="home-illus">
 <svg class="illus cut-anim" viewBox="-189.2 -65.8 222.6 127.9" preserveAspectRatio="xMidYMid meet" role="img" aria-label="An electrode strip feeding into a press, where the cutter punches out cells">
 <defs>
@@ -1263,6 +1263,19 @@
         lastCrown = tier.name;
     }
 
+    /* Headline changes with the number of cutter changes */
+    const GREETINGS = [
+        { over: 99, html: 'Cutter change<br><span class="soft">final</span> boss.' },
+        { over: 50, html: 'Welcome,<br><span class="soft">cutter</span> leader! 🫡' },
+        { over: 10, html: 'It’s cutter<br><span class="soft">change</span> time.' },
+        { over: -1, html: 'Another day,<br><span class="soft">another</span> cutter.' }
+    ];
+    function renderGreeting(count) {
+        const g = GREETINGS.find(x => count > x.over);
+        const el = $('home-title');
+        if (el.innerHTML !== g.html) el.innerHTML = g.html;
+    }
+
     function renderHome() {
         const draft = loadDraft();
         $('draft-slot').innerHTML = draft ? `
@@ -1280,6 +1293,7 @@
         const sorted = [...savedReports].sort((a, b) => reportSortKey(b) - reportSortKey(a));
         $('recent-count').textContent = sorted.length ? String(sorted.length) : '';
         renderCrown(sorted.length);
+        renderGreeting(sorted.length);
         if (sorted.length === 0) {
             list.innerHTML = `
                 <div class="empty-recent">
