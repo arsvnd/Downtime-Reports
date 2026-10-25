@@ -157,7 +157,8 @@
         }
 
         .bottom-bar .btn {
-            padding: 16px 24px;
+            padding: 16px 18px;
+            white-space: nowrap;
             margin: 0;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
@@ -238,6 +239,99 @@
         .id-input-wrapper.is-complete .id-input, .id-input-wrapper.is-complete span { color: #15803D; }
 
         .report-preview { background-color: #FAFAFA; color: #111111; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 24px; font-family: ui-monospace, monospace; font-size: 13px; white-space: pre-wrap; line-height: 1.6;}
+    
+        /* =========================================
+           4. HOME: hero, draft card, recent changes
+           ========================================= */
+        .home-body { padding-bottom: calc(32px + env(safe-area-inset-bottom)); }
+        .home-hero { padding: 28px 0 4px; }
+        .home-hero .home-title { margin-bottom: 24px; }
+
+        .draft-card { background: #FFFBEB; border: 1.5px dashed #F59E0B; border-radius: var(--radius-md); padding: 16px 18px; margin-top: 20px; }
+        .draft-head { display: flex; align-items: center; gap: 8px; font-size: 15px; }
+        .draft-dot { width: 8px; height: 8px; border-radius: 50%; background: #F59E0B; flex-shrink: 0; }
+        .draft-age { margin-left: auto; font-size: 12px; color: #92400E; font-weight: 600; }
+        .draft-sum { margin: 8px 0 2px; font-weight: 600; font-size: 14px; }
+        .draft-exp { font-size: 12px; color: #92400E; font-weight: 500; }
+        .draft-actions { display: flex; gap: 8px; margin-top: 14px; justify-content: flex-end; }
+        .draft-actions .btn-small { padding: 10px 18px; font-size: 14px; }
+        .btn-dark { background: var(--accent-color); color: #fff; }
+
+        .section-head { display: flex; align-items: center; justify-content: space-between; margin: 36px 2px 0; }
+        .section-head h3 { margin: 0; }
+        .section-head .count { font-size: 12px; font-weight: 800; color: var(--text-muted); background: #F0F0F0; padding: 3px 10px; border-radius: var(--radius-pill); }
+        .day-label { font-size: 13px; font-weight: 700; color: var(--text-muted); margin: 20px 2px 10px; }
+
+        .rc-card { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px; margin-bottom: 10px; box-shadow: var(--shadow-sm); cursor: pointer; font: inherit; color: inherit; transition: transform 0.15s, box-shadow 0.15s; }
+        .rc-card:active { transform: scale(0.98); box-shadow: none; }
+        .rc-line { flex-shrink: 0; width: 58px; height: 58px; border-radius: 16px; background: var(--accent-color); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; }
+        .rc-line small { font-size: 9px; letter-spacing: 0.14em; font-weight: 700; opacity: 0.55; }
+        .rc-line b { font-size: 19px; font-weight: 800; letter-spacing: -0.02em; }
+        .rc-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 7px; }
+        .rc-top { display: flex; align-items: center; gap: 8px; }
+        .rc-time { font-size: 15px; font-weight: 800; }
+        .badge-warn { font-size: 11px; font-weight: 800; color: var(--accent-red); background: #FFF0F2; border: 1px solid #FFD5DC; padding: 2px 8px; border-radius: var(--radius-pill); }
+        .rc-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+        .chip { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: var(--radius-pill); background: #F2F2F2; color: #333; }
+        .chip-outline { background: transparent; border: 1px dashed #BBBBBB; }
+        .rc-muted { font-size: 13px; color: var(--text-muted); font-weight: 600; }
+        .rc-meta { font-size: 12.5px; color: var(--text-muted); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .rc-chev { flex-shrink: 0; width: 18px; height: 18px; stroke: #C4C4C4; }
+        .show-more { margin-top: 8px; padding: 14px; font-size: 14px; }
+
+        .empty-recent { text-align: center; padding: 36px 20px; margin-top: 14px; border: 1.5px dashed var(--border); border-radius: var(--radius-md); color: var(--text-muted); font-weight: 600; font-size: 14px; line-height: 1.5; }
+        .empty-recent svg { width: 36px; height: 36px; margin-bottom: 10px; opacity: 0.6; }
+
+        /* =========================================
+           5. REVIEW: gap list + highlights
+           ========================================= */
+        .review-sub { color: var(--text-muted); margin: -8px 0 20px; font-size: 14px; font-weight: 500; }
+        .issues-card { background: #FFF5F6; border: 1px solid #FFD5DC; border-radius: var(--radius-md); padding: 4px 16px; margin-bottom: 16px; }
+        .issues-head { display: flex; gap: 8px; align-items: center; color: var(--accent-red); font-weight: 800; font-size: 15px; padding: 12px 0 8px; }
+        .issues-head svg, .ok-card svg { width: 18px; height: 18px; flex-shrink: 0; }
+        .issue-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; background: none; border: none; border-top: 1px solid #FFE1E6; padding: 13px 0; font: inherit; font-size: 14px; font-weight: 600; color: #7F1D1D; text-align: left; cursor: pointer; }
+        .issue-fix { color: var(--accent-red); font-weight: 800; font-size: 13px; flex-shrink: 0; }
+        .ok-card { display: flex; align-items: center; gap: 8px; background: #F0FDF4; border: 1px solid #BBF7D0; color: #15803D; font-weight: 700; border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 16px; font-size: 14px; }
+        .report-preview mark { background: #FFE4E8; color: var(--accent-red); border-radius: 4px; padding: 0 2px; font-weight: 800; }
+
+        .btn-icon { flex: 0 0 56px; width: 56px; padding: 0 !important; display: flex; align-items: center; justify-content: center; }
+        .btn-icon svg { width: 20px; height: 20px; }
+        .btn-danger-soft { background: #FFF0F2; color: var(--accent-red); border: 1px solid #FFD5DC; box-shadow: none !important; }
+
+        /* Fields flagged by the gap check */
+        .is-missing { border-color: var(--accent-red) !important; background-color: #FFF5F6 !important; }
+        .id-input-wrapper.is-missing span { color: var(--accent-red); }
+        .cutter-checkboxes.is-missing { outline: 2px solid var(--accent-red); outline-offset: 6px; border-radius: 18px; background-color: transparent !important; }
+        .three-way-toggle.is-missing { box-shadow: 0 0 0 2px var(--accent-red); }
+
+        /* =========================================
+           6. BANNER + BOTTOM SHEET (replace alert/confirm)
+           ========================================= */
+        .toast { position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 68px); transform: translate(-50%, -16px); opacity: 0; z-index: 3000; background: var(--accent-color); color: #fff; padding: 12px 22px; border-radius: 18px; box-shadow: 0 12px 32px rgba(0,0,0,0.18); display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; width: max-content; max-width: calc(100% - 40px); transition: opacity 0.25s, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); pointer-events: none; }
+        .toast.show { opacity: 1; transform: translate(-50%, 0); }
+        .toast strong { font-size: 15px; font-weight: 800; }
+        .toast span { font-size: 13px; opacity: 0.85; font-weight: 500; }
+        .toast-warn { background: var(--accent-red); }
+        .toast-error { background: #7F1D1D; }
+
+        .sheet-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 2000; display: flex; align-items: flex-end; justify-content: center; opacity: 0; transition: opacity 0.25s ease; }
+        .sheet-backdrop.show { opacity: 1; }
+        .sheet { width: 100%; max-width: 480px; background: var(--card-bg); border-radius: 28px 28px 0 0; padding: 10px 22px calc(18px + env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1); box-shadow: 0 -16px 40px rgba(0,0,0,0.12); }
+        .sheet-backdrop.show .sheet { transform: translateY(0); }
+        .sheet-grabber { width: 40px; height: 5px; border-radius: 3px; background: #E2E2E2; margin: 0 auto 18px; }
+        .sheet .sheet-title { font-size: 20px; text-transform: none; letter-spacing: -0.02em; color: var(--text-main); font-weight: 800; margin-bottom: 6px; }
+        .sheet-msg { font-size: 15px; color: #555; line-height: 1.45; margin-bottom: 16px; font-weight: 500; }
+        .sheet-list { list-style: none; background: #FFF5F6; border: 1px solid #FFD5DC; border-radius: 16px; padding: 6px 14px; margin-bottom: 16px; }
+        .sheet-list li { font-size: 14px; font-weight: 600; color: #7F1D1D; padding: 8px 0; border-top: 1px solid #FFE1E6; }
+        .sheet-list li:first-child { border-top: none; }
+        .sheet-list li.more { color: var(--accent-red); font-weight: 700; }
+        .sheet-actions { display: flex; flex-direction: column; gap: 8px; }
+        .sheet-btn { width: 100%; border: none; border-radius: var(--radius-pill); padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; transition: transform 0.15s; }
+        .sheet-btn:active { transform: scale(0.97); }
+        .sheet-primary { background: var(--accent-color); color: #fff; box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+        .sheet-danger { background: #FFF0F2; color: var(--accent-red); }
+        .sheet-secondary { background: #F4F4F4; color: var(--text-main); }
+        .sheet-plain { background: transparent; color: var(--text-muted); }
     </style>
 </head>
 <body>
@@ -250,15 +344,14 @@
 
     <div id="content">
         <div id="screen-home" class="screen active">
-            <div class="scrollable-body" style="justify-content: center; align-items: center; text-align: center;">
-                <h2 class="home-title">Another day,<br>another cutter.</h2>
-                <button class="btn" style="margin-bottom: 16px;" onclick="openNewForm()">New Cutter Change</button>
-                <button class="btn btn-secondary" onclick="showHistory()">Previous Reports</button>
+            <div class="scrollable-body home-body">
+                <div class="home-hero">
+                    <h2 class="home-title">Another day,<br>another cutter.</h2>
+                    <button class="btn" onclick="openNewForm()">New Cutter Change</button>
+                </div>
+                <div id="draft-slot"></div>
+                <div id="recent-list"></div>
             </div>
-        </div>
-
-        <div id="screen-history" class="screen">
-            <div class="scrollable-body" id="history-list"></div>
         </div>
 
         <div id="screen-form" class="screen">
@@ -333,8 +426,9 @@
 
         <div id="screen-review" class="screen">
             <div class="scrollable-body">
-                <h2>Review Report</h2>
-                <p style="color:var(--text-muted); text-align:center; margin-bottom:24px; font-size:14px;">Review your data before saving to history.</p>
+                <h2 id="review-title">Review Report</h2>
+                <p class="review-sub" id="review-sub"></p>
+                <div id="review-issues"></div>
                 <div class="report-preview" id="review-text"></div>
             </div>
             <div class="bottom-bar" id="review-buttons"></div>
@@ -344,12 +438,15 @@
 
 <script>
     const STORAGE_KEY = "cutter_reports_v15";
+    const DRAFT_KEY = "cutter_draft_v1";
+    const DRAFT_TTL_MS = 60 * 60 * 1000;   // drafts are kept for 1 hour after the last edit
+    const RECENT_PAGE = 20;                // recent changes shown before "Show older"
     const LINES = ["1-1", "1-2", "1-3", "1-4", "1-5", "1-H", "2-1", "2-2", "2-3", "2-4", "2-5", "3-1", "3-2", "3-3", "3-4", "3-5"];
-    const CUTTER_ORDER = ["Upper", "Center", "Final"]; 
+    const CUTTER_ORDER = ["Upper", "Center", "Final"];
     const FORMATS = {
         'Upper': { prefix: 'LCAGHY', suffixes: ['CU656X1.8', 'CL718X0.0'] },
         'Center': { prefix: 'LCAGHY', suffixes: ['CU656X1.8', 'CL718X0.0'] },
-        'Final': { prefix: 'LCAGHY', suffixes: ['FU656X1.2', 'FL718X0.0'] } 
+        'Final': { prefix: 'LCAGHY', suffixes: ['FU656X1.2', 'FL718X0.0'] }
     };
 
     const CHECKLIST_RULES = [
@@ -365,59 +462,28 @@
     let savedReports = [];
     let currentReviewText = "";
     let currentReviewLine = "";
-    let reviewMode = 'edit'; 
-    let activeEditId = null; 
+    let reviewMode = 'edit';
+    let activeEditId = null;
+    let currentIssues = [];
+    let formDirty = false;
+    let recentLimit = RECENT_PAGE;
 
-    function init() {
-        try { savedReports = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { savedReports = []; }
+    /* =========================================
+       HELPERS
+       ========================================= */
+    const $ = (id) => document.getElementById(id);
+    function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+    function buzz(p) {
+        // Browsers block vibration until the first tap; skip it quietly before then.
+        if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate(p);
+    }
+    const niceTime = (t) => (t || '').replace(/(AM|PM)$/, ' $1');
 
-        const lineSelect = document.getElementById('lineSelect');
-        lineSelect.add(new Option('Select Line', ''));
-        lineSelect.options[0].disabled = true;
-        lineSelect.options[0].selected = true;
-        LINES.forEach(l => lineSelect.add(new Option(`Line ${l}`, l)));
-        
-        // INTERLOCK: Enforce 1-H "Upper" restriction when changing lines
-        lineSelect.addEventListener('change', function() {
-            if (this.value === '1-H') {
-                let kidding = false;
-                if (selectedCutters.includes('Upper')) {
-                    const btn = document.querySelector('.cutter-btn[data-cutter="Upper"]:not(.module-btn)');
-                    selectedCutters = selectedCutters.filter(x => x !== 'Upper');
-                    btn.classList.remove('active');
-                    document.getElementById('old-block-Upper').style.display = 'none';
-                    document.getElementById('new-block-Upper').style.display = 'none';
-                    document.getElementById('old-block-Upper').classList.remove('visible');
-                    document.getElementById('new-block-Upper').classList.remove('visible');
-                    document.getElementById('old-group').style.display = selectedCutters.length > 0 ? 'block' : 'none';
-                    document.getElementById('new-group').style.display = selectedCutters.length > 0 ? 'block' : 'none';
-                    updateChecklistUI();
-                    kidding = true;
-                }
-                if (selectedModules.includes('Upper')) {
-                    const btn = document.querySelector('.module-btn[data-module="Upper"]');
-                    selectedModules = selectedModules.filter(x => x !== 'Upper');
-                    btn.classList.remove('active');
-                    document.getElementById('module-block-Upper').style.display = 'none';
-                    kidding = true;
-                }
-                if (kidding) {
-                    setTimeout(() => alert("Are you kidding me?"), 50);
-                }
-            }
-        });
-        
-        const timeSelect = document.getElementById('timeInput');
-        for (let h = 0; h < 24; h++) {
-            for (let m of ["00", "30"]) {
-                const ampm = h >= 12 ? "PM" : "AM";
-                let hour = h % 12; hour = hour || 12;
-                timeSelect.add(new Option(`${hour}:${m}${ampm}`, `${hour}:${m}${ampm}`));
-            }
-        }
-
-        buildInputContainers();
-        showScreen('screen-home');
+    // Today's date in the phone's local time zone (YYYY-MM-DD).
+    // toISOString() uses UTC, which rolls over to tomorrow during the evening in Toronto.
+    function localDateStr(d = new Date()) {
+        const pad = n => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
     }
 
     function getNearestTime() {
@@ -430,262 +496,567 @@
         return `${hour}:${m}${ampm}`;
     }
 
-    function showScreen(screenId) {
-        if (navigator.vibrate) navigator.vibrate(10);
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(screenId).classList.add('active');
+    function timeToMinutes(t) {
+        const m = /^(\d{1,2}):(\d{2})(AM|PM)$/.exec(t || '');
+        if (!m) return 0;
+        let h = +m[1] % 12; if (m[3] === 'PM') h += 12;
+        return h * 60 + +m[2];
+    }
 
-        const backBtn = document.getElementById('nav-back');
-        backBtn.style.visibility = (screenId === 'screen-home') ? 'hidden' : 'visible';
+    function dayLabel(dateStr) {
+        if (!dateStr) return 'Earlier';
+        if (dateStr === localDateStr()) return 'Today';
+        if (dateStr === localDateStr(new Date(Date.now() - 864e5))) return 'Yesterday';
+        const [y, mo, d] = dateStr.split('-').map(Number);
+        return new Date(y, mo - 1, d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    }
+
+    function minsAgo(ts) {
+        const m = Math.floor((Date.now() - ts) / 60000);
+        return m < 1 ? 'just now' : `${m} min ago`;
+    }
+
+    function persistReports() {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(savedReports)); return true; }
+        catch (e) { showToast("Couldn't save the report", { sub: 'Phone storage is full or blocked.', type: 'error' }); return false; }
+    }
+
+    /* =========================================
+       BANNER (toast) + BOTTOM SHEET
+       ========================================= */
+    let toastTimer = null;
+    function showToast(title, { sub = '', type = 'info', ms = 2600 } = {}) {
+        let el = $('toast');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'toast';
+            el.setAttribute('role', 'status');
+            el.setAttribute('aria-live', 'polite');
+            document.body.appendChild(el);
+        }
+        el.className = 'toast toast-' + type;
+        el.innerHTML = `<strong>${esc(title)}</strong>${sub ? `<span>${esc(sub)}</span>` : ''}`;
+        void el.offsetWidth; // restart the slide-in animation
+        el.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove('show'), ms);
+    }
+
+    // Resolves with the chosen action's value, or null if dismissed.
+    function showSheet({ title, message = '', bodyHtml = '', actions = [] }) {
+        return new Promise(resolve => {
+            document.querySelectorAll('.sheet-backdrop').forEach(s => s.remove());
+            const el = document.createElement('div');
+            el.className = 'sheet-backdrop';
+            el.innerHTML = `
+                <div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(title)}">
+                    <div class="sheet-grabber"></div>
+                    <h3 class="sheet-title">${esc(title)}</h3>
+                    ${message ? `<p class="sheet-msg">${esc(message)}</p>` : ''}
+                    ${bodyHtml}
+                    <div class="sheet-actions">
+                        ${actions.map((a, i) => `<button class="sheet-btn sheet-${a.kind || 'secondary'}" data-i="${i}">${esc(a.label)}</button>`).join('')}
+                    </div>
+                </div>`;
+            document.body.appendChild(el);
+            buzz(10);
+            requestAnimationFrame(() => el.classList.add('show'));
+            const done = (v) => { el.classList.remove('show'); setTimeout(() => el.remove(), 300); resolve(v); };
+            el.addEventListener('click', (e) => {
+                if (e.target === el) return done(null);
+                const b = e.target.closest('[data-i]');
+                if (b) done(actions[+b.dataset.i].value);
+            });
+        });
+    }
+
+    function kiddingBanner() {
+        buzz([30, 40, 30]);
+        showToast("Are you kidding me?", { sub: "Upper isn't available on Line 1-H.", type: 'warn' });
+    }
+
+    /* =========================================
+       INIT
+       ========================================= */
+    function init() {
+        try { savedReports = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { savedReports = []; }
+
+        const lineSelect = $('lineSelect');
+        lineSelect.add(new Option('Select Line', ''));
+        lineSelect.options[0].disabled = true;
+        lineSelect.options[0].selected = true;
+        LINES.forEach(l => lineSelect.add(new Option(`Line ${l}`, l)));
+
+        // INTERLOCK: Enforce 1-H "Upper" restriction when changing lines
+        lineSelect.addEventListener('change', function() {
+            if (this.value !== '1-H') return;
+            let kidding = false;
+            if (selectedCutters.includes('Upper')) {
+                selectedCutters = selectedCutters.filter(x => x !== 'Upper');
+                setCutterBlocks();
+                updateChecklistUI();
+                kidding = true;
+            }
+            if (selectedModules.includes('Upper')) {
+                selectedModules = selectedModules.filter(x => x !== 'Upper');
+                setModuleBlocks();
+                kidding = true;
+            }
+            if (kidding) kiddingBanner();
+        });
+
+        const timeSelect = $('timeInput');
+        for (let h = 0; h < 24; h++) {
+            for (let m of ["00", "30"]) {
+                const ampm = h >= 12 ? "PM" : "AM";
+                let hour = h % 12; hour = hour || 12;
+                timeSelect.add(new Option(`${hour}:${m}${ampm}`, `${hour}:${m}${ampm}`));
+            }
+        }
+
+        buildInputContainers();
+
+        // Save the draft right away if the app is closed or the phone locks.
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveDraftNow(); });
+        window.addEventListener('pagehide', saveDraftNow);
+
+        showScreen('screen-home');
+    }
+
+    function showScreen(screenId) {
+        buzz(10);
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        $(screenId).classList.add('active');
+        $('nav-back').style.visibility = (screenId === 'screen-home') ? 'hidden' : 'visible';
+        if (screenId === 'screen-home') renderHome();
     }
 
     function handleBack() {
         const activeScreen = document.querySelector('.screen.active').id;
         if (activeScreen === 'screen-review') {
-            showScreen(reviewMode === 'edit' ? 'screen-form' : 'screen-history');
+            showScreen(reviewMode === 'edit' ? 'screen-form' : 'screen-home');
         } else if (activeScreen === 'screen-form') {
-            if (confirm("Discard this form and go back?")) { showScreen('screen-home'); }
-        } else if (activeScreen === 'screen-history') {
-            showScreen('screen-home');
+            leaveForm();
         }
     }
 
-    function showHistory() {
-        renderHistory();
-        showScreen('screen-history');
+    /* =========================================
+       FORM STATE (shared by drafts, edits, saves)
+       ========================================= */
+    function idInput(type, cutter, idx) {
+        return document.querySelector(`input[data-type="${type}"][data-cutter="${cutter}"][data-idx="${idx}"]`);
     }
 
-    function renderHistory() {
-        const list = document.getElementById('history-list');
-        if (savedReports.length === 0) {
-            list.innerHTML = `<div class="empty-state"><img src="https://illustrations.popsy.co/white/page-under-construction.svg" style="width:180px; margin-bottom:16px; opacity:0.8;"><p>No previous reports found.</p></div>`;
-            return;
-        }
-        list.innerHTML = `<h2 style="margin-bottom: 24px;">History</h2>` + savedReports.map(r => `
-            <div class="report-item">
-                <div class="report-header">
-                    <div>
-                        <h4>Line ${r.line || 'Not Selected'}</h4>
-                        <p>${new Date(r.timestamp).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' })}</p>
-                    </div>
-                    <div style="display:flex; gap:8px;">
-                        <button class="btn-small btn-danger" onclick="deleteReport(${r.id})">Del</button>
-                        <button class="btn-small btn-secondary" onclick="editReport(${r.id})">Edit</button>
-                        <button class="btn-small btn-grey" onclick="viewReport(${r.id})">View</button>
-                    </div>
-                </div>
-            </div>
-        `).join('');
+    function getFormState() {
+        const taskStates = {};
+        document.querySelectorAll('.check-input-toggle').forEach(t => { taskStates[t.dataset.taskId] = t.dataset.state; });
+        const ids = { old: {}, new: {} };
+        selectedCutters.forEach(c => ['old', 'new'].forEach(t => { ids[t][c] = [idInput(t, c, 0).value, idInput(t, c, 1).value]; }));
+        const moduleDetails = {};
+        selectedModules.forEach(m => {
+            moduleDetails[m] = { old: $(`old-mod-${m}`).value, new: $(`new-mod-${m}`).value, reason: $(`reason-mod-${m}`).value };
+        });
+        return {
+            line: $('lineSelect').value,
+            date: $('dateInput').value,
+            time: $('timeInput').value,
+            remarks: $('remarksInput').value,
+            includeChecklist: $('includeChecklistToggle').checked,
+            cutters: [...selectedCutters],
+            ids,
+            taskStates,
+            includeModules: $('moduleReplacementToggle').checked,
+            modules: [...selectedModules],
+            moduleDetails
+        };
     }
 
-    // Today's date in the phone's local time zone (YYYY-MM-DD).
-    // toISOString() uses UTC, which rolls over to tomorrow during the evening in Toronto.
-    function localDateStr(d = new Date()) {
-        const pad = n => String(n).padStart(2, '0');
-        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    function isFormPristine(s) {
+        return !s.line && !s.cutters.length && !s.modules.length && !s.remarks.trim()
+            && !Object.values(s.taskStates).some(v => v !== 'none');
     }
 
-    function openNewForm() {
+    function setCutterBlocks() {
+        const any = selectedCutters.length > 0;
+        $('old-group').style.display = any ? 'block' : 'none';
+        $('new-group').style.display = any ? 'block' : 'none';
+        CUTTER_ORDER.forEach(c => ['old', 'new'].forEach(t => {
+            const block = $(`${t}-block-${c}`);
+            const on = selectedCutters.includes(c);
+            block.style.display = on ? 'block' : 'none';
+            block.classList.toggle('visible', on);
+        }));
+        document.querySelectorAll('.cutter-btn:not(.module-btn)').forEach(btn => btn.classList.toggle('active', selectedCutters.includes(btn.dataset.cutter)));
+    }
+
+    function setModuleBlocks() {
+        CUTTER_ORDER.forEach(m => { $(`module-block-${m}`).style.display = selectedModules.includes(m) ? 'block' : 'none'; });
+        document.querySelectorAll('.module-btn').forEach(btn => btn.classList.toggle('active', selectedModules.includes(btn.dataset.module)));
+    }
+
+    function resetForm() {
         activeEditId = null;
-        document.getElementById('lineSelect').value = "";
-        document.getElementById('dateInput').value = localDateStr();
-        document.getElementById('timeInput').value = getNearestTime();
-        document.getElementById('remarksInput').value = "";
-        
-        document.getElementById('includeChecklistToggle').checked = false;
+        $('lineSelect').value = "";
+        $('dateInput').value = localDateStr();
+        $('timeInput').value = getNearestTime();
+        $('remarksInput').value = "";
+        $('includeChecklistToggle').checked = false;
         toggleChecklist();
-
-        document.getElementById('moduleReplacementToggle').checked = false;
+        $('moduleReplacementToggle').checked = false;
         toggleModuleReplacement();
         selectedModules = [];
-        document.querySelectorAll('.module-btn').forEach(btn => btn.classList.remove('active'));
-        CUTTER_ORDER.forEach(mod => {
-            document.getElementById(`module-block-${mod}`).style.display = 'none';
-            document.getElementById(`old-mod-${mod}`).value = "";
-            document.getElementById(`new-mod-${mod}`).value = "";
-            document.getElementById(`reason-mod-${mod}`).value = "";
-        });
-
         selectedCutters = [];
-        document.querySelectorAll('.cutter-btn:not(.module-btn)').forEach(btn => btn.classList.remove('active'));
-        document.getElementById('old-group').style.display = 'none';
-        document.getElementById('new-group').style.display = 'none';
-        document.querySelectorAll('.cutter-block').forEach(block => {
-            block.style.display = 'none';
-            block.classList.remove('visible');
-        });
+        CUTTER_ORDER.forEach(m => ['old', 'new', 'reason'].forEach(k => { $(`${k}-mod-${m}`).value = ""; }));
         document.querySelectorAll('.id-input').forEach(input => {
             input.value = '';
             input.closest('.id-input-wrapper').classList.remove('is-complete');
         });
-
+        setCutterBlocks();
+        setModuleBlocks();
         updateChecklistUI();
-        showScreen('screen-form');
+        clearMissingMarks();
+        const body = document.querySelector('#screen-form .scrollable-body');
+        if (body) body.scrollTop = 0;
     }
 
-    function editReport(id) {
-        const report = savedReports.find(r => r.id === id);
-        if(!report) return;
-        activeEditId = report.id;
-
-        document.getElementById('lineSelect').value = report.line || "";
-        document.getElementById('dateInput').value = report.date || "";
-        document.getElementById('timeInput').value = report.time || "";
-        document.getElementById('remarksInput').value = report.remarks || "";
-        
-        document.getElementById('includeChecklistToggle').checked = report.includeChecklist || false;
+    function applyFormState(s) {
+        resetForm();
+        $('lineSelect').value = LINES.includes(s.line) ? s.line : "";
+        $('dateInput').value = s.date || localDateStr();
+        $('timeInput').value = s.time || getNearestTime();
+        $('remarksInput').value = s.remarks || "";
+        $('includeChecklistToggle').checked = !!s.includeChecklist;
         toggleChecklist();
-
-        document.getElementById('moduleReplacementToggle').checked = report.includeModules || false;
+        $('moduleReplacementToggle').checked = !!s.includeModules;
         toggleModuleReplacement();
-        
-        selectedModules = report.modules || [];
-        document.querySelectorAll('.module-btn').forEach(btn => {
-            btn.classList.toggle('active', selectedModules.includes(btn.dataset.module));
-        });
-        CUTTER_ORDER.forEach(mod => {
-            const isVisible = selectedModules.includes(mod);
-            const modBlock = document.getElementById(`module-block-${mod}`);
-            if (isVisible) {
-                modBlock.style.display = 'block';
-                document.getElementById(`old-mod-${mod}`).value = report.moduleDetails?.[mod]?.old || "";
-                document.getElementById(`new-mod-${mod}`).value = report.moduleDetails?.[mod]?.new || "";
-                document.getElementById(`reason-mod-${mod}`).value = report.moduleDetails?.[mod]?.reason || "";
-            } else {
-                modBlock.style.display = 'none';
-            }
+
+        selectedModules = [...(s.modules || [])];
+        setModuleBlocks();
+        selectedModules.forEach(m => {
+            const d = s.moduleDetails?.[m] || {};
+            $(`old-mod-${m}`).value = d.old || "";
+            $(`new-mod-${m}`).value = d.new || "";
+            $(`reason-mod-${m}`).value = d.reason || "";
         });
 
-        selectedCutters = report.cutters || [];
-        document.querySelectorAll('.cutter-btn:not(.module-btn)').forEach(btn => {
-            btn.classList.toggle('active', selectedCutters.includes(btn.dataset.cutter));
-        });
-
-        document.getElementById('old-group').style.display = selectedCutters.length > 0 ? 'block' : 'none';
-        document.getElementById('new-group').style.display = selectedCutters.length > 0 ? 'block' : 'none';
-
-        CUTTER_ORDER.forEach(cutter => {
-            const isVisible = selectedCutters.includes(cutter);
-            const oldBlock = document.getElementById(`old-block-${cutter}`);
-            const newBlock = document.getElementById(`new-block-${cutter}`);
-            if (isVisible) {
-                oldBlock.style.display = 'block'; oldBlock.classList.add('visible');
-                newBlock.style.display = 'block'; newBlock.classList.add('visible');
-                for(let idx=0; idx<=1; idx++) {
-                    const oldInput = document.querySelector(`input[data-type="old"][data-cutter="${cutter}"][data-idx="${idx}"]`);
-                    const newInput = document.querySelector(`input[data-type="new"][data-cutter="${cutter}"][data-idx="${idx}"]`);
-                    oldInput.value = report.ids?.old?.[cutter]?.[idx] || "";
-                    newInput.value = report.ids?.new?.[cutter]?.[idx] || "";
-                    oldInput.closest('.id-input-wrapper').classList.toggle('is-complete', oldInput.value.length === 4);
-                    newInput.closest('.id-input-wrapper').classList.toggle('is-complete', newInput.value.length === 4);
-                }
-            } else {
-                oldBlock.style.display = 'none'; oldBlock.classList.remove('visible');
-                newBlock.style.display = 'none'; newBlock.classList.remove('visible');
-            }
-        });
+        selectedCutters = [...(s.cutters || [])];
+        setCutterBlocks();
+        selectedCutters.forEach(c => ['old', 'new'].forEach(t => [0, 1].forEach(i => {
+            const inp = idInput(t, c, i);
+            inp.value = s.ids?.[t]?.[c]?.[i] || "";
+            inp.closest('.id-input-wrapper').classList.toggle('is-complete', inp.value.length === 4);
+        })));
 
         updateChecklistUI();
-        if (report.taskStates) {
-            document.querySelectorAll('.check-input-toggle').forEach(toggle => {
-                const id = toggle.dataset.taskId;
-                if(report.taskStates[id]) toggle.dataset.state = report.taskStates[id];
+        if (s.taskStates) {
+            document.querySelectorAll('.check-input-toggle').forEach(t => {
+                const v = s.taskStates[t.dataset.taskId];
+                if (v) t.dataset.state = v;
             });
         }
+    }
+
+    /* =========================================
+       DRAFTS (kept for 1 hour after the last edit)
+       ========================================= */
+    let draftTimer = null;
+
+    function loadDraft() {
+        try {
+            const d = JSON.parse(localStorage.getItem(DRAFT_KEY));
+            if (!d) return null;
+            if (Date.now() - d.savedAt > DRAFT_TTL_MS) { clearDraft(); return null; }
+            return d;
+        } catch (e) { return null; }
+    }
+
+    function clearDraft() {
+        clearTimeout(draftTimer);
+        try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+    }
+
+    function isEditingForm() {
+        const a = document.querySelector('.screen.active')?.id;
+        return a === 'screen-form' || (a === 'screen-review' && reviewMode === 'edit');
+    }
+
+    function saveDraftNow() {
+        clearTimeout(draftTimer);
+        if (!formDirty || !isEditingForm()) return;
+        const s = getFormState();
+        if (activeEditId === null && isFormPristine(s)) { clearDraft(); return; }
+        try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...s, editId: activeEditId, savedAt: Date.now() })); } catch (e) {}
+    }
+
+    function markDirty() {
+        formDirty = true;
+        clearTimeout(draftTimer);
+        draftTimer = setTimeout(saveDraftNow, 400);
+    }
+
+    function draftSummary(d) {
+        const line = LINES.includes(d.line) ? `Line ${d.line}` : 'No line yet';
+        const cutters = d.cutters?.length ? d.cutters.join(', ') : 'no cutters yet';
+        return `${line} · ${cutters}`;
+    }
+
+    function resumeDraft() {
+        const d = loadDraft();
+        if (!d) { showToast('That draft has expired'); renderHome(); return; }
+        applyFormState(d);
+        activeEditId = d.editId ?? null;
+        formDirty = true;
         showScreen('screen-form');
     }
 
-    function deleteReport(id) {
-        if (navigator.vibrate) navigator.vibrate(10);
-        if (confirm("Delete this saved report?")) {
-            savedReports = savedReports.filter(r => r.id !== id);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(savedReports));
-            renderHistory();
+    async function discardDraftFromHome() {
+        const choice = await showSheet({
+            title: 'Discard this draft?',
+            message: "What you typed will be deleted. This can't be undone.",
+            actions: [
+                { label: 'Discard draft', value: 'discard', kind: 'danger' },
+                { label: 'Cancel', value: null, kind: 'plain' }
+            ]
+        });
+        if (choice !== 'discard') return;
+        clearDraft();
+        renderHome();
+        showToast('Draft discarded');
+    }
+
+    // If a draft exists, ask what to do with it first. Returns false if the user cancelled or resumed.
+    async function handleExistingDraft(continueLabel, skipIfEditId) {
+        const d = loadDraft();
+        if (!d || (skipIfEditId !== undefined && d.editId === skipIfEditId)) return true;
+        const choice = await showSheet({
+            title: 'You have an unfinished report',
+            message: `${draftSummary(d)} · saved ${minsAgo(d.savedAt)}.`,
+            actions: [
+                { label: 'Resume it', value: 'resume', kind: 'primary' },
+                { label: continueLabel, value: 'continue', kind: 'danger' },
+                { label: 'Cancel', value: null, kind: 'plain' }
+            ]
+        });
+        if (choice === 'resume') { resumeDraft(); return false; }
+        if (choice !== 'continue') return false;
+        clearDraft();
+        return true;
+    }
+
+    async function leaveForm() {
+        const s = getFormState();
+        if (!formDirty) { showScreen('screen-home'); return; }
+        if (activeEditId === null && isFormPristine(s)) { clearDraft(); formDirty = false; showScreen('screen-home'); return; }
+        const choice = await showSheet({
+            title: activeEditId ? 'Leave without saving changes?' : 'Leave this report?',
+            message: 'Keep it as a draft for an hour and pick it up from the home screen, or discard it.',
+            actions: [
+                { label: 'Keep as draft', value: 'keep', kind: 'primary' },
+                { label: 'Discard', value: 'discard', kind: 'danger' },
+                { label: 'Stay here', value: null, kind: 'plain' }
+            ]
+        });
+        if (choice === 'keep') {
+            saveDraftNow();
+            formDirty = false;
+            showScreen('screen-home');
+            showToast('Draft saved', { sub: 'Kept for 1 hour' });
+        } else if (choice === 'discard') {
+            clearDraft();
+            formDirty = false;
+            showScreen('screen-home');
         }
     }
 
-    function toggleCutter(element) {
-        const c = element.dataset.cutter;
-        
-        // INTERLOCK: Prevent selection if "Upper" and Line 1-H
-        if (!selectedCutters.includes(c) && c === 'Upper' && document.getElementById('lineSelect').value === '1-H') {
-            alert("Are you kidding me?");
+    /* =========================================
+       HOME: draft card + recent changes
+       ========================================= */
+    function reportSortKey(r) {
+        if (r.date) {
+            const [y, mo, d] = r.date.split('-').map(Number);
+            return new Date(y, mo - 1, d).getTime() + timeToMinutes(r.time) * 60000;
+        }
+        return r.timestamp || r.id || 0;
+    }
+
+    function reportHasGaps(r) {
+        return /LCAGHY\d*_|Line: Not Selected|Module ID: N\/A/.test(r.text || '');
+    }
+
+    function renderHome() {
+        const draft = loadDraft();
+        $('draft-slot').innerHTML = draft ? `
+            <div class="draft-card">
+                <div class="draft-head">
+                    <span class="draft-dot"></span>
+                    <strong>${draft.editId ? 'Unsaved edits' : 'Unfinished report'}</strong>
+                    <span class="draft-age">${esc(minsAgo(draft.savedAt))}</span>
+                </div>
+                <p class="draft-sum">${esc(draftSummary(draft))}</p>
+                <p class="draft-exp">Kept until ${esc(new Date(draft.savedAt + DRAFT_TTL_MS).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }))}</p>
+                <div class="draft-actions">
+                    <button class="btn-small btn-grey" onclick="discardDraftFromHome()">Discard</button>
+                    <button class="btn-small btn-dark" onclick="resumeDraft()">Resume</button>
+                </div>
+            </div>` : '';
+
+        const list = $('recent-list');
+        const sorted = [...savedReports].sort((a, b) => reportSortKey(b) - reportSortKey(a));
+        if (sorted.length === 0) {
+            list.innerHTML = `
+                <div class="section-head"><h3>Recent changes</h3></div>
+                <div class="empty-recent">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+                    <p>No cutter changes yet.<br>Saved reports will show up here.</p>
+                </div>`;
             return;
         }
-        
-        if (navigator.vibrate) navigator.vibrate(10);
-        element.classList.toggle('active');
-        
-        if (selectedCutters.includes(c)) {
-            selectedCutters = selectedCutters.filter(x => x !== c);
-        } else { 
-            selectedCutters.push(c); 
-            selectedCutters.sort((a, b) => CUTTER_ORDER.indexOf(a) - CUTTER_ORDER.indexOf(b)); 
+
+        const chevron = `<svg class="rc-chev" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>`;
+        let html = `<div class="section-head"><h3>Recent changes</h3><span class="count">${sorted.length}</span></div>`;
+        let lastDay = null;
+        sorted.slice(0, recentLimit).forEach(r => {
+            const day = dayLabel(r.date);
+            if (day !== lastDay) { html += `<div class="day-label">${esc(day)}</div>`; lastDay = day; }
+
+            const lineShort = LINES.includes(r.line) ? r.line : '—';
+            let chips = (r.cutters || []).map(c => `<span class="chip">${esc(c)}</span>`).join('');
+            if (r.includeModules && r.modules?.length) chips += r.modules.map(m => `<span class="chip chip-outline">${esc(m)} module</span>`).join('');
+
+            const meta = [];
+            if (r.includeChecklist && r.taskStates) {
+                const vals = Object.values(r.taskStates);
+                if (vals.length) meta.push(`Checklist ${vals.filter(v => v === 'yes').length}/${vals.length}`);
+            }
+            if (r.remarks && r.remarks.trim()) meta.push(r.remarks.trim().replace(/\s+/g, ' '));
+
+            html += `
+                <button class="rc-card" onclick="viewReport(${Number(r.id)})">
+                    <div class="rc-line"><small>LINE</small><b>${esc(lineShort)}</b></div>
+                    <div class="rc-body">
+                        <div class="rc-top">
+                            <span class="rc-time">${esc(niceTime(r.time))}</span>
+                            ${reportHasGaps(r) ? '<span class="badge-warn">Has gaps</span>' : ''}
+                        </div>
+                        <div class="rc-chips">${chips || '<span class="rc-muted">No cutters</span>'}</div>
+                        ${meta.length ? `<div class="rc-meta">${esc(meta.join(' · '))}</div>` : ''}
+                    </div>
+                    ${chevron}
+                </button>`;
+        });
+        if (sorted.length > recentLimit) {
+            html += `<button class="btn btn-secondary show-more" onclick="recentLimit += RECENT_PAGE; renderHome();">Show older (${sorted.length - recentLimit} more)</button>`;
+        }
+        list.innerHTML = html;
+    }
+
+    /* =========================================
+       NEW / EDIT / DELETE
+       ========================================= */
+    async function openNewForm() {
+        if (!(await handleExistingDraft('Start new (discard it)'))) return;
+        resetForm();
+        formDirty = false;
+        showScreen('screen-form');
+    }
+
+    async function editReport(id) {
+        const report = savedReports.find(r => r.id === id);
+        if (!report) return;
+        const d = loadDraft();
+        if (d && d.editId === id) { resumeDraft(); return; }   // already has unsaved edits for this report
+        if (!(await handleExistingDraft('Discard it and edit this one'))) return;
+        applyFormState(report);
+        activeEditId = report.id;
+        formDirty = false;
+        showScreen('screen-form');
+    }
+
+    async function deleteReport(id) {
+        const report = savedReports.find(r => r.id === id);
+        if (!report) return;
+        const lineTxt = LINES.includes(report.line) ? `Line ${report.line}` : 'This report';
+        const choice = await showSheet({
+            title: 'Delete this report?',
+            message: `${lineTxt} · ${dayLabel(report.date)} ${niceTime(report.time)}. This can't be undone.`,
+            actions: [
+                { label: 'Delete report', value: 'delete', kind: 'danger' },
+                { label: 'Cancel', value: null, kind: 'plain' }
+            ]
+        });
+        if (choice !== 'delete') return;
+        savedReports = savedReports.filter(r => r.id !== id);
+        persistReports();
+        const d = loadDraft();
+        if (d && d.editId === id) clearDraft();
+        showScreen('screen-home');
+        showToast('Report deleted');
+    }
+
+    /* =========================================
+       FORM INTERACTIONS
+       ========================================= */
+    function toggleCutter(element) {
+        const c = element.dataset.cutter;
+
+        // INTERLOCK: Prevent selection if "Upper" and Line 1-H
+        if (!selectedCutters.includes(c) && c === 'Upper' && $('lineSelect').value === '1-H') {
+            kiddingBanner();
+            return;
         }
 
-        document.getElementById('old-group').style.display = selectedCutters.length > 0 ? 'block' : 'none';
-        document.getElementById('new-group').style.display = selectedCutters.length > 0 ? 'block' : 'none';
-
-        CUTTER_ORDER.forEach(cutter => {
-            const isVisible = selectedCutters.includes(cutter);
-            const oldBlock = document.getElementById(`old-block-${cutter}`);
-            if (isVisible) { oldBlock.style.display = 'block'; oldBlock.classList.add('visible'); } 
-            else { oldBlock.style.display = 'none'; oldBlock.classList.remove('visible'); }
-
-            const newBlock = document.getElementById(`new-block-${cutter}`);
-            if (isVisible) { newBlock.style.display = 'block'; newBlock.classList.add('visible'); } 
-            else { newBlock.style.display = 'none'; newBlock.classList.remove('visible'); }
-        });
+        buzz(10);
+        if (selectedCutters.includes(c)) {
+            selectedCutters = selectedCutters.filter(x => x !== c);
+        } else {
+            selectedCutters.push(c);
+            selectedCutters.sort((a, b) => CUTTER_ORDER.indexOf(a) - CUTTER_ORDER.indexOf(b));
+        }
+        element.closest('.cutter-checkboxes').classList.remove('is-missing');
+        setCutterBlocks();
         updateChecklistUI();
+        markDirty();
     }
 
     function toggleModuleReplacement() {
-        const isChecked = document.getElementById('moduleReplacementToggle').checked;
-        document.getElementById('moduleReplacementContainer').style.display = isChecked ? 'block' : 'none';
+        $('moduleReplacementContainer').style.display = $('moduleReplacementToggle').checked ? 'block' : 'none';
     }
 
     function toggleModule(element) {
         const m = element.dataset.module;
-        
+
         // INTERLOCK: Prevent selection if "Upper" and Line 1-H
-        if (!selectedModules.includes(m) && m === 'Upper' && document.getElementById('lineSelect').value === '1-H') {
-            alert("Are you kidding me?");
+        if (!selectedModules.includes(m) && m === 'Upper' && $('lineSelect').value === '1-H') {
+            kiddingBanner();
             return;
         }
 
-        if (navigator.vibrate) navigator.vibrate(10);
-        element.classList.toggle('active');
-        
+        buzz(10);
         if (selectedModules.includes(m)) {
             selectedModules = selectedModules.filter(x => x !== m);
-        } else { 
-            selectedModules.push(m); 
-            selectedModules.sort((a, b) => CUTTER_ORDER.indexOf(a) - CUTTER_ORDER.indexOf(b)); 
+        } else {
+            selectedModules.push(m);
+            selectedModules.sort((a, b) => CUTTER_ORDER.indexOf(a) - CUTTER_ORDER.indexOf(b));
         }
-
-        CUTTER_ORDER.forEach(mod => {
-            const isVisible = selectedModules.includes(mod);
-            const modBlock = document.getElementById(`module-block-${mod}`);
-            if (isVisible) { modBlock.style.display = 'block'; } 
-            else { modBlock.style.display = 'none'; }
-        });
+        element.closest('.cutter-checkboxes').classList.remove('is-missing');
+        setModuleBlocks();
+        markDirty();
     }
 
     function toggleChecklist() {
-        const isChecked = document.getElementById('includeChecklistToggle').checked;
-        document.getElementById('checklistItemsContainer').style.display = isChecked ? 'block' : 'none';
+        $('checklistItemsContainer').style.display = $('includeChecklistToggle').checked ? 'block' : 'none';
     }
 
     function cycleToggle(el) {
-        if (navigator.vibrate) navigator.vibrate(10);
+        buzz(10);
         const states = ['none', 'yes', 'no'];
-        let currentIdx = states.indexOf(el.dataset.state);
-        let nextIdx = (currentIdx + 1) % states.length;
-        el.dataset.state = states[nextIdx];
+        el.dataset.state = states[(states.indexOf(el.dataset.state) + 1) % states.length];
+        el.classList.remove('is-missing');
+        markDirty();
     }
 
     function buildInputContainers() {
-        const container = document.getElementById('dynamic-ids-container');
+        const container = $('dynamic-ids-container');
         let oldHtml = `<div id="old-group" style="display:none; margin-bottom: 24px;">`;
         let newHtml = `<div id="new-group" style="display:none; margin-bottom: 24px;">`;
 
@@ -702,7 +1073,7 @@
                     <input class="id-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="____" data-cutter="${c}" data-type="${type}" data-idx="1">
                     <span>${format.suffixes[1]}</span>
                 </div>`;
-            
+
             oldHtml += `
                 <div id="old-block-${c}" class="cutter-block card" style="display:none; margin-bottom: 16px;">
                     <h2 style="color:var(--text-main); font-size:18px; margin-bottom:16px;">📤 OLD ${c}</h2>
@@ -716,7 +1087,6 @@
         });
         container.innerHTML = oldHtml + `</div>` + newHtml + `</div>`;
 
-        const modContainer = document.getElementById('dynamic-modules-container');
         let modHtml = '';
         CUTTER_ORDER.forEach(m => {
             modHtml += `
@@ -736,7 +1106,7 @@
                     </div>
                 </div>`;
         });
-        modContainer.innerHTML = modHtml;
+        $('dynamic-modules-container').innerHTML = modHtml;
     }
 
     function updateChecklistUI() {
@@ -744,11 +1114,11 @@
         CHECKLIST_RULES.forEach(rule => {
             if (rule.condition(selectedCutters)) { dynamicTitles.push(...rule.tasks); }
         });
-        
-        dynamicTitles = [...new Set(dynamicTitles)]; 
+
+        dynamicTitles = [...new Set(dynamicTitles)];
         const allItems = dynamicTitles.map(t => ({ id: "dyn_" + t.replace(/\s/g,''), title: t, desc: t }));
-        const container = document.getElementById('checklistItemsContainer');
-        
+        const container = $('checklistItemsContainer');
+
         if (allItems.length === 0) { container.innerHTML = ""; return; }
 
         container.innerHTML = `<div class="card" style="padding: 8px 20px; margin-bottom: 0;">` + allItems.map((item, index) => `
@@ -763,21 +1133,29 @@
         `).join("") + `</div>`;
     }
 
-    document.getElementById("content").addEventListener("focusin", e => {
+    $("content").addEventListener("focusin", e => {
         if (e.target.classList.contains("id-input")) {
             setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 150);
         }
     });
 
-    document.getElementById("content").addEventListener("input", e => {
+    // Any typing or picker change on the form: clear its red mark and save the draft.
+    ["input", "change"].forEach(type => $("content").addEventListener(type, e => {
+        if (!isEditingForm()) return;
+        e.target.classList.remove('is-missing');
+        e.target.closest('.id-input-wrapper')?.classList.remove('is-missing');
+        markDirty();
+    }));
+
+    $("content").addEventListener("input", e => {
         if (e.target.classList.contains("id-input")) {
             let val = e.target.value.replace(/\D/g, "").slice(0, 4);
             e.target.value = val;
             const wrapper = e.target.closest('.id-input-wrapper');
-            
+
             if (val.length === 4) {
                 wrapper.classList.add('is-complete');
-                if (navigator.vibrate) navigator.vibrate([15, 30]);
+                buzz([15, 30]);
                 const allVisibleInputs = Array.from(document.querySelectorAll('.cutter-block.visible .id-input'));
                 const currentIndex = allVisibleInputs.indexOf(e.target);
                 if (currentIndex >= 0 && currentIndex < allVisibleInputs.length - 1) {
@@ -789,27 +1167,30 @@
         }
     });
 
-    document.getElementById("content").addEventListener("paste", e => {
+    $("content").addEventListener("paste", e => {
         if (e.target.classList.contains("id-input")) {
             const pasteData = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, "");
             if (pasteData.length === 8) {
                 e.preventDefault();
                 e.target.value = pasteData.slice(0, 4);
                 e.target.closest('.id-input-wrapper').classList.add('is-complete');
+                e.target.closest('.id-input-wrapper').classList.remove('is-missing');
                 const allVisibleInputs = Array.from(document.querySelectorAll('.cutter-block.visible .id-input'));
                 const currentIndex = allVisibleInputs.indexOf(e.target);
                 if (currentIndex >= 0 && currentIndex < allVisibleInputs.length - 1) {
                     const nextInput = allVisibleInputs[currentIndex + 1];
                     nextInput.value = pasteData.slice(4, 8);
                     nextInput.closest('.id-input-wrapper').classList.add('is-complete');
-                    if (navigator.vibrate) navigator.vibrate([15, 50, 15]);
+                    nextInput.closest('.id-input-wrapper').classList.remove('is-missing');
+                    buzz([15, 50, 15]);
                     nextInput.focus();
                 }
+                markDirty();
             }
         }
     });
 
-    document.getElementById("content").addEventListener("keydown", e => {
+    $("content").addEventListener("keydown", e => {
         if (e.target.classList.contains("id-input") && e.key === "Backspace" && e.target.value === "") {
             e.preventDefault();
             const allVisibleInputs = Array.from(document.querySelectorAll('.cutter-block.visible .id-input'));
@@ -817,29 +1198,112 @@
             if (currentIndex > 0) {
                 const prevInput = allVisibleInputs[currentIndex - 1];
                 prevInput.focus();
-                const val = prevInput.value; prevInput.value = ''; prevInput.value = val; 
+                const val = prevInput.value; prevInput.value = ''; prevInput.value = val;
             }
         }
     });
 
+    /* =========================================
+       GAP CHECKS
+       ========================================= */
+    function collectIssues() {
+        const issues = [];
+        const line = $('lineSelect');
+        if (!line.value) issues.push({ msg: 'No production line selected', el: line });
+
+        const includeModules = $('moduleReplacementToggle').checked;
+        if (!selectedCutters.length && !(includeModules && selectedModules.length)) {
+            issues.push({ msg: 'No cutters or modules selected', el: document.querySelector('#screen-form .card .cutter-checkboxes') });
+        }
+
+        selectedCutters.forEach(c => ['old', 'new'].forEach(t => [0, 1].forEach(i => {
+            const inp = idInput(t, c, i);
+            const v = inp.value;
+            if (v.length < 4) {
+                issues.push({
+                    msg: `${t.toUpperCase()} ${c} — ${i === 0 ? '1st' : '2nd'} ID ${v ? `incomplete (${v.length} of 4 digits)` : 'missing'}`,
+                    el: inp, mark: inp.closest('.id-input-wrapper')
+                });
+            }
+        })));
+
+        if (includeModules) {
+            if (!selectedModules.length) {
+                issues.push({ msg: 'Module Replacement is on, but no module is selected', el: $('moduleReplacementContainer').querySelector('.cutter-checkboxes') });
+            }
+            selectedModules.forEach(m => [['old', 'OLD'], ['new', 'NEW']].forEach(([k, label]) => {
+                const inp = $(`${k}-mod-${m}`);
+                if (!inp.value.trim()) issues.push({ msg: `${m} module — ${label} module ID missing`, el: inp });
+            }));
+        }
+
+        if ($('includeChecklistToggle').checked) {
+            const toggles = [...document.querySelectorAll('.check-input-toggle')];
+            const blank = toggles.filter(t => t.dataset.state === 'none');
+            if (toggles.length && blank.length) {
+                issues.push({
+                    msg: blank.length === toggles.length
+                        ? 'Checklist is on, but nothing is marked'
+                        : `${blank.length} checklist item${blank.length > 1 ? 's' : ''} not marked (left out of the report)`,
+                    el: blank[0], marks: blank
+                });
+            }
+        }
+        return issues;
+    }
+
+    function clearMissingMarks() {
+        document.querySelectorAll('.is-missing').forEach(el => el.classList.remove('is-missing'));
+    }
+
+    function markMissing(issues) {
+        clearMissingMarks();
+        issues.forEach(i => (i.marks || [i.mark || i.el]).forEach(el => el && el.classList.add('is-missing')));
+    }
+
+    function goToIssue(index) {
+        const issue = currentIssues[index];
+        showScreen('screen-form');
+        if (!issue || !issue.el) return;
+        setTimeout(() => {
+            issue.el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (issue.el.matches('input, textarea')) issue.el.focus({ preventScroll: true });
+        }, 220);
+    }
+
+    function highlightReport(text) {
+        return esc(text)
+            .replace(/(LCAGHY)(\d*_+)/g, '$1<mark>$2</mark>')
+            .replace(/(Line: )(Not Selected)/g, '$1<mark>$2</mark>')
+            .replace(/(Module ID: )(N\/A)/g, '$1<mark>$2</mark>');
+    }
+
+    const WARN_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>`;
+    const OK_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>`;
+
+    /* =========================================
+       REVIEW, SAVE & COPY
+       ========================================= */
     function goToReview() {
-        const dateObj = new Date(document.getElementById('dateInput').value + "T00:00:00");
+        const dateObj = new Date($('dateInput').value + "T00:00:00");
         const month = dateObj.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
-        const time = document.getElementById('timeInput').value;
-        const line = document.getElementById('lineSelect').value || 'Not Selected';
-        const remarks = document.getElementById('remarksInput').value.trim();
-        const includeChecklist = document.getElementById('includeChecklistToggle').checked;
-        const includeModules = document.getElementById('moduleReplacementToggle').checked;
+        const time = $('timeInput').value;
+        const line = $('lineSelect').value || 'Not Selected';
+        const remarks = $('remarksInput').value.trim();
+        const includeChecklist = $('includeChecklistToggle').checked;
+        const includeModules = $('moduleReplacementToggle').checked;
 
         let txt = `${month} ${dateObj.getDate()} | ${time}\nLine: ${line}\n\n`;
-        
+
         const getIDs = (type) => {
             let block = "";
             selectedCutters.forEach(c => {
                 block += c + "\n";
-                const inputs = document.querySelectorAll(`input[data-type="${type}"][data-cutter="${c}"]`);
-                block += `${FORMATS[c].prefix}${inputs[0].value || "____"}${FORMATS[c].suffixes[0]}\n`;
-                block += `${FORMATS[c].prefix}${inputs[1].value || "____"}${FORMATS[c].suffixes[1]}\n`;
+                [0, 1].forEach(i => {
+                    // Blank or partial IDs are padded with "_" so the gap is visible in the chat.
+                    const v = idInput(type, c, i).value.padEnd(4, "_");
+                    block += `${FORMATS[c].prefix}${v}${FORMATS[c].suffixes[i]}\n`;
+                });
             });
             return block;
         };
@@ -852,22 +1316,20 @@
         if (includeModules && selectedModules.length > 0) {
             txt += `${selectedModules.join(', ')} Module Replaced\n\n`;
             selectedModules.forEach(m => {
-                const oldMod = document.getElementById(`old-mod-${m}`).value || "N/A";
-                const newMod = document.getElementById(`new-mod-${m}`).value || "N/A";
-                const reasonMod = document.getElementById(`reason-mod-${m}`).value || "N/A";
+                const oldMod = $(`old-mod-${m}`).value || "N/A";
+                const newMod = $(`new-mod-${m}`).value || "N/A";
+                const reasonMod = $(`reason-mod-${m}`).value || "N/A";
                 txt += `${m} Module:\nOLD Module ID: ${oldMod}\nNEW Module ID: ${newMod}\nReason for Replacement: ${reasonMod}\n\n`;
             });
         }
 
         if (includeChecklist) {
-            const toggles = document.querySelectorAll('.check-input-toggle');
             let hasAddedItems = false;
             let checklistText = "Tasks Checklist:\n";
-            toggles.forEach(toggle => {
-                const desc = toggle.dataset.taskDesc;
+            document.querySelectorAll('.check-input-toggle').forEach(toggle => {
                 const state = toggle.dataset.state;
                 if (state !== 'none') {
-                    checklistText += `- ${desc} : ${state === 'yes' ? 'Yes' : 'No'}\n`;
+                    checklistText += `- ${toggle.dataset.taskDesc} : ${state === 'yes' ? 'Yes' : 'No'}\n`;
                     hasAddedItems = true;
                 }
             });
@@ -879,89 +1341,127 @@
         currentReviewText = txt.trim();
         currentReviewLine = line;
         reviewMode = 'edit';
-        document.getElementById('review-text').innerText = currentReviewText;
-        document.getElementById('review-buttons').innerHTML = `
+
+        currentIssues = collectIssues();
+        markMissing(currentIssues);
+        const n = currentIssues.length;
+
+        $('review-title').textContent = 'Review Report';
+        $('review-sub').textContent = n ? 'Tap an item to fix it, or send the report as is.' : 'Everything is filled in and ready to send.';
+        $('review-issues').innerHTML = n ? `
+            <div class="issues-card">
+                <div class="issues-head">${WARN_ICON}<span>${n} thing${n > 1 ? 's' : ''} to check</span></div>
+                ${currentIssues.map((x, i) => `<button class="issue-row" onclick="goToIssue(${i})"><span>${esc(x.msg)}</span><span class="issue-fix">Fix ›</span></button>`).join('')}
+            </div>` : `<div class="ok-card">${OK_ICON}<span>All fields complete</span></div>`;
+        $('review-text').innerHTML = highlightReport(currentReviewText);
+        $('review-buttons').innerHTML = `
             <button class="btn btn-secondary" style="flex:1;" onclick="handleBack()">Edit Form</button>
             <button class="btn" id="copyBtn" style="flex:2;" onclick="saveAndCopy()">Save & Copy</button>
         `;
+        $('screen-review').querySelector('.scrollable-body').scrollTop = 0;
         showScreen('screen-review');
     }
 
     function viewReport(id) {
         const report = savedReports.find(r => r.id === id);
-        if(!report) return;
+        if (!report) return;
         currentReviewText = report.text;
         reviewMode = 'view';
-        document.getElementById('review-text').innerText = currentReviewText;
-        document.getElementById('review-buttons').innerHTML = `<button class="btn" id="copyBtn" onclick="justCopy()">Copy Text</button>`;
+        currentIssues = [];
+        $('review-title').textContent = LINES.includes(report.line) ? `Line ${report.line}` : 'Cutter Change';
+        $('review-sub').textContent = `${dayLabel(report.date)}${report.time ? ' · ' + niceTime(report.time) : ''}`;
+        $('review-issues').innerHTML = reportHasGaps(report)
+            ? `<div class="issues-card"><div class="issues-head">${WARN_ICON}<span>Saved with gaps, highlighted below</span></div></div>` : '';
+        $('review-text').innerHTML = highlightReport(currentReviewText);
+        $('review-buttons').innerHTML = `
+            <button class="btn btn-icon btn-danger-soft" aria-label="Delete report" onclick="deleteReport(${Number(report.id)})">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/></svg>
+            </button>
+            <button class="btn btn-secondary" style="flex:1;" onclick="editReport(${Number(report.id)})">Edit</button>
+            <button class="btn" id="copyBtn" style="flex:1.4;" onclick="justCopy()">Copy Text</button>`;
+        $('screen-review').querySelector('.scrollable-body').scrollTop = 0;
         showScreen('screen-review');
     }
 
     async function saveAndCopy() {
-        const taskStatesMap = {};
-        document.querySelectorAll('.check-input-toggle').forEach(toggle => {
-            taskStatesMap[toggle.dataset.taskId] = toggle.dataset.state;
-        });
+        if (currentIssues.length) {
+            const n = currentIssues.length;
+            const shown = currentIssues.slice(0, 4).map(x => `<li>${esc(x.msg)}</li>`).join('');
+            const more = n > 4 ? `<li class="more">+ ${n - 4} more</li>` : '';
+            const choice = await showSheet({
+                title: `This report has ${n} gap${n > 1 ? 's' : ''}`,
+                message: 'Missing IDs will show up as ____ or N/A in the group chat.',
+                bodyHtml: `<ul class="sheet-list">${shown}${more}</ul>`,
+                actions: [
+                    { label: 'Go back and fix', value: 'fix', kind: 'primary' },
+                    { label: 'Save & copy anyway', value: 'send', kind: 'danger' }
+                ]
+            });
+            if (choice === 'fix') { goToIssue(0); return; }
+            if (choice !== 'send') return;
+        }
 
+        const existing = savedReports.find(r => r.id === activeEditId);
         const stateToSave = {
+            ...getFormState(),
             id: activeEditId || Date.now(),
+            createdAt: existing?.createdAt || existing?.timestamp || Date.now(),
             timestamp: Date.now(),
             line: currentReviewLine,
-            text: currentReviewText,
-            date: document.getElementById('dateInput').value,
-            time: document.getElementById('timeInput').value,
-            remarks: document.getElementById('remarksInput').value,
-            includeChecklist: document.getElementById('includeChecklistToggle').checked,
-            cutters: [...selectedCutters],
-            ids: { old: {}, new: {} },
-            taskStates: taskStatesMap,
-            
-            includeModules: document.getElementById('moduleReplacementToggle').checked,
-            modules: [...selectedModules],
-            moduleDetails: {}
+            text: currentReviewText
         };
-
-        selectedCutters.forEach(c => {
-            stateToSave.ids.old[c] = [
-                document.querySelector(`input[data-type="old"][data-cutter="${c}"][data-idx="0"]`).value,
-                document.querySelector(`input[data-type="old"][data-cutter="${c}"][data-idx="1"]`).value
-            ];
-            stateToSave.ids.new[c] = [
-                document.querySelector(`input[data-type="new"][data-cutter="${c}"][data-idx="0"]`).value,
-                document.querySelector(`input[data-type="new"][data-cutter="${c}"][data-idx="1"]`).value
-            ];
-        });
-
-        selectedModules.forEach(m => {
-            stateToSave.moduleDetails[m] = {
-                old: document.getElementById(`old-mod-${m}`).value,
-                new: document.getElementById(`new-mod-${m}`).value,
-                reason: document.getElementById(`reason-mod-${m}`).value
-            };
-        });
 
         const existingIdx = savedReports.findIndex(r => r.id === activeEditId);
         if (existingIdx >= 0) savedReports[existingIdx] = stateToSave;
         else savedReports.unshift(stateToSave);
-        
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(savedReports));
-        await executeCopy();
-        setTimeout(() => showScreen('screen-home'), 1200);
+
+        if (!persistReports()) return;
+        clearDraft();
+        formDirty = false;
+        clearMissingMarks();
+        const copied = await executeCopy();
+        setTimeout(() => showScreen('screen-home'), copied ? 1200 : 0);
     }
 
     async function justCopy() { await executeCopy(); }
 
+    function legacyCopy(text) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.cssText = 'position:fixed; top:0; left:0; opacity:0;';
+        document.body.appendChild(ta);
+        ta.select();
+        ta.setSelectionRange(0, text.length);
+        let ok = false;
+        try { ok = document.execCommand('copy'); } catch (e) {}
+        ta.remove();
+        return ok;
+    }
+
     async function executeCopy() {
-        try {
-            await navigator.clipboard.writeText(currentReviewText);
-            if (navigator.vibrate) navigator.vibrate([15, 50, 15]);
-            const btn = document.getElementById("copyBtn");
+        let ok = false;
+        try { await navigator.clipboard.writeText(currentReviewText); ok = true; }
+        catch (e) { ok = legacyCopy(currentReviewText); }
+
+        if (!ok) {
+            showToast("Couldn't copy the text", {
+                sub: reviewMode === 'edit' ? 'The report is saved. Open it from Recent changes and tap Copy.' : 'Check the browser permissions and try again.',
+                type: 'error', ms: 4000
+            });
+            return false;
+        }
+        buzz([15, 50, 15]);
+        const btn = $("copyBtn");
+        if (btn) {
             btn.innerText = "✓ Copied!";
             btn.classList.add("copy-success");
             setTimeout(() => {
-                if(btn) { btn.innerText = reviewMode === 'edit' ? "Save & Copy" : "Copy Text"; btn.classList.remove("copy-success"); }
+                btn.innerText = reviewMode === 'edit' ? "Save & Copy" : "Copy Text";
+                btn.classList.remove("copy-success");
             }, 2000);
-        } catch(e) { alert("Failed to copy. Please check browser permissions."); }
+        }
+        return true;
     }
 
     init();
