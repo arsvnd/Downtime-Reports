@@ -7,7 +7,7 @@
 //  - Icons and other static files: CACHE FIRST (they rarely change), refreshed in the background.
 //
 // Bumping CACHE_NAME is still fine (it clears old caches), but it's no longer required.
-const CACHE_NAME = 'cutter-id-cache-v3';
+const CACHE_NAME = 'cutter-id-cache-v4';
 
 const ASSETS_TO_CACHE = [
   './Cutter_ID_Generator.html',
@@ -65,7 +65,8 @@ async function cacheFirst(request) {
   const cached = await cache.match(request);
   const refresh = fetch(request)
     .then((response) => {
-      if (response && response.ok) cache.put(request, response.clone());
+      // 'opaque' = cross-origin font files from Google Fonts, which can't be inspected but can be cached.
+      if (response && (response.ok || response.type === 'opaque')) cache.put(request, response.clone());
       return response;
     })
     .catch(() => null);
@@ -74,7 +75,14 @@ async function cacheFirst(request) {
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
-  // Only handle same-origin GET requests; let everything else go straight to the network.
-  if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
+  if (request.method !== 'GET') return;
+  const host = new URL(request.url).hostname;
+  // Google Fonts: cache so the app keeps its font offline.
+  if (host === 'fonts.googleapis.com' || host === 'fonts.gstatic.com') {
+    event.respondWith(cacheFirst(request));
+    return;
+  }
+  // Everything else that isn't this site goes straight to the network.
+  if (new URL(request.url).origin !== self.location.origin) return;
   event.respondWith(isFreshFirst(request) ? networkFirst(request) : cacheFirst(request));
 });

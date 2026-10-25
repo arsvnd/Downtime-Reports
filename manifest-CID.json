@@ -3,8 +3,8 @@
   "short_name": "CutterID",
   "start_url": "Cutter_ID_Generator.html",
   "display": "standalone",
-  "background_color": "#FAFAFA",
-  "theme_color": "#111111",
+  "background_color": "#EDF1EA",
+  "theme_color": "#EDF1EA",
   "icons": [
     {
       "src": "CID-icon-app-192.png",

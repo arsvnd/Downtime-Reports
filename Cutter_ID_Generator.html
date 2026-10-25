@@ -3,19 +3,23 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    
+
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Cutter ID" />
-    
+
     <link rel="manifest" href="manifest-CID.json">
     <link rel="apple-touch-icon" href="CID-icon-180.png">
     <link rel="icon" type="image/png" sizes="192x192" href="CID-icon-app-192.png">
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="theme-color" content="#FAFAFA" />
-    
+    <meta name="theme-color" content="#EDF1EA" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
     <title>Cutter ID Generator</title>
-    
+
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -32,160 +36,165 @@
 
     <style>
         /* =========================================
-           1. PREMIUM DESIGN SYSTEM & VARIABLES
+           1. DESIGN TOKENS
            ========================================= */
         :root {
-            --bg-color: #FAFAFA; 
+            --bg-color: #EDF1EA;
+            --bg-top: #F4F7F1;
             --card-bg: #FFFFFF;
-            --text-main: #111111; 
-            --text-muted: #888888; 
-            --accent-color: #111111; 
-            --accent-green: #84CC16; 
-            --accent-red: #E11D48; 
-            --border: #EAEAEA; 
-            
-            --radius-sm: 12px;
-            --radius-md: 20px;
+            --soft-bg: #F3F6F1;
+            --text-main: #15181A;
+            --text-2: #4E5751;
+            --text-muted: #7D867F;
+            --border: #E2E8DE;
+            --accent-color: #15181A;
+
+            --lime: #BDEB78;
+            --lime-2: #9AD84A;
+            --lime-soft: #E8F6D4;
+            --lime-ink: #2F5A0B;
+            --lilac-soft: #EEE9FB;  --lilac-ink: #6A50C4;
+            --mint-soft: #E0F3E9;   --mint-ink: #1F7A55;
+            --peach-soft: #FCEBE1;  --peach-ink: #BD5420;
+            --accent-green: var(--lime-2);
+            --accent-red: #E11D48;
+            --red-soft: #FFF1F3;
+            --red-line: #FFD3DB;
+
+            --radius-sm: 14px;
+            --radius-md: 22px;
             --radius-lg: 28px;
             --radius-pill: 9999px;
 
-            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.03);
-            --shadow-btn: 0 8px 24px rgba(0, 0, 0, 0.12);
-            --shadow-sticky: 0 16px 40px rgba(0, 0, 0, 0.08);
-            
-            --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --shadow-sm: 0 1px 2px rgba(22, 32, 16, 0.04), 0 6px 20px rgba(22, 32, 16, 0.05);
+            --shadow-btn: 0 10px 24px rgba(21, 24, 26, 0.18);
+            --shadow-sticky: 0 18px 40px rgba(22, 32, 16, 0.12);
+
+            --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
         }
 
-        * { 
-            box-sizing: border-box; 
-            margin: 0; 
-            padding: 0; 
-            font-family: var(--font-sans); 
-            -webkit-tap-highlight-color: transparent; 
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-sans);
+            -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
         }
 
-        html, body { 
-            background-color: var(--bg-color); 
-            color: var(--text-main); 
-            width: 100%; 
-            height: 100%; 
-            position: fixed; 
-            overflow: hidden; 
-            display: flex; 
-            justify-content: center; 
-            letter-spacing: -0.02em;
+        html, body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            letter-spacing: -0.01em;
         }
-        .home-title {
-    font-size: 38px;
-    line-height: 1.1;
-    letter-spacing: -0.04em;
-    margin-bottom: 60px; /* Adjust this value */
-    color: var(--text-main);
-}
 
-        #app-container { 
-            width: 100%; 
-            max-width: 414px; 
-            background-color: var(--bg-color); 
-            position: relative; 
-            height: 100%; 
-            display: flex; 
-            flex-direction: column; 
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.05); 
+        #app-container {
+            width: 100%;
+            max-width: 430px;
+            height: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-color) 45%);
         }
 
         /* =========================================
            2. HEADER & LAYOUT (iOS Safe Areas)
            ========================================= */
-        header { 
-            padding: calc(12px + env(safe-area-inset-top)) 20px 16px; 
-            position: relative; 
-            z-index: 100; 
-            background: rgba(250, 250, 250, 0.85); 
-            backdrop-filter: blur(20px) saturate(180%); 
-            -webkit-backdrop-filter: blur(20px) saturate(180%); 
-            flex-shrink: 0; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            border-bottom: 0.5px solid rgba(0, 0, 0, 0.05); 
+        header {
+            padding: calc(10px + env(safe-area-inset-top)) 20px 10px;
+            position: relative;
+            z-index: 100;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
         }
-        
-        .header-btn { background: var(--card-bg); border: 1px solid var(--border); font-size: 14px; font-weight: 700; color: var(--text-main); cursor: pointer; padding: 8px 16px; border-radius: var(--radius-pill); box-shadow: var(--shadow-sm); transition: transform 0.15s; visibility: hidden; width: 85px; position: absolute; left: 20px; bottom: 16px;}
-        .header-btn:active { transform: scale(0.95); }
+        .icon-btn { width: 46px; height: 46px; border-radius: 50%; background: var(--card-bg); border: none; box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center; color: var(--text-main); cursor: pointer; flex-shrink: 0; transition: transform 0.15s; }
+        .icon-btn:active { transform: scale(0.92); }
+        .icon-btn svg { width: 20px; height: 20px; }
+        .icon-btn.spacer { visibility: hidden; }
+        .title-pill { display: flex; align-items: center; gap: 8px; padding: 11px 18px; background: rgba(255, 255, 255, 0.75); border: 1px solid rgba(255, 255, 255, 0.9); border-radius: var(--radius-pill); box-shadow: var(--shadow-sm); font-size: 14px; font-weight: 600; color: var(--text-main); white-space: nowrap; user-select: none; }
+        .title-pill svg { width: 16px; height: 16px; }
 
         #content { flex-grow: 1; position: relative; overflow: hidden; }
 
-        .screen { display: none; flex-direction: column; width: 100%; height: 100%; position: absolute; top: 0; left: 0; background: var(--bg-color); }
+        .screen { display: none; flex-direction: column; width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
         .screen.active { display: flex; z-index: 10; animation: fade-in 0.2s ease-out; }
         @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .scrollable-body { 
-            flex-grow: 1; 
-            overflow-y: auto; 
-            -webkit-overflow-scrolling: touch; 
-            padding: 24px 20px calc(110px + env(safe-area-inset-bottom)); 
-            display: flex; 
-            flex-direction: column; 
+        .scrollable-body {
+            flex-grow: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 10px 20px calc(116px + env(safe-area-inset-bottom));
+            display: flex;
+            flex-direction: column;
         }
 
-        h1, h2, h3, h4 { font-weight: 800; color: var(--text-main); }
-        h1 { font-size: 20px; text-align: center; letter-spacing: -0.02em; user-select: none; margin: 0; flex-grow: 1;}
-        h2 { font-size: 20px; margin-bottom: 16px; letter-spacing: -0.03em; }
-        h3 { font-size: 14px; margin-bottom: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
+        h1, h2, h3, h4 { font-weight: 700; color: var(--text-main); }
+        h2 { font-size: 18px; margin-bottom: 16px; letter-spacing: -0.02em; }
+        h3 { font-size: 13px; margin-bottom: 12px; color: var(--text-muted); font-weight: 600; }
+        .page-title { font-size: 26px; font-weight: 600; letter-spacing: -0.03em; margin: 8px 2px 6px; }
 
         /* =========================================
            3. COMPONENTS
            ========================================= */
-        .card { background-color: var(--card-bg); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 24px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
-        
-        .bottom-bar { 
-            position: absolute; 
-            bottom: calc(16px + env(safe-area-inset-bottom)); 
-            left: 20px;
-            right: 20px;
-            padding: 10px; 
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(30px) saturate(200%);
-            -webkit-backdrop-filter: blur(30px) saturate(200%);
-            border-radius: var(--radius-pill); 
-            box-shadow: var(--shadow-sticky), 0 0 0 0.5px rgba(0, 0, 0, 0.05) inset; 
-            z-index: 50; 
-            display: flex; 
-            gap: 10px;
-        }
+        .card { background-color: var(--card-bg); border-radius: var(--radius-lg); padding: 22px; margin-bottom: 16px; box-shadow: var(--shadow-sm); }
+        .card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+        .card-head h2 { margin: 0; }
 
-        .bottom-bar .btn {
-            padding: 16px 18px;
-            white-space: nowrap;
-            margin: 0;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        .ico { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .ico svg { width: 18px; height: 18px; }
+        .ico-lime { background: var(--lime-soft); color: var(--lime-ink); }
+        .ico-lilac { background: var(--lilac-soft); color: var(--lilac-ink); }
+        .ico-mint { background: var(--mint-soft); color: var(--mint-ink); }
+        .ico-peach { background: var(--peach-soft); color: var(--peach-ink); }
+        .ico-dark { background: var(--text-main); color: var(--lime); }
+
+        .bottom-bar {
+            position: absolute;
+            bottom: calc(14px + env(safe-area-inset-bottom));
+            left: 16px;
+            right: 16px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border-radius: var(--radius-pill);
+            box-shadow: var(--shadow-sticky), inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+            z-index: 50;
+            display: flex;
+            gap: 8px;
         }
-        
-        .btn { background-color: var(--accent-color); color: white; border: none; border-radius: var(--radius-pill); padding: 18px 24px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); width: 100%; box-shadow: var(--shadow-btn); text-align: center; }
+        .bottom-bar .btn { padding: 16px 18px; margin: 0; white-space: nowrap; }
+
+        .btn { background-color: var(--accent-color); color: #fff; border: none; border-radius: var(--radius-pill); padding: 17px 24px; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s; width: 100%; box-shadow: var(--shadow-btn); text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn:active { transform: scale(0.97); box-shadow: none; }
-        .btn-secondary { background-color: var(--card-bg); color: var(--text-main); border: 2px solid var(--border); box-shadow: var(--shadow-sm); }
-        .btn-small { padding: 8px 16px; font-size: 13px; width: auto; margin: 0; border-radius: var(--radius-pill); font-weight: 700; border: none; cursor: pointer;}
+        .btn-secondary { background-color: var(--card-bg); color: var(--text-main); border: 1px solid var(--border); box-shadow: none; }
+        .btn-small { padding: 9px 16px; font-size: 13px; width: auto; margin: 0; border-radius: var(--radius-pill); font-weight: 600; border: none; cursor: pointer; }
         .btn-small:active { transform: scale(0.95); }
-        .btn-grey { background-color: #F4F4F4; color: var(--text-main); border: 1px solid var(--border); }
-        .btn-danger { background-color: #FFF0F0; color: var(--accent-red); border: 1px solid #FFE5E5; }
-        .copy-success { background-color: #22C55E !important; color: white !important; border-color: #22C55E !important; box-shadow: 0 8px 16px -4px rgba(34, 197, 94, 0.4) !important;}
-
-        .report-item { background-color: var(--card-bg); border-radius: var(--radius-md); padding: 20px; display: flex; flex-direction: column; gap: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 12px; }
-        .report-header { display: flex; justify-content: space-between; align-items: center; }
-        .report-header h4 { font-size: 18px; margin-bottom: 4px; }
-        .report-header p { font-size: 13px; color: var(--text-muted); font-weight: 500;}
-        .empty-state { text-align: center; padding: 40px 20px; opacity: 0.7; }
+        .btn-grey { background-color: var(--soft-bg); color: var(--text-main); border: 1px solid var(--border); }
+        .btn-dark { background: var(--text-main); color: #fff; }
+        .copy-success { background-color: var(--lime) !important; color: #1C3A05 !important; border-color: var(--lime) !important; box-shadow: 0 10px 24px rgba(154, 216, 74, 0.45) !important; }
 
         .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; font-weight: 700; margin-bottom: 8px; font-size: 14px; color: var(--text-muted); }
-        .form-input { width: 100%; padding: 16px; background-color: #FAFAFA; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 16px; color: var(--text-main); font-weight: 600; outline: none; transition: 0.2s;}
-        .form-input:focus { border-color: var(--accent-color); background-color: var(--card-bg); }
-        select.form-input { appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23111%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 16px center; background-size: 16px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 13px; color: var(--text-2); }
+        .form-input { width: 100%; padding: 15px 16px; background-color: var(--soft-bg); border: 1.5px solid transparent; border-radius: var(--radius-sm); font-size: 16px; color: var(--text-main); font-weight: 600; outline: none; transition: 0.2s; }
+        .form-input:focus { border-color: var(--text-main); background-color: var(--card-bg); }
+        select.form-input { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2315181A%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 16px center; background-size: 16px; }
         select.form-input:invalid { color: var(--text-muted); }
-        textarea { width: 100%; height: 100px; resize: vertical; font-family: inherit; color: var(--text-main); background-color: #FAFAFA; border-radius: var(--radius-sm); padding: 16px; border: 2px solid var(--border); font-weight: 500; font-size: 15px; outline: none;}
-        textarea:focus { border-color: var(--accent-color); background-color: var(--card-bg); }
+        textarea { width: 100%; height: 96px; resize: vertical; font-family: inherit; color: var(--text-main); background-color: var(--soft-bg); border-radius: var(--radius-sm); padding: 14px 16px; border: 1.5px solid transparent; font-weight: 500; font-size: 15px; outline: none; transition: 0.2s; }
+        textarea:focus { border-color: var(--text-main); background-color: var(--card-bg); }
+        textarea::placeholder, .form-input::placeholder { color: #A3ABA4; }
 
         input, textarea, select, .id-input {
             -webkit-user-select: text !important;
@@ -194,16 +203,19 @@
             touch-action: auto !important;
         }
 
-        .check-container-legacy { display: flex; align-items: center; position: relative; padding: 16px 0; cursor: pointer; font-size: 15px; font-weight: 600; user-select: none; gap: 16px;}
-        .check-container-legacy input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
-        .custom-checkbox { width: 24px; height: 24px; background: #FAFAFA; border: 2px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0;}
-        .check-container-legacy:hover input ~ .custom-checkbox { background: #EAEAEA; }
-        .check-container-legacy input:checked ~ .custom-checkbox { background: var(--accent-color); border-color: var(--accent-color); }
-        .custom-checkbox svg { width: 14px; height: 14px; fill: none; stroke: white; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 16; stroke-dashoffset: 16; transition: stroke-dashoffset 0.3s ease-in-out; }
-        .check-container-legacy input:checked ~ .custom-checkbox svg { stroke-dashoffset: 0; }
+        /* Option rows with an iOS-style switch */
+        .opt-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--soft-bg); border-radius: 18px; margin-bottom: 12px; cursor: pointer; user-select: none; position: relative; }
+        .opt-row input { position: absolute; opacity: 0; width: 0; height: 0; }
+        .opt-text { flex: 1; display: flex; flex-direction: column; gap: 2px; font-weight: 600; font-size: 15px; color: var(--text-main); }
+        .opt-text small { font-size: 12px; font-weight: 500; color: var(--text-muted); }
+        .switch { width: 50px; height: 30px; border-radius: var(--radius-pill); background: #D7DED3; position: relative; transition: background-color 0.25s; flex-shrink: 0; }
+        .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .opt-row input:checked ~ .switch { background: var(--lime-2); }
+        .opt-row input:checked ~ .switch::after { transform: translateX(20px); }
+        .opt-row input:focus-visible ~ .switch { outline: 2px solid var(--text-main); outline-offset: 2px; }
 
         .three-way-toggle {
-            position: relative; width: 70px; height: 32px; background: #F4F4F4; border-radius: 20px; cursor: pointer; flex-shrink: 0; box-shadow: inset 0 1px 4px rgba(0,0,0,0.06); transition: background-color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); border: 1px solid #EAEAEA;
+            position: relative; width: 70px; height: 32px; background: var(--soft-bg); border-radius: 20px; cursor: pointer; flex-shrink: 0; box-shadow: inset 0 1px 4px rgba(0,0,0,0.05); transition: background-color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); border: 1px solid var(--border);
         }
         .three-way-toggle::before, .three-way-toggle::after {
             content: ""; position: absolute; top: 50%; transform: translateY(-50%); width: 13px; height: 13px; background-size: contain; background-repeat: no-repeat; background-position: center; opacity: 1; transition: opacity 0.2s;
@@ -216,121 +228,149 @@
         .three-way-toggle[data-state="no"]::before, .three-way-toggle[data-state="no"]::after { opacity: 0; }
         .three-way-toggle[data-state="no"] .thumb { left: 2px; transform: translateX(0); }
         .three-way-toggle[data-state="no"] .thumb::after { opacity: 1; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E11D48' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3C/svg%3E"); }
-        .three-way-toggle[data-state="yes"] { background: #ECFCCB; border-color: #D9F99D; }
+        .three-way-toggle[data-state="yes"] { background: var(--lime-soft); border-color: #CBEBA0; }
         .three-way-toggle[data-state="yes"]::before, .three-way-toggle[data-state="yes"]::after { opacity: 0; }
         .three-way-toggle[data-state="yes"] .thumb { left: calc(100% - 28px); transform: translateX(0); }
         .three-way-toggle[data-state="yes"] .thumb::after { opacity: 1; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2384CC16' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E"); }
 
-        .flex-row { display: flex; gap: 16px; margin-bottom: 16px; }
-        .flex-row .form-group { flex: 1; margin-bottom: 0; }
-        
-        .cutter-checkboxes { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 8px;}
-        .cutter-btn { flex: 1; min-width: 80px; text-align: center; padding: 14px 8px; border: 2px solid var(--border); border-radius: var(--radius-md); font-weight: 700; color: var(--text-muted); transition: 0.2s; cursor: pointer; background: var(--card-bg); user-select: none;}
-        .cutter-btn.active { border-color: var(--accent-color); color: var(--accent-color); background: #FAFAFA; box-shadow: 0 0 0 1px var(--accent-color); }
+        .flex-row { display: flex; gap: 12px; margin-bottom: 16px; }
+        .flex-row .form-group { flex: 1; margin-bottom: 0; min-width: 0; }
 
-        .id-input-wrapper { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; background-color: #FAFAFA; border-radius: var(--radius-sm); padding: 8px 16px; border: 2px solid var(--border); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        .id-input-wrapper:focus-within { border-color: var(--text-muted); background-color: var(--card-bg); }
-        .id-input-wrapper span { color: var(--text-muted); font-family: ui-monospace, monospace; font-size: 14px; font-weight: 600; letter-spacing: 1px; transition: color 0.3s;}
-        .id-input { border: none; background: transparent; font-size: 22px; font-weight: 800; width: 70px; text-align: center; outline: none; font-family: ui-monospace, monospace; color: var(--accent-color); letter-spacing: 2px; padding: 8px 0; transition: color 0.3s;}
-        .id-input::placeholder { color: #DDDDDD; }
-        
-        @keyframes successPop { 0% { transform: scale(1); } 50% { transform: scale(1.04); border-color: #22C55E; background-color: #F0FDF4; } 100% { transform: scale(1); border-color: #22C55E; background-color: #F0FDF4; } }
-        .id-input-wrapper.is-complete { animation: successPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-        .id-input-wrapper.is-complete .id-input, .id-input-wrapper.is-complete span { color: #15803D; }
+        .cutter-checkboxes { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+        .cutter-btn { flex: 1; min-width: 80px; text-align: center; padding: 14px 8px; border: 1.5px solid var(--border); border-radius: 18px; font-weight: 600; font-size: 15px; color: var(--text-2); transition: 0.2s; cursor: pointer; background: var(--card-bg); user-select: none; }
+        .cutter-btn:active { transform: scale(0.97); }
+        .cutter-btn.active { background: var(--text-main); border-color: var(--text-main); color: #fff; box-shadow: 0 8px 18px rgba(21, 24, 26, 0.18); }
 
-        .report-preview { background-color: #FAFAFA; color: #111111; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 24px; font-family: ui-monospace, monospace; font-size: 13px; white-space: pre-wrap; line-height: 1.6;}
-    
+        .id-input-wrapper { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; background-color: var(--soft-bg); border-radius: 16px; padding: 6px 14px; border: 1.5px solid transparent; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .id-input-wrapper:focus-within { border-color: var(--text-main); background-color: var(--card-bg); }
+        .id-input-wrapper span { color: var(--text-muted); font-family: var(--font-mono); font-size: 13px; font-weight: 600; letter-spacing: 0.5px; transition: color 0.3s; }
+        .id-input { border: none; background: transparent; font-size: 22px; font-weight: 700; width: 76px; text-align: center; outline: none; font-family: var(--font-mono); color: var(--text-main); letter-spacing: 3px; padding: 8px 0; transition: color 0.3s; }
+        .id-input::placeholder { color: #CDD4C9; }
+        @keyframes successPop { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+        .id-input-wrapper.is-complete { animation: successPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); background-color: var(--lime-soft); border-color: var(--lime-2); }
+        .id-input-wrapper.is-complete .id-input, .id-input-wrapper.is-complete span { color: var(--lime-ink); }
+
+        .module-block { background: var(--soft-bg); border-radius: 20px; padding: 16px; margin-top: 12px; }
+        .module-block h4 { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+        .module-block .form-input, .module-block textarea { background-color: var(--card-bg); }
+
+        .ck-card { padding: 4px 18px; margin-bottom: 0; background: var(--soft-bg); box-shadow: none; border-radius: 20px; }
+        .ck-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+        .ck-row:last-child { border-bottom: none; }
+        .ck-title { flex: 1; font-weight: 600; font-size: 15px; color: var(--text-main); cursor: pointer; user-select: none; }
+
+        .report-preview { background-color: var(--card-bg); color: var(--text-main); border-radius: var(--radius-lg); padding: 22px; font-family: var(--font-mono); font-size: 13px; white-space: pre-wrap; line-height: 1.65; box-shadow: var(--shadow-sm); }
+        .report-preview * { font-family: var(--font-mono); }
+        .report-preview mark { background: #FFE2E8; color: var(--accent-red); border-radius: 4px; padding: 0 2px; font-weight: 700; }
+        .report-preview mark.unmarked { background: var(--red-soft); font-weight: 600; }
+
         /* =========================================
-           4. HOME: hero, draft card, recent changes
+           4. HOME: hero, draft, My Cutter Changes
            ========================================= */
-        .home-body { padding-bottom: calc(32px + env(safe-area-inset-bottom)); }
-        .home-hero { padding: 28px 0 4px; }
-        .home-hero .home-title { margin-bottom: 24px; }
+        .home-top { flex-shrink: 0; padding: 4px 20px 0; }
+        .home-title { font-size: 34px; line-height: 1.12; letter-spacing: -0.035em; font-weight: 600; margin: 4px 2px 18px; }
+        .home-title .soft { color: #98A199; font-weight: 500; }
 
-        .draft-card { background: #FFFBEB; border: 1.5px dashed #F59E0B; border-radius: var(--radius-md); padding: 16px 18px; margin-top: 20px; }
-        .draft-head { display: flex; align-items: center; gap: 8px; font-size: 15px; }
-        .draft-dot { width: 8px; height: 8px; border-radius: 50%; background: #F59E0B; flex-shrink: 0; }
-        .draft-age { margin-left: auto; font-size: 12px; color: #92400E; font-weight: 600; }
-        .draft-sum { margin: 8px 0 2px; font-weight: 600; font-size: 14px; }
-        .draft-exp { font-size: 12px; color: #92400E; font-weight: 500; }
-        .draft-actions { display: flex; gap: 8px; margin-top: 14px; justify-content: flex-end; }
-        .draft-actions .btn-small { padding: 10px 18px; font-size: 14px; }
-        .btn-dark { background: var(--accent-color); color: #fff; }
+        .hero-card { background: linear-gradient(135deg, #CDF294 0%, #A6DF58 100%); border-radius: var(--radius-lg); padding: 18px; box-shadow: 0 14px 30px rgba(140, 200, 60, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.5); }
+        .hero-row { display: flex; gap: 14px; align-items: center; margin-bottom: 16px; }
+        .hero-icon { width: 48px; height: 48px; border-radius: 50%; background: #2C4A12; color: #D8F7A8; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .hero-icon svg { width: 22px; height: 22px; }
+        .hero-row h3 { font-size: 17px; font-weight: 700; color: #16240A; margin: 0 0 3px; }
+        .hero-row p { font-size: 13px; color: #3B5420; font-weight: 500; line-height: 1.35; }
+        .hero-btn { width: 100%; background: #fff; color: var(--text-main); border: none; border-radius: var(--radius-pill); padding: 15px; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; box-shadow: 0 6px 16px rgba(60, 100, 20, 0.12); transition: transform 0.15s; }
+        .hero-btn:active { transform: scale(0.97); }
+        .hero-btn svg { width: 18px; height: 18px; }
 
-        .section-head { display: flex; align-items: center; justify-content: space-between; margin: 36px 2px 0; }
-        .section-head h3 { margin: 0; }
-        .section-head .count { font-size: 12px; font-weight: 800; color: var(--text-muted); background: #F0F0F0; padding: 3px 10px; border-radius: var(--radius-pill); }
-        .day-label { font-size: 13px; font-weight: 700; color: var(--text-muted); margin: 20px 2px 10px; }
+        .draft-card { display: flex; align-items: center; gap: 12px; background: var(--card-bg); border-radius: 22px; padding: 10px 10px 10px 12px; margin-top: 12px; box-shadow: var(--shadow-sm); border: 1.5px dashed #EFC069; }
+        .draft-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .draft-text strong { font-size: 14px; font-weight: 700; }
+        .draft-text span { font-size: 12px; color: var(--text-muted); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .draft-x { width: 36px; height: 36px; border-radius: 50%; background: var(--soft-bg); border: none; color: var(--text-2); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+        .draft-x svg { width: 16px; height: 16px; }
+        .draft-card .btn-dark { padding: 10px 16px; font-size: 14px; flex-shrink: 0; }
 
-        .rc-card { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px; margin-bottom: 10px; box-shadow: var(--shadow-sm); cursor: pointer; font: inherit; color: inherit; transition: transform 0.15s, box-shadow 0.15s; }
-        .rc-card:active { transform: scale(0.98); box-shadow: none; }
-        .rc-line { flex-shrink: 0; width: 58px; height: 58px; border-radius: 16px; background: var(--accent-color); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; }
-        .rc-line small { font-size: 9px; letter-spacing: 0.14em; font-weight: 700; opacity: 0.55; }
-        .rc-line b { font-size: 19px; font-weight: 800; letter-spacing: -0.02em; }
+        .section-head { display: flex; align-items: center; justify-content: space-between; margin: 24px 2px 6px; }
+        .section-head h3 { margin: 0; font-size: 17px; font-weight: 700; color: var(--text-main); }
+        .section-head .count { font-size: 12px; font-weight: 700; color: var(--text-2); background: var(--card-bg); padding: 4px 11px; border-radius: var(--radius-pill); box-shadow: var(--shadow-sm); }
+        .section-head .count:empty { display: none; }
+
+        .home-list { padding: 8px 20px calc(28px + env(safe-area-inset-bottom)); -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 12px); mask-image: linear-gradient(to bottom, transparent 0, #000 12px); }
+        .day-label { font-size: 12px; font-weight: 600; color: var(--text-muted); margin: 14px 4px 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+        .day-label:first-child { margin-top: 4px; }
+
+        .rc-card { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; background: var(--card-bg); border: none; border-radius: 24px; padding: 14px; margin-bottom: 10px; box-shadow: var(--shadow-sm); cursor: pointer; font: inherit; color: inherit; transition: transform 0.15s; flex-shrink: 0; }
+        .rc-card:active { transform: scale(0.98); }
+        .rc-line { flex-shrink: 0; width: 56px; height: 56px; border-radius: 18px; background: var(--lime-soft); color: var(--lime-ink); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; }
+        .rc-line small { font-size: 9px; letter-spacing: 0.14em; font-weight: 700; opacity: 0.7; }
+        .rc-line b { font-size: 19px; font-weight: 700; letter-spacing: -0.02em; color: #1E3B07; }
         .rc-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 7px; }
         .rc-top { display: flex; align-items: center; gap: 8px; }
-        .rc-time { font-size: 15px; font-weight: 800; }
-        .badge-warn { font-size: 11px; font-weight: 800; color: var(--accent-red); background: #FFF0F2; border: 1px solid #FFD5DC; padding: 2px 8px; border-radius: var(--radius-pill); }
+        .rc-time { font-size: 15px; font-weight: 700; }
+        .badge-warn { font-size: 11px; font-weight: 700; color: var(--accent-red); background: var(--red-soft); border: 1px solid var(--red-line); padding: 2px 8px; border-radius: var(--radius-pill); }
         .rc-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-        .chip { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: var(--radius-pill); background: #F2F2F2; color: #333; }
-        .chip-outline { background: transparent; border: 1px dashed #BBBBBB; }
-        .rc-muted { font-size: 13px; color: var(--text-muted); font-weight: 600; }
+        .chip { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: var(--radius-pill); display: inline-flex; align-items: center; gap: 5px; background: var(--soft-bg); color: var(--text-2); }
+        .chip svg { width: 12px; height: 12px; }
+        .chip-Upper { background: var(--lilac-soft); color: var(--lilac-ink); }
+        .chip-Center { background: var(--mint-soft); color: var(--mint-ink); }
+        .chip-Final { background: var(--peach-soft); color: var(--peach-ink); }
+        .chip-module { background: var(--text-main); color: #fff; }
+        .rc-muted { font-size: 13px; color: var(--text-muted); font-weight: 500; }
         .rc-meta { font-size: 12.5px; color: var(--text-muted); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .rc-chev { flex-shrink: 0; width: 18px; height: 18px; stroke: #C4C4C4; }
-        .show-more { margin-top: 8px; padding: 14px; font-size: 14px; }
+        .rc-go { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-main); flex-shrink: 0; }
+        .rc-go svg { width: 16px; height: 16px; }
 
-        .empty-recent { text-align: center; padding: 36px 20px; margin-top: 14px; border: 1.5px dashed var(--border); border-radius: var(--radius-md); color: var(--text-muted); font-weight: 600; font-size: 14px; line-height: 1.5; }
-        .empty-recent svg { width: 36px; height: 36px; margin-bottom: 10px; opacity: 0.6; }
+        .empty-recent { text-align: center; padding: 30px 20px; background: var(--card-bg); border-radius: 24px; box-shadow: var(--shadow-sm); color: var(--text-muted); font-weight: 500; font-size: 14px; line-height: 1.5; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .empty-recent .ico { width: 48px; height: 48px; }
+        .empty-recent .ico svg { width: 22px; height: 22px; }
 
         /* =========================================
            5. REVIEW: gap list + highlights
            ========================================= */
-        .review-sub { color: var(--text-muted); margin: -8px 0 20px; font-size: 14px; font-weight: 500; }
-        .issues-card { background: #FFF5F6; border: 1px solid #FFD5DC; border-radius: var(--radius-md); padding: 4px 16px; margin-bottom: 16px; }
-        .issues-head { display: flex; gap: 8px; align-items: center; color: var(--accent-red); font-weight: 800; font-size: 15px; padding: 12px 0 8px; }
+        .review-sub { color: var(--text-muted); margin: 0 2px 18px; font-size: 14px; font-weight: 500; }
+        .issues-card { background: var(--red-soft); border: 1px solid var(--red-line); border-radius: 24px; padding: 4px 16px; margin-bottom: 16px; }
+        .issues-head { display: flex; gap: 8px; align-items: center; color: var(--accent-red); font-weight: 700; font-size: 15px; padding: 12px 0 8px; }
         .issues-head svg, .ok-card svg { width: 18px; height: 18px; flex-shrink: 0; }
         .issue-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; background: none; border: none; border-top: 1px solid #FFE1E6; padding: 13px 0; font: inherit; font-size: 14px; font-weight: 600; color: #7F1D1D; text-align: left; cursor: pointer; }
-        .issue-fix { color: var(--accent-red); font-weight: 800; font-size: 13px; flex-shrink: 0; }
-        .ok-card { display: flex; align-items: center; gap: 8px; background: #F0FDF4; border: 1px solid #BBF7D0; color: #15803D; font-weight: 700; border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 16px; font-size: 14px; }
-        .report-preview mark { background: #FFE4E8; color: var(--accent-red); border-radius: 4px; padding: 0 2px; font-weight: 800; }
+        .issue-fix { color: var(--accent-red); font-weight: 700; font-size: 13px; flex-shrink: 0; }
+        .ok-card { display: flex; align-items: center; gap: 8px; background: var(--lime-soft); color: var(--lime-ink); font-weight: 600; border-radius: 24px; padding: 14px 16px; margin-bottom: 16px; font-size: 14px; }
 
-        .btn-icon { flex: 0 0 56px; width: 56px; padding: 0 !important; display: flex; align-items: center; justify-content: center; }
+        .btn-icon { flex: 0 0 56px; width: 56px; padding: 0 !important; }
         .btn-icon svg { width: 20px; height: 20px; }
-        .btn-danger-soft { background: #FFF0F2; color: var(--accent-red); border: 1px solid #FFD5DC; box-shadow: none !important; }
+        .btn-danger-soft { background: var(--red-soft); color: var(--accent-red); border: 1px solid var(--red-line); box-shadow: none !important; }
 
         /* Fields flagged by the gap check */
-        .is-missing { border-color: var(--accent-red) !important; background-color: #FFF5F6 !important; }
+        .is-missing { border-color: var(--accent-red) !important; background-color: var(--red-soft) !important; }
         .id-input-wrapper.is-missing span { color: var(--accent-red); }
-        .cutter-checkboxes.is-missing { outline: 2px solid var(--accent-red); outline-offset: 6px; border-radius: 18px; background-color: transparent !important; }
-        .three-way-toggle.is-missing { box-shadow: 0 0 0 2px var(--accent-red); }
+        .cutter-checkboxes.is-missing { outline: 2px solid var(--accent-red); outline-offset: 6px; border-radius: 20px; background-color: transparent !important; }
 
         /* =========================================
-           6. BANNER + BOTTOM SHEET (replace alert/confirm)
+           6. BANNER + BOTTOM SHEET
            ========================================= */
-        .toast { position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 68px); transform: translate(-50%, -16px); opacity: 0; z-index: 3000; background: var(--accent-color); color: #fff; padding: 12px 22px; border-radius: 18px; box-shadow: 0 12px 32px rgba(0,0,0,0.18); display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; width: max-content; max-width: calc(100% - 40px); transition: opacity 0.25s, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); pointer-events: none; }
+        .toast { position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 70px); transform: translate(-50%, -16px); opacity: 0; z-index: 3000; background: var(--text-main); color: #fff; padding: 12px 22px; border-radius: 20px; box-shadow: 0 12px 32px rgba(0,0,0,0.18); display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; width: max-content; max-width: calc(100% - 40px); transition: opacity 0.25s, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); pointer-events: none; }
         .toast.show { opacity: 1; transform: translate(-50%, 0); }
-        .toast strong { font-size: 15px; font-weight: 800; }
+        .toast strong { font-size: 15px; font-weight: 700; }
         .toast span { font-size: 13px; opacity: 0.85; font-weight: 500; }
         .toast-warn { background: var(--accent-red); }
         .toast-error { background: #7F1D1D; }
+        .toast-success { background: var(--lime); color: #1C3A05; }
 
-        .sheet-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 2000; display: flex; align-items: flex-end; justify-content: center; opacity: 0; transition: opacity 0.25s ease; }
+        .sheet-backdrop { position: fixed; inset: 0; background: rgba(20, 28, 16, 0.32); z-index: 2000; display: flex; align-items: flex-end; justify-content: center; opacity: 0; transition: opacity 0.25s ease; }
         .sheet-backdrop.show { opacity: 1; }
-        .sheet { width: 100%; max-width: 480px; background: var(--card-bg); border-radius: 28px 28px 0 0; padding: 10px 22px calc(18px + env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1); box-shadow: 0 -16px 40px rgba(0,0,0,0.12); }
+        .sheet { width: 100%; max-width: 480px; background: var(--card-bg); border-radius: 32px 32px 0 0; padding: 10px 22px calc(18px + env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1); box-shadow: 0 -16px 40px rgba(0,0,0,0.12); }
         .sheet-backdrop.show .sheet { transform: translateY(0); }
-        .sheet-grabber { width: 40px; height: 5px; border-radius: 3px; background: #E2E2E2; margin: 0 auto 18px; }
-        .sheet .sheet-title { font-size: 20px; text-transform: none; letter-spacing: -0.02em; color: var(--text-main); font-weight: 800; margin-bottom: 6px; }
-        .sheet-msg { font-size: 15px; color: #555; line-height: 1.45; margin-bottom: 16px; font-weight: 500; }
-        .sheet-list { list-style: none; background: #FFF5F6; border: 1px solid #FFD5DC; border-radius: 16px; padding: 6px 14px; margin-bottom: 16px; }
+        .sheet-grabber { width: 40px; height: 5px; border-radius: 3px; background: #E0E5DC; margin: 0 auto 18px; }
+        .sheet .sheet-title { font-size: 20px; letter-spacing: -0.02em; color: var(--text-main); font-weight: 700; margin-bottom: 6px; }
+        .sheet-msg { font-size: 15px; color: var(--text-2); line-height: 1.45; margin-bottom: 16px; font-weight: 500; }
+        .sheet-list { list-style: none; background: var(--red-soft); border: 1px solid var(--red-line); border-radius: 18px; padding: 6px 14px; margin-bottom: 16px; }
         .sheet-list li { font-size: 14px; font-weight: 600; color: #7F1D1D; padding: 8px 0; border-top: 1px solid #FFE1E6; }
         .sheet-list li:first-child { border-top: none; }
         .sheet-list li.more { color: var(--accent-red); font-weight: 700; }
         .sheet-actions { display: flex; flex-direction: column; gap: 8px; }
-        .sheet-btn { width: 100%; border: none; border-radius: var(--radius-pill); padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; transition: transform 0.15s; }
+        .sheet-btn { width: 100%; border: none; border-radius: var(--radius-pill); padding: 16px; font-size: 16px; font-weight: 600; cursor: pointer; font-family: inherit; transition: transform 0.15s; }
         .sheet-btn:active { transform: scale(0.97); }
-        .sheet-primary { background: var(--accent-color); color: #fff; box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
-        .sheet-danger { background: #FFF0F2; color: var(--accent-red); }
-        .sheet-secondary { background: #F4F4F4; color: var(--text-main); }
+        .sheet-primary { background: var(--text-main); color: #fff; box-shadow: var(--shadow-btn); }
+        .sheet-danger { background: var(--red-soft); color: var(--accent-red); }
+        .sheet-secondary { background: var(--soft-bg); color: var(--text-main); }
         .sheet-plain { background: transparent; color: var(--text-muted); }
     </style>
 </head>
@@ -338,26 +378,46 @@
 
 <div id="app-container">
     <header>
-        <button class="header-btn" id="nav-back" onclick="handleBack()">Back</button>
-        <h1>Cutter ID Generator</h1>
+        <button class="icon-btn" id="nav-back" onclick="handleBack()" aria-label="Back" style="visibility:hidden;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        <div class="title-pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12"/></svg>
+            Cutter ID Generator
+        </div>
+        <span class="icon-btn spacer" aria-hidden="true"></span>
     </header>
 
     <div id="content">
         <div id="screen-home" class="screen active">
-            <div class="scrollable-body home-body">
-                <div class="home-hero">
-                    <h2 class="home-title">Another day,<br>another cutter.</h2>
-                    <button class="btn" onclick="openNewForm()">New Cutter Change</button>
+            <div class="home-top">
+                <h2 class="home-title">Another day,<br><span class="soft">another</span> cutter.</h2>
+                <div class="hero-card">
+                    <div class="hero-row">
+                        <div class="hero-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12"/></svg></div>
+                        <div>
+                            <h3>Swapping cutters?</h3>
+                            <p>Log the old and new IDs, run the checklist, and share the report.</p>
+                        </div>
+                    </div>
+                    <button class="hero-btn" onclick="openNewForm()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                        New Cutter Change
+                    </button>
                 </div>
                 <div id="draft-slot"></div>
-                <div id="recent-list"></div>
+                <div class="section-head"><h3>My Cutter Changes</h3><span class="count" id="recent-count"></span></div>
             </div>
+            <div class="scrollable-body home-list" id="recent-list"></div>
         </div>
 
         <div id="screen-form" class="screen">
             <div class="scrollable-body">
-                <div class="card" style="padding-bottom: 16px;">
-                    <h2>Setup</h2>
+                <div class="card">
+                    <div class="card-head">
+                        <span class="ico ico-lime"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20M4 20V9l5 3V9l5 3V5l6 4v11"/></svg></span>
+                        <h2>Setup</h2>
+                    </div>
                     <div class="form-group">
                         <label>Production Line</label>
                         <select id="lineSelect" class="form-input" required></select>
@@ -375,7 +435,10 @@
                 <div id="dynamic-ids-container"></div>
 
                 <div class="card">
-                    <h2>Details</h2>
+                    <div class="card-head">
+                        <span class="ico ico-lilac"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
+                        <h2>Details</h2>
+                    </div>
                     <div class="flex-row">
                         <div class="form-group">
                             <label>Date</label>
@@ -387,14 +450,15 @@
                         </div>
                     </div>
 
-                    <label class="check-container-legacy" style="background:#FAFAFA; padding:16px; border-radius:var(--radius-sm); border:2px solid var(--border); margin-bottom:16px;">
+                    <label class="opt-row">
                         <input type="checkbox" id="moduleReplacementToggle" onchange="toggleModuleReplacement()">
-                        <div class="custom-checkbox"><svg viewBox="0 0 12 10"><polyline points="1.5 6 4.5 9 10.5 1"></polyline></svg></div>
-                        <span style="color:var(--text-main); font-weight:700;">Module Replacement</span>
+                        <span class="ico ico-dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7L12 12l8.7-5M12 22V12"/></svg></span>
+                        <span class="opt-text">Module Replacement<small>Log module IDs and the reason</small></span>
+                        <span class="switch"></span>
                     </label>
 
                     <div id="moduleReplacementContainer" style="display: none; margin-bottom: 16px;">
-                        <div class="form-group" style="margin-bottom: 12px;">
+                        <div class="form-group" style="margin-bottom: 0;">
                             <label>Modules Being Replaced</label>
                             <div class="cutter-checkboxes">
                                 <div class="module-btn cutter-btn" data-module="Upper" onclick="toggleModule(this)">Upper</div>
@@ -405,10 +469,11 @@
                         <div id="dynamic-modules-container"></div>
                     </div>
 
-                    <label class="check-container-legacy" style="background:#FAFAFA; padding:16px; border-radius:var(--radius-sm); border:2px solid var(--border); margin-bottom:16px;">
+                    <label class="opt-row">
                         <input type="checkbox" id="includeChecklistToggle" onchange="toggleChecklist()">
-                        <div class="custom-checkbox"><svg viewBox="0 0 12 10"><polyline points="1.5 6 4.5 9 10.5 1"></polyline></svg></div>
-                        <span style="color:var(--text-main); font-weight:700;">Include Checklist in Report</span>
+                        <span class="ico ico-mint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+                        <span class="opt-text">Include Checklist in Report<small>Tasks for the selected cutters</small></span>
+                        <span class="switch"></span>
                     </label>
 
                     <div id="checklistItemsContainer" style="display: none; margin-bottom: 16px;"></div>
@@ -426,7 +491,7 @@
 
         <div id="screen-review" class="screen">
             <div class="scrollable-body">
-                <h2 id="review-title">Review Report</h2>
+                <h2 id="review-title" class="page-title">Review Report</h2>
                 <p class="review-sub" id="review-sub"></p>
                 <div id="review-issues"></div>
                 <div class="report-preview" id="review-text"></div>
@@ -440,7 +505,21 @@
     const STORAGE_KEY = "cutter_reports_v15";
     const DRAFT_KEY = "cutter_draft_v1";
     const DRAFT_TTL_MS = 60 * 60 * 1000;   // drafts are kept for 1 hour after the last edit
-    const RECENT_PAGE = 20;                // recent changes shown before "Show older"
+    const UPDATE_CHECK_MS = 15 * 60 * 1000; // while open, look for a new version every 15 min
+
+    const svg = (d, w = 2) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+    const ICONS = {
+        out:    svg('<path d="M12 15V3M7 8l5-5 5 5M5 21h14"/>'),
+        in:     svg('<path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>'),
+        module: svg('<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7L12 12l8.7-5M12 22V12"/>'),
+        go:     svg('<path d="M7 17L17 7M7 7h10v10"/>', 2.2),
+        clock:  svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
+        close:  svg('<path d="M18 6L6 18M6 6l12 12"/>', 2.4),
+        list:   svg('<rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 8h8M8 12h8M8 16h5"/>'),
+        warn:   svg('<path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>', 2.4),
+        ok:     svg('<path d="M20 6L9 17l-5-5"/>', 2.6),
+        trash:  svg('<path d="M3 6h18M8 6V4h8v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/>', 2.2)
+    };
     const LINES = ["1-1", "1-2", "1-3", "1-4", "1-5", "1-H", "2-1", "2-2", "2-3", "2-4", "2-5", "3-1", "3-2", "3-3", "3-4", "3-5"];
     const CUTTER_ORDER = ["Upper", "Center", "Final"];
     const FORMATS = {
@@ -466,7 +545,6 @@
     let activeEditId = null;
     let currentIssues = [];
     let formDirty = false;
-    let recentLimit = RECENT_PAGE;
 
     /* =========================================
        HELPERS
@@ -621,6 +699,7 @@
         window.addEventListener('pagehide', saveDraftNow);
 
         showScreen('screen-home');
+        startUpdateChecks();
     }
 
     function showScreen(screenId) {
@@ -628,7 +707,58 @@
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         $(screenId).classList.add('active');
         $('nav-back').style.visibility = (screenId === 'screen-home') ? 'hidden' : 'visible';
-        if (screenId === 'screen-home') renderHome();
+        if (screenId === 'screen-home') {
+            renderHome();
+            setTimeout(applyUpdateIfSafe, 400);
+        }
+    }
+
+    /* =========================================
+       AUTO-UPDATE
+       Phones often keep the app open in the background for days. When it comes
+       back to the foreground (and every 15 min while open), check GitHub Pages
+       for a newer version of this page. If there is one, reload as soon as the
+       person is on the home screen, so nobody loses what they're typing.
+       ========================================= */
+    let pageVersion = null;
+    let updatePending = false;
+
+    async function fetchPageVersion() {
+        try {
+            const r = await fetch('Cutter_ID_Generator.html', { method: 'HEAD', cache: 'no-store' });
+            if (!r.ok) return null;
+            return r.headers.get('ETag') || r.headers.get('Last-Modified');
+        } catch (e) { return null; }   // offline: try again later
+    }
+
+    async function checkForUpdate() {
+        if (updatePending || document.visibilityState !== 'visible') return;
+        navigator.serviceWorker?.getRegistration().then(reg => reg && reg.update()).catch(() => {});
+        const v = await fetchPageVersion();
+        if (!v) return;
+        if (pageVersion === null) { pageVersion = v; return; }
+        if (v !== pageVersion) { updatePending = true; applyUpdateIfSafe(); }
+    }
+
+    function applyUpdateIfSafe() {
+        if (!updatePending) return;
+        const onHome = document.querySelector('.screen.active')?.id === 'screen-home';
+        if (!onHome || document.querySelector('.sheet-backdrop')) return;  // wait until they're done
+        try { sessionStorage.setItem('cid_just_updated', '1'); } catch (e) {}
+        location.reload();
+    }
+
+    function startUpdateChecks() {
+        try {
+            if (sessionStorage.getItem('cid_just_updated')) {
+                sessionStorage.removeItem('cid_just_updated');
+                setTimeout(() => showToast('App updated', { sub: "You're on the latest version.", type: 'success' }), 500);
+            }
+        } catch (e) {}
+        checkForUpdate();
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkForUpdate(); });
+        window.addEventListener('online', checkForUpdate);
+        setInterval(checkForUpdate, UPDATE_CHECK_MS);
     }
 
     function handleBack() {
@@ -887,41 +1017,42 @@
         const draft = loadDraft();
         $('draft-slot').innerHTML = draft ? `
             <div class="draft-card">
-                <div class="draft-head">
-                    <span class="draft-dot"></span>
-                    <strong>${draft.editId ? 'Unsaved edits' : 'Unfinished report'}</strong>
-                    <span class="draft-age">${esc(minsAgo(draft.savedAt))}</span>
+                <span class="ico ico-peach">${ICONS.clock}</span>
+                <div class="draft-text">
+                    <strong>${draft.editId ? 'Unsaved edits' : 'Unfinished report'} · ${esc(minsAgo(draft.savedAt))}</strong>
+                    <span>${esc(draftSummary(draft))} · kept until ${esc(new Date(draft.savedAt + DRAFT_TTL_MS).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }))}</span>
                 </div>
-                <p class="draft-sum">${esc(draftSummary(draft))}</p>
-                <p class="draft-exp">Kept until ${esc(new Date(draft.savedAt + DRAFT_TTL_MS).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }))}</p>
-                <div class="draft-actions">
-                    <button class="btn-small btn-grey" onclick="discardDraftFromHome()">Discard</button>
-                    <button class="btn-small btn-dark" onclick="resumeDraft()">Resume</button>
-                </div>
+                <button class="draft-x" aria-label="Discard draft" onclick="discardDraftFromHome()">${ICONS.close}</button>
+                <button class="btn-small btn-dark" onclick="resumeDraft()">Resume</button>
             </div>` : '';
 
         const list = $('recent-list');
         const sorted = [...savedReports].sort((a, b) => reportSortKey(b) - reportSortKey(a));
+        $('recent-count').textContent = sorted.length ? String(sorted.length) : '';
         if (sorted.length === 0) {
             list.innerHTML = `
-                <div class="section-head"><h3>Recent changes</h3></div>
                 <div class="empty-recent">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+                    <span class="ico ico-lime">${ICONS.list}</span>
                     <p>No cutter changes yet.<br>Saved reports will show up here.</p>
                 </div>`;
             return;
         }
 
-        const chevron = `<svg class="rc-chev" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>`;
-        let html = `<div class="section-head"><h3>Recent changes</h3><span class="count">${sorted.length}</span></div>`;
+        let html = '';
         let lastDay = null;
-        sorted.slice(0, recentLimit).forEach(r => {
+        sorted.forEach(r => {
             const day = dayLabel(r.date);
             if (day !== lastDay) { html += `<div class="day-label">${esc(day)}</div>`; lastDay = day; }
 
             const lineShort = LINES.includes(r.line) ? r.line : '—';
-            let chips = (r.cutters || []).map(c => `<span class="chip">${esc(c)}</span>`).join('');
-            if (r.includeModules && r.modules?.length) chips += r.modules.map(m => `<span class="chip chip-outline">${esc(m)} module</span>`).join('');
+            // A replaced module includes its cutter, so show the module instead of that cutter.
+            const modules = (r.includeModules && r.modules) ? r.modules : [];
+            const cutters = (r.cutters || []).filter(c => !modules.includes(c));
+            const chips = CUTTER_ORDER.map(pos => {
+                if (modules.includes(pos)) return `<span class="chip chip-module">${ICONS.module}${esc(pos)} module</span>`;
+                if (cutters.includes(pos)) return `<span class="chip chip-${pos}">${esc(pos)}</span>`;
+                return '';
+            }).join('');
 
             const meta = [];
             if (r.includeChecklist && r.taskStates) {
@@ -941,12 +1072,9 @@
                         <div class="rc-chips">${chips || '<span class="rc-muted">No cutters</span>'}</div>
                         ${meta.length ? `<div class="rc-meta">${esc(meta.join(' · '))}</div>` : ''}
                     </div>
-                    ${chevron}
+                    <span class="rc-go">${ICONS.go}</span>
                 </button>`;
         });
-        if (sorted.length > recentLimit) {
-            html += `<button class="btn btn-secondary show-more" onclick="recentLimit += RECENT_PAGE; renderHome();">Show older (${sorted.length - recentLimit} more)</button>`;
-        }
         list.innerHTML = html;
     }
 
@@ -1057,31 +1185,26 @@
 
     function buildInputContainers() {
         const container = $('dynamic-ids-container');
-        let oldHtml = `<div id="old-group" style="display:none; margin-bottom: 24px;">`;
-        let newHtml = `<div id="new-group" style="display:none; margin-bottom: 24px;">`;
+        let oldHtml = `<div id="old-group" style="display:none;">`;
+        let newHtml = `<div id="new-group" style="display:none;">`;
 
         CUTTER_ORDER.forEach(c => {
             const format = FORMATS[c];
-            const generateInputs = (type) => `
-                <div class="id-input-wrapper">
+            const generateInputs = (type) => [0, 1].map(i => `
+                <div class="id-input-wrapper"${i === 1 ? ' style="margin-bottom:0;"' : ''}>
                     <span>${format.prefix}</span>
-                    <input class="id-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="____" data-cutter="${c}" data-type="${type}" data-idx="0">
-                    <span>${format.suffixes[0]}</span>
-                </div>
-                <div class="id-input-wrapper" style="margin-bottom:0;">
-                    <span>${format.prefix}</span>
-                    <input class="id-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="____" data-cutter="${c}" data-type="${type}" data-idx="1">
-                    <span>${format.suffixes[1]}</span>
-                </div>`;
+                    <input class="id-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="____" data-cutter="${c}" data-type="${type}" data-idx="${i}">
+                    <span>${format.suffixes[i]}</span>
+                </div>`).join('');
 
             oldHtml += `
-                <div id="old-block-${c}" class="cutter-block card" style="display:none; margin-bottom: 16px;">
-                    <h2 style="color:var(--text-main); font-size:18px; margin-bottom:16px;">📤 OLD ${c}</h2>
+                <div id="old-block-${c}" class="cutter-block card" style="display:none;">
+                    <div class="card-head"><span class="ico ico-peach">${ICONS.out}</span><h2>OLD ${c}</h2></div>
                     ${generateInputs('old')}
                 </div>`;
             newHtml += `
-                <div id="new-block-${c}" class="cutter-block card" style="display:none; margin-bottom: 16px;">
-                    <h2 style="color:var(--text-main); font-size:18px; margin-bottom:16px;">📥 NEW ${c}</h2>
+                <div id="new-block-${c}" class="cutter-block card" style="display:none;">
+                    <div class="card-head"><span class="ico ico-lime">${ICONS.in}</span><h2>NEW ${c}</h2></div>
                     ${generateInputs('new')}
                 </div>`;
         });
@@ -1090,8 +1213,8 @@
         let modHtml = '';
         CUTTER_ORDER.forEach(m => {
             modHtml += `
-                <div id="module-block-${m}" class="module-block card" style="display:none; margin-bottom: 16px; padding:16px; border: 1px solid var(--border); box-shadow: none;">
-                    <h3 style="color:var(--text-main); font-size:16px; margin-bottom:12px;">${m} Module Details</h3>
+                <div id="module-block-${m}" class="module-block" style="display:none;">
+                    <h4>${m} Module</h4>
                     <div class="form-group">
                         <label>OLD Module ID</label>
                         <input type="text" class="form-input" id="old-mod-${m}" placeholder="Enter OLD ID">
@@ -1116,17 +1239,15 @@
         });
 
         dynamicTitles = [...new Set(dynamicTitles)];
-        const allItems = dynamicTitles.map(t => ({ id: "dyn_" + t.replace(/\s/g,''), title: t, desc: t }));
+        const allItems = dynamicTitles.map(t => ({ id: "dyn_" + t.replace(/\s/g, ''), title: t, desc: t }));
         const container = $('checklistItemsContainer');
 
         if (allItems.length === 0) { container.innerHTML = ""; return; }
 
-        container.innerHTML = `<div class="card" style="padding: 8px 20px; margin-bottom: 0;">` + allItems.map((item, index) => `
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 0; ${index < allItems.length - 1 ? 'border-bottom: 1px solid var(--border);' : ''}">
-                <div style="display:flex; flex-direction:column; gap:4px; max-width: 65%; padding-right: 12px; cursor: pointer; -webkit-tap-highlight-color: transparent;" onclick="cycleToggle(this.nextElementSibling)">
-                    <span style="color:var(--text-main); font-weight:700; font-size:15px; user-select:none;">${item.title}</span>
-                </div>
-                <div class="three-way-toggle check-input-toggle" data-task-id="${item.id}" data-task-desc="${item.desc}" data-state="none" onclick="cycleToggle(this)">
+        container.innerHTML = `<div class="card ck-card">` + allItems.map(item => `
+            <div class="ck-row">
+                <span class="ck-title" onclick="cycleToggle(this.nextElementSibling)">${esc(item.title)}</span>
+                <div class="three-way-toggle check-input-toggle" data-task-id="${esc(item.id)}" data-task-desc="${esc(item.desc)}" data-state="none" onclick="cycleToggle(this)">
                     <div class="thumb"></div>
                 </div>
             </div>
@@ -1237,18 +1358,6 @@
             }));
         }
 
-        if ($('includeChecklistToggle').checked) {
-            const toggles = [...document.querySelectorAll('.check-input-toggle')];
-            const blank = toggles.filter(t => t.dataset.state === 'none');
-            if (toggles.length && blank.length) {
-                issues.push({
-                    msg: blank.length === toggles.length
-                        ? 'Checklist is on, but nothing is marked'
-                        : `${blank.length} checklist item${blank.length > 1 ? 's' : ''} not marked (left out of the report)`,
-                    el: blank[0], marks: blank
-                });
-            }
-        }
         return issues;
     }
 
@@ -1273,13 +1382,14 @@
 
     function highlightReport(text) {
         return esc(text)
+            .replace(/\u0001([^\u0002]*)\u0002/g, '<mark class="unmarked">$1</mark>')
             .replace(/(LCAGHY)(\d*_+)/g, '$1<mark>$2</mark>')
             .replace(/(Line: )(Not Selected)/g, '$1<mark>$2</mark>')
             .replace(/(Module ID: )(N\/A)/g, '$1<mark>$2</mark>');
     }
 
-    const WARN_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>`;
-    const OK_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>`;
+    const WARN_ICON = ICONS.warn;
+    const OK_ICON = ICONS.ok;
 
     /* =========================================
        REVIEW, SAVE & COPY
@@ -1323,20 +1433,26 @@
             });
         }
 
+        // The copied text only has marked items. The preview also lists unmarked
+        // items in red (wrapped in \u0001...\u0002), as a reminder without blocking.
+        let preview = txt;
         if (includeChecklist) {
-            let hasAddedItems = false;
-            let checklistText = "Tasks Checklist:\n";
+            let marked = "", previewList = "";
             document.querySelectorAll('.check-input-toggle').forEach(toggle => {
                 const state = toggle.dataset.state;
                 if (state !== 'none') {
-                    checklistText += `- ${toggle.dataset.taskDesc} : ${state === 'yes' ? 'Yes' : 'No'}\n`;
-                    hasAddedItems = true;
+                    const row = `- ${toggle.dataset.taskDesc} : ${state === 'yes' ? 'Yes' : 'No'}\n`;
+                    marked += row;
+                    previewList += row;
+                } else {
+                    previewList += `\u0001- ${toggle.dataset.taskDesc} : not marked\u0002\n`;
                 }
             });
-            if (hasAddedItems) txt += checklistText + "\n";
+            if (marked) txt += `Tasks Checklist:\n${marked}\n`;
+            if (previewList) preview += `Tasks Checklist:\n${previewList}\n`;
         }
 
-        if (remarks) txt += `Remarks:\n${remarks}\n`;
+        if (remarks) { txt += `Remarks:\n${remarks}\n`; preview += `Remarks:\n${remarks}\n`; }
 
         currentReviewText = txt.trim();
         currentReviewLine = line;
@@ -1353,7 +1469,7 @@
                 <div class="issues-head">${WARN_ICON}<span>${n} thing${n > 1 ? 's' : ''} to check</span></div>
                 ${currentIssues.map((x, i) => `<button class="issue-row" onclick="goToIssue(${i})"><span>${esc(x.msg)}</span><span class="issue-fix">Fix ›</span></button>`).join('')}
             </div>` : `<div class="ok-card">${OK_ICON}<span>All fields complete</span></div>`;
-        $('review-text').innerHTML = highlightReport(currentReviewText);
+        $('review-text').innerHTML = highlightReport(preview.trim());
         $('review-buttons').innerHTML = `
             <button class="btn btn-secondary" style="flex:1;" onclick="handleBack()">Edit Form</button>
             <button class="btn" id="copyBtn" style="flex:2;" onclick="saveAndCopy()">Save & Copy</button>
@@ -1374,9 +1490,7 @@
             ? `<div class="issues-card"><div class="issues-head">${WARN_ICON}<span>Saved with gaps, highlighted below</span></div></div>` : '';
         $('review-text').innerHTML = highlightReport(currentReviewText);
         $('review-buttons').innerHTML = `
-            <button class="btn btn-icon btn-danger-soft" aria-label="Delete report" onclick="deleteReport(${Number(report.id)})">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/></svg>
-            </button>
+            <button class="btn btn-icon btn-danger-soft" aria-label="Delete report" onclick="deleteReport(${Number(report.id)})">${ICONS.trash}</button>
             <button class="btn btn-secondary" style="flex:1;" onclick="editReport(${Number(report.id)})">Edit</button>
             <button class="btn" id="copyBtn" style="flex:1.4;" onclick="justCopy()">Copy Text</button>`;
         $('screen-review').querySelector('.scrollable-body').scrollTop = 0;
