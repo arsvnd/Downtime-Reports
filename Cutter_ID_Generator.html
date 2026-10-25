@@ -478,10 +478,17 @@
         `).join('');
     }
 
+    // Today's date in the phone's local time zone (YYYY-MM-DD).
+    // toISOString() uses UTC, which rolls over to tomorrow during the evening in Toronto.
+    function localDateStr(d = new Date()) {
+        const pad = n => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    }
+
     function openNewForm() {
-        activeEditId = null; 
+        activeEditId = null;
         document.getElementById('lineSelect').value = "";
-        document.getElementById('dateInput').value = new Date().toISOString().split("T")[0];
+        document.getElementById('dateInput').value = localDateStr();
         document.getElementById('timeInput').value = getNearestTime();
         document.getElementById('remarksInput').value = "";
         
