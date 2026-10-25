@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<link rel="manifest" href="manifest-incident.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Incidents">
+<meta name="format-detection" content="telephone=no">
+<meta name="theme-color" content="#F6EFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17111F" media="(prefers-color-scheme: dark)">
+<link rel="apple-touch-icon" href="incident-icon-180.png">
+<link rel="icon" type="image/png" href="incident-icon-192.png">
+<title>Incident Log</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Palette pulled from the app icon */
+  --purple: #B77CF8;
+  --purple-2: #9D6BF4;
+  --purple-ink: #6B3FCF;
+  --purple-tint: rgba(183, 124, 248, 0.14);
+  --yellow: #FFD84A;
+  --yellow-2: #FFBE0B;
+  --cream: #FFF7DE;
+  --pink: #FF8080;
+  --brown: #3D2418;
+
+  --bg: linear-gradient(180deg, #F6EFFF 0%, #FBF5FF 40%, #FFF8E8 100%);
+  --bg-solid: #F6EFFF;
+  --surface: rgba(255, 255, 255, 0.82);
+  --surface-strong: #FFFFFF;
+  --field: #F7F2FD;
+  --hairline: rgba(107, 63, 207, 0.10);
+  --text-1: #22162E;
+  --text-2: #6E6380;
+  --text-3: #A79DB5;
+  --danger: #FF3B30;
+  --shadow: 0 1px 2px rgba(70, 30, 120, 0.04), 0 8px 24px rgba(120, 70, 200, 0.07);
+  --bar: rgba(250, 246, 255, 0.78);
+
+  --r: 22px; --r-sm: 16px; --r-xs: 12px;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  --round: ui-rounded, "SF Pro Rounded", -apple-system, "Nunito", sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: linear-gradient(180deg, #17111F 0%, #1B1426 50%, #1E1720 100%);
+    --bg-solid: #17111F;
+    --surface: rgba(255, 255, 255, 0.06);
+    --surface-strong: #2A2236;
+    --field: rgba(255, 255, 255, 0.07);
+    --hairline: rgba(255, 255, 255, 0.08);
+    --text-1: #F6F0FF;
+    --text-2: #B4A8C6;
+    --text-3: #7D7290;
+    --purple-tint: rgba(183, 124, 248, 0.20);
+    --shadow: 0 1px 2px rgba(0,0,0,0.3);
+    --bar: rgba(23, 17, 31, 0.78);
+  }
+}
+
+html { height: 100%; background: var(--bg-solid); }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  background-attachment: fixed;
+  color: var(--text-1);
+  min-height: 100%;
+  font-size: 17px;
+  padding-bottom: calc(96px + var(--safe-b));
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+button, .chip, .tappable { touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+.hidden { display: none !important; }
+.container { max-width: 500px; margin: 0 auto; padding: 0 16px; padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+
+/* ── iOS NAV BAR (compact title appears on scroll) ── */
+.navbar {
+  position: sticky; top: 0; z-index: 150;
+  padding-top: var(--safe-t);
+  background: transparent;
+  transition: background 0.2s, border-color 0.2s;
+  border-bottom: 0.5px solid transparent;
+}
+.navbar.scrolled { background: var(--bar); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); border-bottom-color: var(--hairline); }
+.navbar-inner { height: 44px; max-width: 500px; margin: 0 auto; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; }
+.nav-small { position: absolute; left: 50%; transform: translateX(-50%); font-size: 17px; font-weight: 600; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+.navbar.scrolled .nav-small { opacity: 1; }
+.nav-action {
+  min-height: 44px; display: flex; align-items: center; gap: 4px;
+  background: none; border: none; color: var(--purple-ink);
+  font-family: var(--font); font-size: 17px; font-weight: 400; cursor: pointer; padding: 0;
+}
+@media (prefers-color-scheme: dark) { .nav-action { color: var(--purple); } }
+.nav-action:active { opacity: 0.4; }
+
+.large-title { display: flex; align-items: center; gap: 12px; padding: 2px 0 18px; }
+.large-title img { width: 46px; height: 46px; border-radius: 12px; box-shadow: 0 6px 16px rgba(255, 190, 11, 0.35); flex-shrink: 0; }
+.large-title h1 { font-family: var(--round); font-size: 34px; font-weight: 700; letter-spacing: 0.2px; line-height: 1.1; }
+.clock { display: inline-flex; align-items: center; gap: 6px; margin-top: 3px; font-family: var(--mono); font-size: 12px; color: var(--text-2); }
+.clock .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--pink); box-shadow: 0 0 6px var(--pink); animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+/* ── CARDS (inset grouped) ── */
+.card {
+  background: var(--surface);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--r);
+  padding: 18px 16px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+}
+.card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.num {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--purple-tint); color: var(--purple-ink);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--round); font-size: 13px; font-weight: 700; flex-shrink: 0;
+  transition: all 0.25s;
+}
+.card.filled .num { background: linear-gradient(135deg, var(--purple), var(--purple-2)); color: #fff; box-shadow: 0 3px 8px rgba(157,107,244,0.4); }
+.card-title { font-family: var(--round); font-size: 17px; font-weight: 600; }
+.opt { margin-left: auto; font-size: 13px; color: var(--text-3); }
+.label { display: block; font-size: 13px; font-weight: 500; color: var(--text-2); margin: 0 0 8px 4px; }
+
+input[type="text"], input[type="date"], input[type="time"], input[type="search"], textarea {
+  width: 100%; min-height: 48px;
+  padding: 13px 14px;
+  background: var(--field);
+  border: 1.5px solid transparent;
+  border-radius: var(--r-xs);
+  color: var(--text-1);
+  font-family: var(--font); font-size: 17px; /* ≥16px stops iOS zooming in */
+  -webkit-appearance: none; appearance: none;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+input[type="date"], input[type="time"] { font-variant-numeric: tabular-nums; display: flex; align-items: center; }
+input::-webkit-date-and-time-value { text-align: left; }
+textarea { resize: none; line-height: 1.45; min-height: 140px; overflow: hidden; display: block; }
+input::placeholder, textarea::placeholder { color: var(--text-3); }
+input:focus, textarea:focus { outline: none; border-color: var(--purple); background: var(--surface-strong); box-shadow: 0 0 0 4px var(--purple-tint); }
+input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; }
+
+.row2 { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px; }
+.row2 > div, .row2 input { min-width: 0; max-width: 100%; }
+
+/* iOS segmented control */
+.segmented { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 12px; padding: 2px; border-radius: 10px; background: var(--field); }
+.seg {
+  min-height: 34px; border: none; background: transparent; border-radius: 8px;
+  font-family: var(--font); font-size: 14px; font-weight: 500; color: var(--text-1); cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.seg.on { background: var(--surface-strong); box-shadow: 0 2px 6px rgba(0,0,0,0.10), 0 0 0 0.5px rgba(0,0,0,0.04); }
+
+.chip-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  min-height: 38px; padding: 0 15px; display: inline-flex; align-items: center;
+  border-radius: 100px; background: var(--field); border: none;
+  font-family: var(--font); font-size: 15px; font-weight: 500; color: var(--text-1);
+  cursor: pointer; transition: transform 0.15s, background 0.2s, color 0.2s;
+}
+.chip:active { transform: scale(0.94); }
+.chip.sel { background: linear-gradient(135deg, var(--purple), var(--purple-2)); color: #fff; box-shadow: 0 4px 12px rgba(157,107,244,0.35); }
+.chip-sm { min-height: 36px; padding: 0 13px; font-size: 14px; font-variant-numeric: tabular-nums; }
+.sub-block { margin-top: 16px; }
+
+.tool {
+  margin-top: 10px; min-height: 36px;
+  display: inline-flex; align-items: center; gap: 6px; padding: 0 14px;
+  border-radius: 100px; border: none; background: var(--purple-tint);
+  color: var(--purple-ink); font-family: var(--font); font-size: 14px; font-weight: 600; cursor: pointer;
+}
+@media (prefers-color-scheme: dark) { .tool { color: var(--purple); } .num { color: var(--purple); } }
+.tool:active { transform: scale(0.95); }
+
+/* ── PREVIEW — note card in the cat's yellow ── */
+.section-head { font-family: var(--round); font-size: 22px; font-weight: 700; margin: 24px 4px 12px; display: flex; justify-content: space-between; align-items: baseline; }
+.section-head small { font-family: var(--font); font-size: 13px; font-weight: 400; color: var(--text-3); }
+.note {
+  position: relative; overflow: hidden;
+  background: linear-gradient(160deg, #FFE885 0%, var(--yellow) 45%, #FFC933 100%);
+  color: var(--brown);
+  border-radius: var(--r); padding: 20px 18px;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.6), inset 0 -6px 16px rgba(255,170,0,0.25), 0 12px 28px rgba(255,190,11,0.30);
+  margin-bottom: 16px;
+}
+.note::after { /* little paw watermark like the icon */
+  content: ""; position: absolute; right: -6px; bottom: -8px; width: 76px; height: 76px; opacity: 0.18;
+  background: radial-gradient(circle at 50% 66%, var(--pink) 0 22%, transparent 23%),
+              radial-gradient(circle at 22% 38%, var(--pink) 0 9%, transparent 10%),
+              radial-gradient(circle at 40% 22%, var(--pink) 0 9%, transparent 10%),
+              radial-gradient(circle at 62% 22%, var(--pink) 0 9%, transparent 10%),
+              radial-gradient(circle at 80% 38%, var(--pink) 0 9%, transparent 10%);
+  pointer-events: none;
+}
+.note-title { font-family: var(--round); font-size: 21px; font-weight: 700; line-height: 1.25; margin-bottom: 10px; word-break: break-word; }
+.note-title.empty { opacity: 0.4; }
+.note-body { font-size: 15px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; position: relative; z-index: 1; }
+
+/* ── BUTTONS ── */
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.btn {
+  min-height: 50px; padding: 0 16px; border: none; border-radius: 14px;
+  font-family: var(--round); font-size: 17px; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: transform 0.15s, opacity 0.2s, box-shadow 0.2s;
+}
+.btn:active { transform: scale(0.97); opacity: 0.85; }
+.btn-main { grid-column: 1 / -1; min-height: 56px; background: var(--field); color: var(--text-3); }
+.btn-main.ready {
+  background: linear-gradient(180deg, #FFE16A 0%, var(--yellow-2) 100%); color: var(--brown);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.55), 0 10px 24px rgba(255,190,11,0.40);
+}
+.btn-tint { background: var(--purple-tint); color: var(--purple-ink); }
+@media (prefers-color-scheme: dark) { .btn-tint { color: var(--purple); } }
+.btn-purple { background: linear-gradient(135deg, var(--purple), var(--purple-2)); color: #fff; box-shadow: 0 8px 20px rgba(157,107,244,0.35); }
+.btn-danger { background: rgba(255,59,48,0.10); color: var(--danger); }
+.hint { text-align: center; font-size: 13px; color: var(--text-3); margin-top: 12px; }
+.edit-banner {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, var(--purple), var(--purple-2)); color: #fff;
+  border-radius: var(--r-sm); padding: 10px 10px 10px 16px; margin-bottom: 14px; font-size: 15px; font-weight: 500;
+}
+.edit-banner button { min-height: 34px; background: rgba(255,255,255,0.22); border: none; color: #fff; padding: 0 14px; border-radius: 100px; font-family: var(--font); font-size: 14px; font-weight: 600; cursor: pointer; }
+
+/* ── HISTORY ── */
+.metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+.metric { border-radius: var(--r-sm); padding: 14px 8px; text-align: center; box-shadow: inset 0 2px 0 rgba(255,255,255,0.35); }
+.metric .big { font-family: var(--round); font-size: 30px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+.metric .lbl { font-size: 12px; font-weight: 600; opacity: 0.85; }
+.m1 { background: linear-gradient(135deg, var(--purple), var(--purple-2)); color: #fff; }
+.m2 { background: linear-gradient(160deg, #FFE16A, var(--yellow-2)); color: var(--brown); }
+.m3 { background: linear-gradient(135deg, #FFA0A0, var(--pink)); color: #fff; }
+
+.search-wrap { position: relative; margin-bottom: 14px; }
+.search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-3); pointer-events: none; }
+.search-wrap input { min-height: 40px; padding: 8px 12px 8px 36px; border-radius: 12px; font-size: 17px; }
+
+.list { background: var(--surface); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden; }
+.row { display: flex; gap: 12px; padding: 14px 16px; cursor: pointer; position: relative; transition: background 0.15s; }
+.row:active { background: var(--purple-tint); }
+.row + .row::before { content: ""; position: absolute; top: 0; left: 50px; right: 0; height: 0.5px; background: var(--hairline); }
+.row-mark { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; }
+.row-mark.ca { background: var(--yellow); color: var(--brown); }
+.row-mark.open { background: var(--purple-tint); color: var(--purple-ink); }
+.row-main { flex: 1; min-width: 0; }
+.row-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.row-title { font-size: 17px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row-date { font-size: 14px; color: var(--text-3); flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.row-sub { font-size: 15px; color: var(--text-2); line-height: 1.35; margin-top: 3px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.row-meta { font-size: 12px; color: var(--text-3); margin-top: 6px; font-family: var(--mono); }
+.chev { color: var(--text-3); align-self: center; flex-shrink: 0; }
+.empty-state { text-align: center; padding: 40px 20px 30px; color: var(--text-3); font-size: 16px; }
+.empty-state img { width: 72px; height: 72px; border-radius: 18px; margin-bottom: 14px; opacity: 0.9; }
+.footer-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+.footer-actions .btn { min-height: 44px; font-size: 15px; }
+
+/* ── BOTTOM SHEET ── */
+.sheet-bg { position: fixed; inset: 0; background: rgba(20, 10, 35, 0.35); z-index: 300; display: flex; align-items: flex-end; justify-content: center; animation: fade 0.25s ease; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+.sheet {
+  width: 100%; max-width: 520px; max-height: calc(92vh - var(--safe-t)); overflow-y: auto; -webkit-overflow-scrolling: touch;
+  background: var(--bg-solid); border-radius: 14px 14px 0 0;
+  padding: 8px 16px calc(20px + var(--safe-b));
+  animation: up 0.35s cubic-bezier(0.2, 0.9, 0.3, 1);
+  transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);
+  overscroll-behavior: contain;
+}
+@keyframes up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.sheet-grab { width: 36px; height: 5px; border-radius: 3px; background: var(--text-3); opacity: 0.5; margin: 0 auto 6px; }
+.sheet-top { display: flex; justify-content: space-between; align-items: center; min-height: 44px; margin-bottom: 8px; }
+.sheet-top span { font-family: var(--mono); font-size: 13px; color: var(--text-3); }
+
+/* ── iOS TAB BAR ── */
+.tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 200;
+  background: var(--bar); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-top: 0.5px solid var(--hairline);
+  padding-bottom: var(--safe-b);
+}
+.tabbar-inner { max-width: 500px; margin: 0 auto; display: flex; height: 52px; }
+.tab {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  background: none; border: none; color: var(--text-3);
+  font-family: var(--font); font-size: 10px; font-weight: 600; cursor: pointer;
+}
+.tab.active { color: var(--purple-ink); }
+@media (prefers-color-scheme: dark) { .tab.active { color: var(--purple); } }
+.tab:active svg { transform: scale(0.88); }
+.tab svg { transition: transform 0.15s; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; top: calc(var(--safe-t) + 10px); left: 50%; transform: translate(-50%, -16px); opacity: 0;
+  background: var(--surface-strong); color: var(--text-1);
+  padding: 11px 18px 11px 12px; border-radius: 100px; font-size: 15px; font-weight: 600;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 10px 30px rgba(60, 20, 110, 0.18); z-index: 500;
+  transition: all 0.3s cubic-bezier(0.2, 0.9, 0.3, 1); pointer-events: none; white-space: nowrap;
+}
+.toast img { width: 26px; height: 26px; border-radius: 7px; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+@keyframes fadein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.fadein { animation: fadein 0.35s cubic-bezier(0.2, 0.9, 0.3, 1); }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header class="navbar" id="navbar">
+  <div class="navbar-inner">
+    <span></span>
+    <span class="nav-small" id="navSmall">New Incident</span>
+    <button class="nav-action" id="clearBtn" onclick="newReport(true)" aria-label="Start a new report">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="large-title" id="largeTitle">
+    <img src="incident-icon-180.png" alt="">
+    <div>
+      <h1 id="viewTitle">New Incident</h1>
+      <div class="clock"><span class="dot"></span><span id="clock">…</span></div>
+    </div>
+  </div>
+
+  <!-- ════ NEW / EDIT ════ -->
+  <div id="tabNew" class="fadein">
+
+    <div class="edit-banner hidden" id="editBanner">
+      <span id="editLabel">Editing</span>
+      <button onclick="newReport(true)">Cancel</button>
+    </div>
+
+    <div class="card" id="c1">
+      <div class="card-head"><div class="num">1</div><span class="card-title">Title</span></div>
+      <input type="text" id="fTitle" placeholder="e.g. Ronit Late After Break" autocomplete="off" autocapitalize="words" spellcheck="true" enterkeyhint="next">
+    </div>
+
+    <div class="card filled" id="c2">
+      <div class="card-head"><div class="num">2</div><span class="card-title">When it happened</span></div>
+      <div class="row2">
+        <div><span class="label">Date</span><input type="date" id="fDate"></div>
+        <div><span class="label">Time</span><input type="time" id="fTime"></div>
+      </div>
+      <div class="segmented" id="segAgo">
+        <button class="seg on" data-m="0" onclick="setAgo(0)">Now</button>
+        <button class="seg" data-m="15" onclick="setAgo(15)">−15m</button>
+        <button class="seg" data-m="30" onclick="setAgo(30)">−30m</button>
+        <button class="seg" data-m="60" onclick="setAgo(60)">−1h</button>
+      </div>
+    </div>
+
+    <div class="card" id="c3">
+      <div class="card-head"><div class="num">3</div><span class="card-title">Location</span><span class="opt">Optional</span></div>
+      <span class="label">Area</span>
+      <div class="chip-grid" id="areaChips"></div>
+      <div class="sub-block hidden" id="lineBlock">
+        <span class="label">Line · tap more than one if needed</span>
+        <div class="chip-grid" id="lineChips"></div>
+      </div>
+      <div class="sub-block">
+        <span class="label">Or type it</span>
+        <input type="text" id="fLocOther" placeholder="e.g. Stairs on top of line 2-2" autocomplete="off" enterkeyhint="next">
+      </div>
+    </div>
+
+    <div class="card" id="c4">
+      <div class="card-head"><div class="num">4</div><span class="card-title">What happened</span></div>
+      <textarea id="fBody" placeholder="Who was involved, what you saw, what was said…" spellcheck="true" autocapitalize="sentences"></textarea>
+      <button class="tool" onpointerdown="event.preventDefault()" onclick="insertTime('fBody')">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        Insert time
+      </button>
+    </div>
+
+    <div class="card" id="c5">
+      <div class="card-head"><div class="num">5</div><span class="card-title">Corrective action</span><span class="opt">Optional</span></div>
+      <textarea id="fCA" placeholder="Coaching, warning, follow-up…" style="min-height:96px" spellcheck="true" autocapitalize="sentences"></textarea>
+      <button class="tool" onpointerdown="event.preventDefault()" onclick="insertTime('fCA')">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        Insert time
+      </button>
+    </div>
+
+    <div class="section-head">Preview <small>as it goes into Keep</small></div>
+    <div class="note">
+      <div class="note-title empty" id="pTitle">Title</div>
+      <div class="note-body" id="pBody"></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-main" id="shareBtn" onclick="shareReport()">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        Save &amp; Share to Keep
+      </button>
+      <button class="btn btn-tint" onclick="copyPart('title')">Copy title</button>
+      <button class="btn btn-tint" onclick="copyPart('body')">Copy report</button>
+    </div>
+    <p class="hint" id="hintText">Add a title and what happened to save.</p>
+  </div>
+
+  <!-- ════ HISTORY ════ -->
+  <div id="tabHistory" class="hidden fadein">
+    <div class="metrics">
+      <div class="metric m1"><div class="big" id="mWeek">0</div><div class="lbl">Last 7 days</div></div>
+      <div class="metric m2"><div class="big" id="mMonth">0</div><div class="lbl">This month</div></div>
+      <div class="metric m3"><div class="big" id="mOpen">0</div><div class="lbl">No action yet</div></div>
+    </div>
+    <div class="search-wrap">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input type="search" id="search" placeholder="Search names, lines, words" oninput="renderHistory()" enterkeyhint="search">
+    </div>
+    <div id="feed"></div>
+    <div class="footer-actions">
+      <button class="btn btn-tint" onclick="exportBackup()">Export backup</button>
+      <button class="btn btn-tint" onclick="document.getElementById('importFile').click()">Import backup</button>
+      <input type="file" id="importFile" accept=".json,application/json" class="hidden" onchange="importBackup(this)">
+    </div>
+  </div>
+
+</div>
+
+<!-- DETAIL SHEET -->
+<div class="sheet-bg hidden" id="sheetBg" onclick="if(event.target===this) closeSheet()">
+  <div class="sheet" id="sheet">
+    <div class="sheet-grab"></div>
+    <div class="sheet-top">
+      <span id="sNum"></span>
+      <button class="nav-action" onclick="closeSheet()" style="font-weight:600">Done</button>
+    </div>
+    <div class="note">
+      <div class="note-title" id="sTitle"></div>
+      <div class="note-body" id="sBody"></div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-purple" style="grid-column:1/-1" onclick="shareSaved()">Share to Keep again</button>
+      <button class="btn btn-tint" onclick="copySaved('title')">Copy title</button>
+      <button class="btn btn-tint" onclick="copySaved('body')">Copy report</button>
+      <button class="btn btn-tint" onclick="editSaved()">Edit</button>
+      <button class="btn btn-danger" onclick="deleteSaved()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<nav class="tabbar">
+  <div class="tabbar-inner">
+    <button class="tab active" id="navNew" onclick="showTab('new')">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="4"/><path d="M12 8v8M8 12h8"/></svg>
+      New
+    </button>
+    <button class="tab" id="navHistory" onclick="showTab('history')">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/><path d="M12 7.5V12l3 2"/></svg>
+      History
+    </button>
+  </div>
+</nav>
+
+<div class="toast" id="toast"><img src="incident-icon-180.png" alt=""><span id="toastMsg"></span></div>
+
+<script>
+// Same structure as ShiftLogs
+const orgStructure = {
+  "L&S":   ["1-1","1-2","1-3","1-4","1-H","2-1","2-2","2-3","2-4","2-5","3-1","3-2","3-3","3-4","3-5","2-H","4-1","4-2","4-3"],
+  "PKG":   ["1-1","1-2","2-1","2-2","3-1","3-2"],
+  "HPCD":  ["1","2","3","4"],
+  "JF":    ["1-1","1-2","1-3","2-1","2-2","2-3","3-1","3-2","3-3","4-1","4-2","4-3"],
+  "Degas": ["1-1","1-2","2-1","2-2","3-1","3-2"],
+  "CDC":   ["1","2","3","4"],
+  "SEL":   ["JF","CDC","OCV"],
+  "EOL":   ["1-1","1-2","2-1","2-2","3-1","3-2","4-1","4-2"]
+};
+
+const STORE_KEY = "incidentLog_v1";
+const DRAFT_KEY = "incidentLog_draft";
+const MONTHS = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+const $ = id => document.getElementById(id);
+
+let area = null, lines = [];
+let editingId = null, editingWritten = null, openId = null;
+let currentTab = "new";
+
+// ─── storage (never crash if blocked) ───
+function load(k, fb) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch { return fb; } }
+function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+const getAll = () => load(STORE_KEY, []);
+
+// ─── formatting ───
+const pad = n => String(n).padStart(2, "0");
+const fmtDate = d => `${pad(d.getDate())} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+function fmtTime(d) { let h = d.getHours(); const ap = h >= 12 ? "PM" : "AM"; h = h % 12 || 12; return `${h}:${pad(d.getMinutes())}${ap}`; }
+const toDateInput = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const toTimeInput = d => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+function fromInputs(ds, ts) {
+  if (!ds) return null;
+  const [y, mo, da] = ds.split("-").map(Number);
+  const [h, mi] = (ts || "00:00").split(":").map(Number);
+  return new Date(y, mo - 1, da, h, mi);
+}
+
+function locationText() {
+  const other = $("fLocOther").value.trim();
+  let loc = area ? (lines.length ? `${area} ${lines.join(", ")}` : area) : "";
+  if (other) loc = loc ? `${loc} (${other})` : other;
+  return loc;
+}
+
+function buildReport(written) {
+  const title = $("fTitle").value.trim();
+  const when = fromInputs($("fDate").value, $("fTime").value);
+  const body = $("fBody").value.trim();
+  const ca = $("fCA").value.trim();
+  const loc = locationText();
+  const head = [when ? fmtDate(when) : "", loc, when ? fmtTime(when) : ""].filter(Boolean).join(" | ");
+  const parts = [head, `Written: ${fmtDate(written)} | ${fmtTime(written)}`, "", body || "…"];
+  if (ca) parts.push("", "Corrective Action:", ca);
+  return { title, text: parts.join("\n"), body, ca, loc, when };
+}
+
+// ─── preview ───
+function refresh() {
+  const r = buildReport(editingWritten ? new Date(editingWritten) : new Date());
+  $("pTitle").textContent = r.title || "Title";
+  $("pTitle").classList.toggle("empty", !r.title);
+  $("pBody").textContent = r.text;
+  $("c1").classList.toggle("filled", !!r.title);
+  $("c2").classList.toggle("filled", !!r.when);
+  $("c3").classList.toggle("filled", !!r.loc);
+  $("c4").classList.toggle("filled", !!r.body);
+  $("c5").classList.toggle("filled", !!r.ca);
+  const ready = r.title && r.body && r.when;
+  $("shareBtn").classList.toggle("ready", !!ready);
+  $("hintText").textContent = ready
+    ? (editingId ? "Saving updates this report in History." : "Saves to History, then opens the share sheet. Pick Keep.")
+    : "Add a title and what happened to save.";
+  saveDraft();
+}
+function autoGrow(el) { el.style.height = "auto"; el.style.height = el.scrollHeight + "px"; }
+
+// ─── location chips ───
+function renderAreas() {
+  const box = $("areaChips"); box.innerHTML = "";
+  Object.keys(orgStructure).forEach(a => {
+    const c = document.createElement("button");
+    c.className = "chip" + (a === area ? " sel" : "");
+    c.textContent = a;
+    c.onclick = () => { area = area === a ? null : a; lines = []; renderAreas(); refresh(); };
+    box.appendChild(c);
+  });
+  renderLines();
+}
+function renderLines() {
+  const box = $("lineChips");
+  if (!area) { $("lineBlock").classList.add("hidden"); return; }
+  $("lineBlock").classList.remove("hidden");
+  box.innerHTML = "";
+  orgStructure[area].forEach(l => {
+    const c = document.createElement("button");
+    c.className = "chip chip-sm" + (lines.includes(l) ? " sel" : "");
+    c.textContent = l;
+    c.onclick = () => {
+      lines = lines.includes(l) ? lines.filter(x => x !== l) : [...lines, l];
+      lines.sort((a, b) => orgStructure[area].indexOf(a) - orgStructure[area].indexOf(b));
+      renderLines(); refresh();
+    };
+    box.appendChild(c);
+  });
+}
+
+// ─── time ───
+function markSeg(m) { document.querySelectorAll("#segAgo .seg").forEach(b => b.classList.toggle("on", m !== null && +b.dataset.m === m)); }
+function setAgo(mins) {
+  const d = new Date(Date.now() - mins * 60000);
+  $("fDate").value = toDateInput(d);
+  $("fTime").value = toTimeInput(d);
+  markSeg(mins); refresh();
+}
+function insertTime(id) {
+  const el = $(id);
+  const t = fmtTime(new Date());
+  const s = el.selectionStart ?? el.value.length, e = el.selectionEnd ?? el.value.length;
+  const before = el.value.slice(0, s), after = el.value.slice(e);
+  const ins = (before && !/\s$/.test(before) ? " " : "") + t + " ";
+  el.value = before + ins + after;
+  const pos = (before + ins).length;
+  el.focus(); el.setSelectionRange(pos, pos);
+  autoGrow(el); refresh();
+}
+
+// ─── drafts ───
+function saveDraft() {
+  save(DRAFT_KEY, { title: $("fTitle").value, date: $("fDate").value, time: $("fTime").value, area, lines,
+    other: $("fLocOther").value, body: $("fBody").value, ca: $("fCA").value, editingId, editingWritten });
+}
+function loadInto(d) {
+  $("fTitle").value = d.title || ""; $("fDate").value = d.date || ""; $("fTime").value = d.time || "";
+  area = d.area || null; lines = d.lines || [];
+  $("fLocOther").value = d.other || ""; $("fBody").value = d.body || ""; $("fCA").value = d.ca || "";
+  editingId = d.editingId || null; editingWritten = d.editingWritten || null;
+  markSeg(null);
+  renderAreas(); ["fBody","fCA"].forEach(id => autoGrow($(id)));
+  updateTitles(); refresh();
+}
+function newReport(ask) {
+  const hasText = $("fTitle").value.trim() || $("fBody").value.trim() || $("fCA").value.trim();
+  if (ask && hasText && !editingId && !confirm("Clear this report and start a new one?")) return;
+  loadInto({}); setAgo(0); showTab("new");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function updateTitles() {
+  let t = "History";
+  if (currentTab === "new") {
+    if (editingId) {
+      const item = getAll().find(x => x.id === editingId);
+      $("editLabel").textContent = `Editing ${item ? item.num : "report"}`;
+      $("editBanner").classList.remove("hidden");
+      t = "Edit Incident";
+    } else { $("editBanner").classList.add("hidden"); t = "New Incident"; }
+  }
+  $("viewTitle").textContent = t; $("navSmall").textContent = t;
+}
+
+// ─── save & share ───
+function commit() {
+  const written = editingWritten ? new Date(editingWritten) : new Date();
+  const r = buildReport(written);
+  if (!r.title || !r.body || !r.when) { toast("Add a title and what happened first"); return null; }
+  const all = getAll();
+  const record = {
+    title: r.title, text: r.text,
+    form: { title: $("fTitle").value, date: $("fDate").value, time: $("fTime").value, area, lines, other: $("fLocOther").value, body: $("fBody").value, ca: $("fCA").value },
+    when: r.when.getTime(), written: written.getTime(), hasCA: !!r.ca, loc: r.loc
+  };
+  if (editingId) {
+    const i = all.findIndex(x => x.id === editingId);
+    if (i >= 0) { all[i] = { ...all[i], ...record, updated: Date.now() }; save(STORE_KEY, all); return all[i]; }
+  }
+  const n = all.reduce((m, x) => Math.max(m, x.seq || 0), 0) + 1;
+  const item = { id: String(Date.now()), seq: n, num: `INC-${String(n).padStart(3, "0")}`, ...record };
+  all.unshift(item); save(STORE_KEY, all);
+  return item;
+}
+async function doShare(title, text) {
+  if (navigator.share) {
+    try { await navigator.share({ title, text: `${title}\n\n${text}` }); return true; }
+    catch (e) { if (e.name === "AbortError") return false; }
+  }
+  await copyText(`${title}\n\n${text}`);
+  toast("Copied. Paste into a new Keep note");
+  return true;
+}
+async function shareReport() {
+  const item = commit(); if (!item) return;
+  const shared = await doShare(item.title, item.text);
+  toast(shared ? `Saved ${item.num}` : `Saved ${item.num}, not shared`);
+  newReport(false);
+}
+async function copyText(t) {
+  try { await navigator.clipboard.writeText(t); }
+  catch {
+    const ta = document.createElement("textarea"); ta.value = t; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, t.length); document.execCommand("copy"); ta.remove();
+  }
+}
+async function copyPart(which) {
+  if (which === "title") {
+    const t = $("fTitle").value.trim();
+    if (!t) return toast("No title yet");
+    await copyText(t); return toast("Title copied");
+  }
+  const item = commit(); if (!item) return;
+  editingId = item.id; editingWritten = item.written; updateTitles(); saveDraft();
+  await copyText(item.text);
+  toast(`Report copied · saved ${item.num}`);
+}
+
+// ─── history ───
+const markSVG = { ca: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+                  open: '<svg width="10" height="10" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="currentColor"/></svg>' };
+function renderHistory() {
+  const all = getAll();
+  const q = $("search").value.trim().toLowerCase();
+  const now = Date.now(), d = new Date();
+  $("mWeek").textContent = all.filter(x => now - x.when < 7 * 864e5).length;
+  $("mMonth").textContent = all.filter(x => { const w = new Date(x.when); return w.getMonth() === d.getMonth() && w.getFullYear() === d.getFullYear(); }).length;
+  $("mOpen").textContent = all.filter(x => !x.hasCA).length;
+
+  const list = all.filter(x => !q || (x.title + " " + x.text + " " + x.num).toLowerCase().includes(q)).sort((a, b) => b.when - a.when);
+  const feed = $("feed");
+  if (!list.length) {
+    feed.innerHTML = all.length ? `<div class="empty-state">Nothing matches that search.</div>`
+      : `<div class="empty-state"><img src="incident-icon-180.png" alt=""><div>No incidents saved yet.</div></div>`;
+    return;
+  }
+  const wrap = document.createElement("div"); wrap.className = "list";
+  list.forEach(x => {
+    const w = new Date(x.when);
+    const el = document.createElement("div");
+    el.className = "row";
+    el.innerHTML = `<div class="row-mark ${x.hasCA ? "ca" : "open"}">${x.hasCA ? markSVG.ca : markSVG.open}</div>
+      <div class="row-main"><div class="row-top"><div class="row-title"></div><div class="row-date">${pad(w.getDate())} ${MONTHS[w.getMonth()]}</div></div>
+      <div class="row-sub"></div><div class="row-meta"></div></div>
+      <svg class="chev" width="8" height="14" viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l6 6-6 6"/></svg>`;
+    el.querySelector(".row-title").textContent = x.title;
+    el.querySelector(".row-sub").textContent = x.form.body;
+    el.querySelector(".row-meta").textContent = [x.num, fmtTime(w), x.loc].filter(Boolean).join(" · ");
+    el.onclick = () => openSheet(x.id);
+    wrap.appendChild(el);
+  });
+  feed.innerHTML = ""; feed.appendChild(wrap);
+}
+
+// ─── sheet (tap outside, Done, or swipe down to close) ───
+function openSheet(id) {
+  const x = getAll().find(i => i.id === id); if (!x) return;
+  openId = id;
+  $("sNum").textContent = x.num;
+  $("sTitle").textContent = x.title;
+  $("sBody").textContent = x.text;
+  $("sheet").style.transform = "";
+  $("sheetBg").classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+}
+function closeSheet() { $("sheetBg").classList.add("hidden"); openId = null; document.body.style.overflow = ""; }
+(function swipeToClose() {
+  const sh = () => $("sheet"); let y0 = null, dy = 0;
+  document.addEventListener("touchstart", e => { if (!openId || !sh().contains(e.target) || sh().scrollTop > 0) return; y0 = e.touches[0].clientY; dy = 0; sh().style.transition = "none"; }, { passive: true });
+  document.addEventListener("touchmove", e => { if (y0 === null) return; dy = Math.max(0, e.touches[0].clientY - y0); sh().style.transform = `translateY(${dy}px)`; }, { passive: true });
+  document.addEventListener("touchend", () => { if (y0 === null) return; sh().style.transition = ""; if (dy > 110) closeSheet(); else sh().style.transform = ""; y0 = null; });
+})();
+const savedItem = () => getAll().find(i => i.id === openId);
+async function shareSaved() { const x = savedItem(); if (x) await doShare(x.title, x.text); }
+async function copySaved(w) { const x = savedItem(); if (!x) return; await copyText(w === "title" ? x.title : x.text); toast(w === "title" ? "Title copied" : "Report copied"); }
+function editSaved() {
+  const x = savedItem(); if (!x) return;
+  closeSheet(); showTab("new");
+  loadInto({ ...x.form, editingId: x.id, editingWritten: x.written });
+  window.scrollTo({ top: 0 });
+}
+function deleteSaved() {
+  const x = savedItem(); if (!x) return;
+  if (!confirm(`Delete ${x.num} "${x.title}"? This can't be undone.`)) return;
+  save(STORE_KEY, getAll().filter(i => i.id !== x.id));
+  if (editingId === x.id) loadInto({});
+  closeSheet(); renderHistory(); toast("Deleted");
+}
+
+function exportBackup() {
+  const name = `incident-log-backup-${toDateInput(new Date())}.json`;
+  const blob = new Blob([JSON.stringify(getAll(), null, 2)], { type: "application/json" });
+  const file = new File([blob], name, { type: "application/json" });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) { navigator.share({ files: [file] }).catch(() => {}); return; } // iOS: save to Files
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function importBackup(input) {
+  const f = input.files[0]; if (!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    try {
+      const incoming = JSON.parse(rd.result); if (!Array.isArray(incoming)) throw 0;
+      const all = getAll(); const ids = new Set(all.map(x => x.id));
+      const added = incoming.filter(x => x && x.id && !ids.has(x.id));
+      save(STORE_KEY, [...all, ...added]); renderHistory();
+      toast(`Imported ${added.length} report${added.length === 1 ? "" : "s"}`);
+    } catch { toast("That isn't a backup from this app"); }
+    input.value = "";
+  };
+  rd.readAsText(f);
+}
+
+// ─── UI plumbing ───
+function showTab(t) {
+  currentTab = t;
+  $("tabNew").classList.toggle("hidden", t !== "new");
+  $("tabHistory").classList.toggle("hidden", t !== "history");
+  $("navNew").classList.toggle("active", t === "new");
+  $("navHistory").classList.toggle("active", t === "history");
+  $("clearBtn").style.visibility = t === "new" ? "visible" : "hidden";
+  if (t === "history") renderHistory();
+  updateTitles();
+  window.scrollTo({ top: 0 });
+}
+let toastTimer;
+function toast(msg) {
+  $("toastMsg").textContent = msg; $("toast").classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => $("toast").classList.remove("show"), 2200);
+}
+function tickClock() { const d = new Date(); $("clock").textContent = `${fmtDate(d)} · ${fmtTime(d)}`; }
+function onScroll() { $("navbar").classList.toggle("scrolled", window.scrollY > $("largeTitle").offsetHeight - 10); }
+
+document.addEventListener("DOMContentLoaded", () => {
+  ["fTitle","fLocOther"].forEach(id => $(id).addEventListener("input", refresh));
+  ["fDate","fTime"].forEach(id => $(id).addEventListener("input", () => { markSeg(null); refresh(); }));
+  ["fBody","fCA"].forEach(id => $(id).addEventListener("input", e => { autoGrow(e.target); refresh(); }));
+  $("fTitle").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); $("fBody").focus(); } });
+  const draft = load(DRAFT_KEY, null);
+  if (draft && (draft.title || draft.body || draft.ca || draft.editingId)) loadInto(draft);
+  else { renderAreas(); setAgo(0); }
+  tickClock();
+  setInterval(() => { tickClock(); if (!editingWritten && document.activeElement.tagName !== "TEXTAREA") refresh(); }, 15000);
+  window.addEventListener("scroll", onScroll, { passive: true });
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+});
+</script>
+</body>
+</html>
