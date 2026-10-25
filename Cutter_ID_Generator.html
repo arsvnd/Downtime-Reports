@@ -409,6 +409,20 @@
         .seg-btn:active { transform: scale(0.97); }
         .seg-hint { margin: 12px 4px 0; font-size: 13px; color: var(--text-muted); font-weight: 500; }
 
+        /* What's-new preview: two mini phones */
+        .wn-preview { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 4px 0 18px; }
+        .wn-phone { width: 74px; height: 112px; border-radius: 16px; padding: 12px 9px; display: flex; flex-direction: column; gap: 6px; box-shadow: var(--shadow-sm); position: relative; }
+        .wn-phone span { display: block; height: 14px; border-radius: 6px; }
+        .wn-phone span:first-child { width: 60%; height: 10px; }
+        .wn-phone b { position: absolute; left: 0; right: 0; bottom: 9px; text-align: center; font-size: 11px; font-weight: 700; }
+        .wn-light { background: #EDF1EA; border: 1px solid #DCE2D8; }
+        .wn-light span { background: #FFFFFF; }
+        .wn-light b { color: #4E5751; }
+        .wn-dark { background: #0E1011; border: 1px solid #2F3437; }
+        .wn-dark span { background: #1B1F21; }
+        .wn-dark b { color: #B4BCB7; }
+        .wn-arrow { font-size: 20px; color: var(--text-muted); font-weight: 700; }
+
         /* =========================================
            8. DARK THEME
            ========================================= */
@@ -933,6 +947,7 @@
         initHomeSheet();
         showScreen('screen-home');
         startUpdateChecks();
+        setTimeout(showWhatsNew, 1200);
     }
 
     function showScreen(screenId) {
@@ -1154,6 +1169,41 @@
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (getThemeChoice() === 'system') applyTheme(); });
     } catch (e) {}
     applyTheme();
+
+    /* =========================================
+       ONE-TIME "WHAT'S NEW": dark mode
+       Shown once per phone, on the home screen. To announce something new
+       later, copy this with a new key.
+       ========================================= */
+    const WHATS_NEW_KEY = 'cid_seen_new_darkmode';
+    async function showWhatsNew() {
+        try { if (localStorage.getItem(WHATS_NEW_KEY)) return; } catch (e) { return; }
+        const onHome = document.querySelector('.screen.active')?.id === 'screen-home';
+        // Wait for a quiet moment: not mid-report, not over another popup.
+        if (!onHome || document.querySelector('.sheet-backdrop, .cid-install-backdrop')) { setTimeout(showWhatsNew, 3000); return; }
+        try { localStorage.setItem(WHATS_NEW_KEY, '1'); } catch (e) {}
+
+        const alreadyDark = document.documentElement.dataset.theme === 'dark';
+        const choice = await showSheet({
+            title: 'New: Dark mode 🌙',
+            message: alreadyDark
+                ? "You're already using it. Switch any time in Settings (the gear on the form and report screens)."
+                : 'Easier on the eyes on night shift. Switch any time in Settings (the gear on the form and report screens).',
+            bodyHtml: `<div class="wn-preview" aria-hidden="true">
+                <div class="wn-phone wn-light"><span></span><span></span><span></span><b>Light</b></div>
+                <div class="wn-arrow">→</div>
+                <div class="wn-phone wn-dark"><span></span><span></span><span></span><b>Dark</b></div>
+            </div>`,
+            actions: alreadyDark
+                ? [{ label: 'Nice', value: null, kind: 'primary' }]
+                : [{ label: 'Turn on dark mode', value: 'dark', kind: 'primary' },
+                   { label: 'Keep light mode', value: null, kind: 'plain' }]
+        });
+        if (choice === 'dark') {
+            setThemeChoice('dark');
+            showToast('Dark mode is on', { sub: 'Change it any time in Settings.' });
+        }
+    }
 
     /* =========================================
        FORM STATE (shared by drafts, edits, saves)
