@@ -15,7 +15,8 @@ const ASSETS_TO_CACHE = [
   './CID-icon-192.png',
   './CID-icon-180.png',
   './CID-icon-app-192.png',
-  './CID-icon-512.png'
+  './CID-icon-512.png',
+  './CID-icon-maskable-512.png'
 ];
 
 self.addEventListener('install', (event) => {
