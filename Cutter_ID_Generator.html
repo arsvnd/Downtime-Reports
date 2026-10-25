@@ -9,10 +9,20 @@
     <meta name="apple-mobile-web-app-title" content="Cutter ID" />
 
     <link rel="manifest" href="manifest-CID.json">
-    <link rel="apple-touch-icon" href="CID-icon-180.png?v=2">
-    <link rel="icon" type="image/png" sizes="192x192" href="CID-icon-app-192.png?v=2">
+    <link rel="apple-touch-icon" href="CID-icon-180.png?v=3">
+    <link rel="icon" type="image/png" sizes="192x192" href="CID-icon-app-192.png?v=3">
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="theme-color" content="#EDF1EA" />
+    <script>
+        // Apply the saved theme before anything is drawn (no flash of the wrong colours).
+        (function () {
+            try {
+                var choice = localStorage.getItem('cid_theme') || 'light';
+                var dark = choice === 'dark' || (choice === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+            } catch (e) { document.documentElement.setAttribute('data-theme', 'light'); }
+        })();
+    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -115,7 +125,7 @@
             flex-shrink: 0;
             display: flex;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: space-between;
             gap: 12px;
         }
         .icon-btn { width: 46px; height: 46px; border-radius: 50%; background: var(--card-bg); border: none; box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center; color: var(--text-main); cursor: pointer; flex-shrink: 0; transition: transform 0.15s; }
@@ -388,6 +398,79 @@
         .sheet-danger { background: var(--red-soft); color: var(--accent-red); }
         .sheet-secondary { background: var(--soft-bg); color: var(--text-main); }
         .sheet-plain { background: transparent; color: var(--text-muted); }
+
+        /* =========================================
+           7. SETTINGS
+           ========================================= */
+        .home-gear { position: absolute; top: calc(env(safe-area-inset-top) + 10px); right: 16px; z-index: 5; }
+        .seg { display: flex; gap: 4px; padding: 4px; background: var(--soft-bg); border-radius: 18px; }
+        .seg-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 6px; border: none; border-radius: 14px; background: transparent; color: var(--text-2); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: background-color 0.2s, color 0.2s, box-shadow 0.2s; }
+        .seg-btn svg { width: 22px; height: 22px; }
+        .seg-btn.active { background: var(--card-bg); color: var(--text-main); box-shadow: var(--shadow-sm); }
+        .seg-btn:active { transform: scale(0.97); }
+        .seg-hint { margin: 12px 4px 0; font-size: 13px; color: var(--text-muted); font-weight: 500; }
+
+        /* =========================================
+           8. DARK THEME
+           ========================================= */
+        :root[data-theme="dark"] {
+            color-scheme: dark;
+            --bg-color: #0E1011;
+            --bg-top: #15181A;
+            --card-bg: #1B1F21;
+            --soft-bg: #252A2D;
+            --text-main: #F1F3F2;
+            --text-2: #B4BCB7;
+            --text-muted: #868E89;
+            --border: #2F3437;
+            --accent-color: #F1F3F2;
+            --lime-soft: #22341A;   --lime-ink: #B6E57C;
+            --lilac-soft: #29243F;  --lilac-ink: #B9A8F2;
+            --mint-soft: #17302A;   --mint-ink: #7FD3AE;
+            --peach-soft: #3A2519;  --peach-ink: #F0A77A;
+            --red-soft: #351C1A;    --red-line: #5A2A25;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45), 0 6px 20px rgba(0, 0, 0, 0.35);
+            --shadow-btn: 0 10px 24px rgba(0, 0, 0, 0.55);
+            --shadow-sticky: 0 18px 40px rgba(0, 0, 0, 0.55);
+        }
+        /* light-on-dark buttons and pills (they use the text colour as their background) */
+        [data-theme="dark"] .btn,
+        [data-theme="dark"] .btn-dark,
+        [data-theme="dark"] .cutter-btn.active,
+        [data-theme="dark"] .chip-module,
+        [data-theme="dark"] .sheet-primary,
+        [data-theme="dark"] .hero-btn,
+        [data-theme="dark"] .toast { color: #15181A; }
+        [data-theme="dark"] .btn-secondary { color: var(--text-main); }
+        [data-theme="dark"] .toast-warn, [data-theme="dark"] .toast-error { color: #FFFFFF; }
+        [data-theme="dark"] .hero-btn { box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5); }
+        [data-theme="dark"] .ico-dark { background: #2E3337; }
+        [data-theme="dark"] .bottom-bar { background: rgba(30, 34, 37, 0.78); box-shadow: var(--shadow-sticky), inset 0 0 0 1px rgba(255, 255, 255, 0.06); }
+        [data-theme="dark"] .changes-sheet { background: rgba(21, 24, 26, 0.95); box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06); }
+        [data-theme="dark"] .cs-grabber, [data-theme="dark"] .sheet-grabber { background: #3A4045; }
+        [data-theme="dark"] .switch { background: #3A4045; }
+        [data-theme="dark"] .home-title .soft { color: #6F7772; }
+        [data-theme="dark"] .rc-line b { color: var(--lime-ink); }
+        [data-theme="dark"] textarea::placeholder, [data-theme="dark"] .form-input::placeholder { color: #5F6762; }
+        [data-theme="dark"] .id-input::placeholder { color: #4A5155; }
+        [data-theme="dark"] select.form-input { background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23F1F3F2%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E"); }
+        [data-theme="dark"] .three-way-toggle[data-state="no"] { background: var(--red-soft); border-color: var(--red-line); }
+        [data-theme="dark"] .three-way-toggle[data-state="yes"] { border-color: #3B5A22; }
+        [data-theme="dark"] .three-way-toggle .thumb { background: #E9ECEB; }
+        [data-theme="dark"] .report-preview mark { background: #4A2420; }
+        [data-theme="dark"] .sheet-list li { color: #F2A49C; border-top-color: #4A2622; }
+        [data-theme="dark"] .draft-card { border-color: #8A6A2E; }
+        [data-theme="dark"] .cid-install-steps { background: var(--soft-bg) !important; }
+        [data-theme="dark"] .cid-install-primary { background: #F1F3F2 !important; color: #15181A !important; }
+        /* the cutting animation: dark platform and graphite press */
+        [data-theme="dark"] #cTop stop { stop-color: #24282B; }
+        [data-theme="dark"] #cSideX stop { stop-color: #151719; }
+        [data-theme="dark"] .cut-anim > polygon[fill="url(#cTop)"] { stroke: rgba(255, 255, 255, 0.07); }
+        [data-theme="dark"] .cut-anim > polyline { opacity: 0.18; }
+        [data-theme="dark"] .cut-anim > polygon[fill="#FFFFFF"] { fill: #474D52; }
+        [data-theme="dark"] .cut-anim > polygon[fill="#EEF3EB"] { fill: #2E3337; }
+        [data-theme="dark"] .cut-anim > polygon[fill="#E2E9DD"] { fill: #3A4045; }
+        [data-theme="dark"] .cut-anim > polygon[stroke="#D0DACB"] { stroke: #50575C; }
     </style>
 </head>
 <body>
@@ -397,10 +480,16 @@
         <button class="icon-btn" id="nav-back" onclick="handleBack()" aria-label="Back" style="visibility:hidden;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         </button>
+        <button class="icon-btn" id="nav-settings" onclick="openSettings()" aria-label="Settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
     </header>
 
     <div id="content">
         <div id="screen-home" class="screen active">
+            <button class="icon-btn home-gear" onclick="openSettings()" aria-label="Settings">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </button>
             <div class="home-stage" id="home-stage">
                 <div class="home-top">
                     <h2 class="home-title" id="home-title">Another day,<br><span class="soft">another</span> cutter.</h2>
@@ -605,6 +694,34 @@
             </div>
             <div class="bottom-bar">
                 <button class="btn" onclick="goToReview()">Review Final Report</button>
+            </div>
+        </div>
+
+        <div id="screen-settings" class="screen">
+            <div class="scrollable-body">
+                <h2 class="page-title">Settings</h2>
+                <p class="review-sub">Saved on this phone.</p>
+                <div class="card">
+                    <div class="card-head">
+                        <span class="ico ico-lilac"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></span>
+                        <h2>Appearance</h2>
+                    </div>
+                    <div class="seg" role="radiogroup" aria-label="Appearance">
+                        <button class="seg-btn" role="radio" data-theme-choice="light" onclick="setThemeChoice('light')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+                            Light
+                        </button>
+                        <button class="seg-btn" role="radio" data-theme-choice="dark" onclick="setThemeChoice('dark')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+                            Dark
+                        </button>
+                        <button class="seg-btn" role="radio" data-theme-choice="system" onclick="setThemeChoice('system')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg>
+                            Phone
+                        </button>
+                    </div>
+                    <p class="seg-hint" id="theme-hint"></p>
+                </div>
             </div>
         </div>
 
@@ -827,6 +944,7 @@
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         $(screenId).classList.add('active');
         $('nav-back').style.visibility = (screenId === 'screen-home') ? 'hidden' : 'visible';
+        $('nav-settings').style.visibility = (screenId === 'screen-settings') ? 'hidden' : 'visible';
         document.querySelector('header').classList.toggle('on-home', screenId === 'screen-home');
         if (screenId === 'screen-home') {
             renderHome();
@@ -988,8 +1106,58 @@
             showScreen(reviewMode === 'edit' ? 'screen-form' : 'screen-home');
         } else if (activeScreen === 'screen-form') {
             leaveForm();
+        } else if (activeScreen === 'screen-settings') {
+            showScreen(settingsReturnTo);
         }
     }
+
+    /* =========================================
+       SETTINGS: appearance (light / dark / match phone)
+       ========================================= */
+    let settingsReturnTo = 'screen-home';
+    function openSettings() {
+        const current = document.querySelector('.screen.active')?.id;
+        if (current && current !== 'screen-settings') settingsReturnTo = current;
+        renderSettings();
+        showScreen('screen-settings');
+    }
+
+    function getThemeChoice() {
+        try { return localStorage.getItem('cid_theme') || 'light'; } catch (e) { return 'light'; }
+    }
+
+    function applyTheme() {
+        const choice = getThemeChoice();
+        const dark = choice === 'dark' || (choice === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', dark ? '#0E1011' : '#EDF1EA');
+    }
+
+    function setThemeChoice(choice) {
+        try { localStorage.setItem('cid_theme', choice); } catch (e) {}
+        buzz(10);
+        applyTheme();
+        renderSettings();
+    }
+
+    function renderSettings() {
+        const choice = getThemeChoice();
+        document.querySelectorAll('.seg-btn').forEach(b => {
+            const on = b.dataset.themeChoice === choice;
+            b.classList.toggle('active', on);
+            b.setAttribute('aria-checked', on ? 'true' : 'false');
+        });
+        $('theme-hint').textContent = choice === 'system'
+            ? 'Follows your phone: dark when your phone is in dark mode.'
+            : choice === 'dark' ? 'Easier on the eyes on night shift.' : 'Bright and clear for day shift.';
+    }
+
+    // When set to "Phone", follow the phone switching between light and dark.
+    try {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (getThemeChoice() === 'system') applyTheme(); });
+    } catch (e) {}
+    applyTheme();
 
     /* =========================================
        FORM STATE (shared by drafts, edits, saves)
@@ -1866,7 +2034,7 @@
         el.innerHTML = `
             <div class="cid-install-sheet" role="dialog" aria-label="Install Cutter ID">
                 <div class="cid-install-head">
-                    <img src="CID-icon-180.png?v=2" alt="">
+                    <img src="CID-icon-180.png?v=3" alt="">
                     <div><h3>Install Cutter ID</h3><p>Open it from your home screen, full-screen, like a regular app.</p></div>
                 </div>
                 ${body}
