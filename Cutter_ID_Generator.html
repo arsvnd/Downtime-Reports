@@ -9,8 +9,8 @@
     <meta name="apple-mobile-web-app-title" content="Cutter ID" />
 
     <link rel="manifest" href="manifest-CID.json">
-    <link rel="apple-touch-icon" href="CID-icon-180.png?v=3">
-    <link rel="icon" type="image/png" sizes="192x192" href="CID-icon-app-192.png?v=3">
+    <link rel="apple-touch-icon" href="CID-icon-180.png?v=4">
+    <link rel="icon" type="image/png" sizes="192x192" href="CID-icon-app-192.png?v=4">
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="theme-color" content="#EDF1EA" />
     <script>
@@ -402,7 +402,6 @@
         /* =========================================
            7. SETTINGS
            ========================================= */
-        .home-gear { position: absolute; top: calc(env(safe-area-inset-top) + 10px); right: 16px; z-index: 5; }
         .seg { display: flex; gap: 4px; padding: 4px; background: var(--soft-bg); border-radius: 18px; }
         .seg-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 6px; border: none; border-radius: 14px; background: transparent; color: var(--text-2); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: background-color 0.2s, color 0.2s, box-shadow 0.2s; }
         .seg-btn svg { width: 22px; height: 22px; }
@@ -487,9 +486,6 @@
 
     <div id="content">
         <div id="screen-home" class="screen active">
-            <button class="icon-btn home-gear" onclick="openSettings()" aria-label="Settings">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            </button>
             <div class="home-stage" id="home-stage">
                 <div class="home-top">
                     <h2 class="home-title" id="home-title">Another day,<br><span class="soft">another</span> cutter.</h2>
@@ -2034,7 +2030,7 @@
         el.innerHTML = `
             <div class="cid-install-sheet" role="dialog" aria-label="Install Cutter ID">
                 <div class="cid-install-head">
-                    <img src="CID-icon-180.png?v=3" alt="">
+                    <img src="CID-icon-180.png?v=4" alt="">
                     <div><h3>Install Cutter ID</h3><p>Open it from your home screen, full-screen, like a regular app.</p></div>
                 </div>
                 ${body}
