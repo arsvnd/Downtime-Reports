@@ -115,15 +115,13 @@
             flex-shrink: 0;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-start;
             gap: 12px;
         }
         .icon-btn { width: 46px; height: 46px; border-radius: 50%; background: var(--card-bg); border: none; box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center; color: var(--text-main); cursor: pointer; flex-shrink: 0; transition: transform 0.15s; }
         .icon-btn:active { transform: scale(0.92); }
         .icon-btn svg { width: 20px; height: 20px; }
-        .icon-btn.spacer { visibility: hidden; }
-        .title-pill { display: flex; align-items: center; gap: 8px; padding: 11px 18px; background: rgba(255, 255, 255, 0.75); border: 1px solid rgba(255, 255, 255, 0.9); border-radius: var(--radius-pill); box-shadow: var(--shadow-sm); font-size: 14px; font-weight: 600; color: var(--text-main); white-space: nowrap; user-select: none; }
-        .title-pill svg { width: 16px; height: 16px; }
+        header.on-home { display: none; }
 
         #content { flex-grow: 1; position: relative; overflow: hidden; }
 
@@ -267,9 +265,13 @@
         /* =========================================
            4. HOME: hero, draft, My Cutter Changes
            ========================================= */
-        .home-top { flex-shrink: 0; padding: 4px 20px 0; }
-        .home-title { font-size: 34px; line-height: 1.12; letter-spacing: -0.035em; font-weight: 600; margin: 4px 2px 18px; }
+        #screen-home { overflow: hidden; }
+        .home-stage { position: absolute; inset: 0; display: grid; grid-template-rows: minmax(0, 1fr) auto minmax(0, 1fr); padding: 0 20px; }
+        .home-top { display: flex; flex-direction: column; min-height: 0; padding: calc(env(safe-area-inset-top) + 14px) 0 14px; }
+        .home-title { font-size: clamp(26px, 8.2vw, 32px); line-height: 1.1; letter-spacing: -0.035em; font-weight: 600; margin: 0 2px 6px; flex-shrink: 0; }
         .home-title .soft { color: #98A199; font-weight: 500; }
+        .home-illus { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; margin: 0 -14px; }
+        .home-illus .illus { width: 100%; height: 100%; max-height: 230px; display: block; overflow: visible; }
 
         .hero-card { background: linear-gradient(135deg, #CDF294 0%, #A6DF58 100%); border-radius: var(--radius-lg); padding: 18px; box-shadow: 0 14px 30px rgba(140, 200, 60, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.5); }
         .hero-row { display: flex; gap: 14px; align-items: center; margin-bottom: 16px; }
@@ -281,7 +283,7 @@
         .hero-btn:active { transform: scale(0.97); }
         .hero-btn svg { width: 18px; height: 18px; }
 
-        .draft-card { display: flex; align-items: center; gap: 12px; background: var(--card-bg); border-radius: 22px; padding: 10px 10px 10px 12px; margin-top: 12px; box-shadow: var(--shadow-sm); border: 1.5px dashed #EFC069; }
+        .draft-card { display: flex; align-items: center; gap: 12px; background: var(--card-bg); border-radius: 22px; padding: 10px 10px 10px 12px; margin-bottom: 12px; box-shadow: var(--shadow-sm); border: 1.5px dashed #EFC069; }
         .draft-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
         .draft-text strong { font-size: 14px; font-weight: 700; }
         .draft-text span { font-size: 12px; color: var(--text-muted); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -289,14 +291,22 @@
         .draft-x svg { width: 16px; height: 16px; }
         .draft-card .btn-dark { padding: 10px 16px; font-size: 14px; flex-shrink: 0; }
 
-        .section-head { display: flex; align-items: center; justify-content: space-between; margin: 24px 2px 6px; }
+        /* Pull-up sheet: My Cutter Changes */
+        .changes-sheet { position: absolute; left: 0; right: 0; top: calc(env(safe-area-inset-top) + 8px); bottom: 0; z-index: 20; display: flex; flex-direction: column; background: rgba(246, 248, 244, 0.94); backdrop-filter: blur(22px) saturate(160%); -webkit-backdrop-filter: blur(22px) saturate(160%); border-radius: 30px 30px 0 0; box-shadow: 0 -10px 36px rgba(22, 32, 16, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9); transform: translateY(100%); will-change: transform; }
+        .changes-sheet.animating { transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1); }
+        .cs-handle { flex-shrink: 0; padding: 10px 20px 8px; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+        .cs-grabber { width: 40px; height: 5px; border-radius: 3px; background: #D3DACE; margin: 0 auto 12px; }
+        .cs-handle .section-head { margin: 0 2px; }
+        .cs-list { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 6px 16px calc(24px + env(safe-area-inset-bottom)); }
+        .changes-sheet:not(.expanded) .cs-list { overflow-y: hidden; }
+
+        .section-head { display: flex; align-items: center; justify-content: space-between; }
         .section-head h3 { margin: 0; font-size: 17px; font-weight: 700; color: var(--text-main); }
         .section-head .count { font-size: 12px; font-weight: 700; color: var(--text-2); background: var(--card-bg); padding: 4px 11px; border-radius: var(--radius-pill); box-shadow: var(--shadow-sm); }
         .section-head .count:empty { display: none; }
 
-        .home-list { padding: 8px 20px calc(28px + env(safe-area-inset-bottom)); -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 12px); mask-image: linear-gradient(to bottom, transparent 0, #000 12px); }
         .day-label { font-size: 12px; font-weight: 600; color: var(--text-muted); margin: 14px 4px 8px; text-transform: uppercase; letter-spacing: 0.06em; }
-        .day-label:first-child { margin-top: 4px; }
+        #recent-list > .day-label:first-child { margin-top: 6px; }
 
         .rc-card { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; background: var(--card-bg); border: none; border-radius: 24px; padding: 14px; margin-bottom: 10px; box-shadow: var(--shadow-sm); cursor: pointer; font: inherit; color: inherit; transition: transform 0.15s; flex-shrink: 0; }
         .rc-card:active { transform: scale(0.98); }
@@ -327,12 +337,6 @@
            5. REVIEW: gap list + highlights
            ========================================= */
         .review-sub { color: var(--text-muted); margin: 0 2px 18px; font-size: 14px; font-weight: 500; }
-        .issues-card { background: var(--red-soft); border: 1px solid var(--red-line); border-radius: 24px; padding: 4px 16px; margin-bottom: 16px; }
-        .issues-head { display: flex; gap: 8px; align-items: center; color: var(--accent-red); font-weight: 700; font-size: 15px; padding: 12px 0 8px; }
-        .issues-head svg, .ok-card svg { width: 18px; height: 18px; flex-shrink: 0; }
-        .issue-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; background: none; border: none; border-top: 1px solid #FFE1E6; padding: 13px 0; font: inherit; font-size: 14px; font-weight: 600; color: #7F1D1D; text-align: left; cursor: pointer; }
-        .issue-fix { color: var(--accent-red); font-weight: 700; font-size: 13px; flex-shrink: 0; }
-        .ok-card { display: flex; align-items: center; gap: 8px; background: var(--lime-soft); color: var(--lime-ink); font-weight: 600; border-radius: 24px; padding: 14px 16px; margin-bottom: 16px; font-size: 14px; }
 
         .btn-icon { flex: 0 0 56px; width: 56px; padding: 0 !important; }
         .btn-icon svg { width: 20px; height: 20px; }
@@ -381,18 +385,88 @@
         <button class="icon-btn" id="nav-back" onclick="handleBack()" aria-label="Back" style="visibility:hidden;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         </button>
-        <div class="title-pill">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12"/></svg>
-            Cutter ID Generator
-        </div>
-        <span class="icon-btn spacer" aria-hidden="true"></span>
     </header>
 
     <div id="content">
         <div id="screen-home" class="screen active">
-            <div class="home-top">
-                <h2 class="home-title">Another day,<br><span class="soft">another</span> cutter.</h2>
-                <div class="hero-card">
+            <div class="home-stage" id="home-stage">
+                <div class="home-top">
+                    <h2 class="home-title">Another day,<br><span class="soft">another</span> cutter.</h2>
+                    <div class="home-illus">
+<svg class="illus" viewBox="-52.5 -25.5 349.2 146.5" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Cutter change: pull the old cutter, fit the new one, run the checklist, share the report">
+<defs>
+<linearGradient id="gTop" gradientUnits="userSpaceOnUse" x1="-52" y1="0" x2="297" y2="0"><stop offset="0" stop-color="#E4ECDE"/><stop offset="0.55" stop-color="#DCE9D2"/><stop offset="1" stop-color="#CDEBA4"/></linearGradient>
+<linearGradient id="gSideY" gradientUnits="userSpaceOnUse" x1="-52" y1="0" x2="297" y2="0"><stop offset="0" stop-color="#C6D6BC"/><stop offset="1" stop-color="#AFD983"/></linearGradient>
+<linearGradient id="gSideX" gradientUnits="userSpaceOnUse" x1="-52" y1="0" x2="297" y2="0"><stop offset="0" stop-color="#AFC4A3"/><stop offset="1" stop-color="#93C962"/></linearGradient>
+<filter id="pillShadow" x="-20%" y="-40%" width="140%" height="200%"><feDropShadow dx="0" dy="2" stdDeviation="2.2" flood-color="#23401A" flood-opacity="0.14"/></filter>
+</defs>
+<polygon points="81.4,117.0 -48.5,42.0 -48.5,28.0 81.4,103.0" fill="url(#gSideY)" />
+<polygon points="244.2,117.0 162.8,70.0 162.8,56.0 244.2,103.0" fill="url(#gSideY)" />
+<polygon points="162.8,70.0 81.4,117.0 81.4,103.0 162.8,56.0" fill="url(#gSideX)" />
+<polygon points="292.7,89.0 244.2,117.0 244.2,103.0 292.7,75.0" fill="url(#gSideX)" />
+<polygon points="0.0,0.0 81.4,47.0 162.8,0.0 292.7,75.0 244.2,103.0 162.8,56.0 81.4,103.0 -48.5,28.0" fill="url(#gTop)" stroke="rgba(255,255,255,0.7)" stroke-width="0.8" stroke-linejoin="round"/>
+<text transform="matrix(0.866,0.5,0,1,-26.0,44.5)" text-anchor="middle" font-size="9" font-weight="800" fill="#FFFFFF" fill-opacity="0.95" letter-spacing="0.5">01</text>
+<text transform="matrix(0.866,-0.5,0,1,143.8,70.5)" text-anchor="middle" font-size="9" font-weight="800" fill="#FFFFFF" fill-opacity="0.95" letter-spacing="0.5">02</text>
+<text transform="matrix(0.866,0.5,0,1,192.3,76.5)" text-anchor="middle" font-size="9" font-weight="800" fill="#FFFFFF" fill-opacity="0.95" letter-spacing="0.5">03</text>
+<text transform="matrix(0.866,-0.5,0,1,268.5,92.5)" text-anchor="middle" font-size="9" font-weight="800" fill="#FFFFFF" fill-opacity="0.95" letter-spacing="0.5">04</text>
+<polyline points="-15.6,19.0 81.4,75.0 162.8,28.0 261.5,85.0" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="0.1 5" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+<polygon points="23.4,26.5 66.7,51.5 40.7,66.5 -2.6,41.5" fill="none" stroke="#97AE8A" stroke-width="1" stroke-dasharray="3 2.5"/>
+<polygon points="22.5,29.0 62.4,52.0 54.6,56.5 14.7,33.5" fill="rgba(35,60,20,0.06)" />
+<polygon points="9.5,36.5 49.4,59.5 41.6,64.0 1.7,41.0" fill="rgba(35,60,20,0.06)" />
+<polygon points="14.7,14.5 54.6,37.5 54.6,33.5 14.7,10.5" fill="#F3B796" stroke-linejoin="round"/>
+<polygon points="62.4,33.0 54.6,37.5 54.6,33.5 62.4,29.0" fill="#E99E77" stroke-linejoin="round"/>
+<polygon points="22.5,6.0 62.4,29.0 54.6,33.5 14.7,10.5" fill="#FDE7D9" stroke-linejoin="round"/>
+<polygon points="16.0,9.8 55.9,32.8 54.6,33.5 14.7,10.5" fill="rgba(255,255,255,0.85)" />
+<polygon points="1.7,30.0 41.6,53.0 41.6,49.0 1.7,26.0" fill="#F3B796" stroke-linejoin="round"/>
+<polygon points="49.4,48.5 41.6,53.0 41.6,49.0 49.4,44.5" fill="#E99E77" stroke-linejoin="round"/>
+<polygon points="9.5,21.5 49.4,44.5 41.6,49.0 1.7,26.0" fill="#FDE7D9" stroke-linejoin="round"/>
+<polygon points="3.0,25.2 42.9,48.2 41.6,49.0 1.7,26.0" fill="rgba(255,255,255,0.85)" />
+<line x1="32.0" y1="19.5" x2="32.0" y2="5.5" stroke="#E0784A" stroke-width="2.2" stroke-linecap="round" />
+<polygon points="32.0,1.5 27.8,7.0 36.2,7.0" fill="#E0784A" />
+<polygon points="150.7,21.0 158.5,25.5 120.4,47.5 112.6,43.0" fill="rgba(35,60,20,0.06)" />
+<polygon points="161.9,27.5 169.7,32.0 131.6,54.0 123.8,49.5" fill="rgba(35,60,20,0.06)" />
+<polygon points="112.6,43.0 120.4,47.5 120.4,43.5 112.6,39.0" fill="#C4EA8E" stroke-linejoin="round"/>
+<polygon points="158.5,25.5 120.4,47.5 120.4,43.5 158.5,21.5" fill="#A6DA62" stroke-linejoin="round"/>
+<polygon points="150.7,17.0 158.5,21.5 120.4,43.5 112.6,39.0" fill="#E6F8CB" stroke-linejoin="round"/>
+<polygon points="157.2,20.8 158.5,21.5 120.4,43.5 119.1,42.8" fill="rgba(255,255,255,0.9)" />
+<polygon points="123.8,34.5 131.6,39.0 131.6,35.0 123.8,30.5" fill="#C4EA8E" stroke-linejoin="round"/>
+<polygon points="169.7,17.0 131.6,39.0 131.6,35.0 169.7,13.0" fill="#A6DA62" stroke-linejoin="round"/>
+<polygon points="161.9,8.5 169.7,13.0 131.6,35.0 123.8,30.5" fill="#E6F8CB" stroke-linejoin="round"/>
+<polygon points="161.9,8.5 163.2,9.2 125.1,31.2 123.8,30.5" fill="rgba(255,255,255,0.9)" />
+<line x1="146.4" y1="0.5" x2="146.4" y2="16.5" stroke="#6FB02C" stroke-width="2.2" stroke-linecap="round" />
+<polygon points="146.4,20.5 142.2,15.0 150.6,15.0" fill="#6FB02C" />
+<polygon points="198.3,33.5 227.8,50.5 201.8,65.5 172.3,48.5" fill="rgba(35,60,20,0.06)" />
+<polygon points="172.3,48.5 201.8,65.5 201.8,62.5 172.3,45.5" fill="#D6CBF6" stroke-linejoin="round"/>
+<polygon points="227.8,50.5 201.8,65.5 201.8,62.5 227.8,47.5" fill="#C5B6F1" stroke-linejoin="round"/>
+<polygon points="198.3,30.5 227.8,47.5 201.8,62.5 172.3,45.5" fill="#F3EFFD" stroke-linejoin="round"/>
+<polygon points="206.1,38.0 214.8,43.0 214.8,40.0 206.1,35.0" fill="#3A2F63" stroke-linejoin="round"/>
+<polygon points="218.2,41.0 214.8,43.0 214.8,40.0 218.2,38.0" fill="#2E254F" stroke-linejoin="round"/>
+<polygon points="209.6,33.0 218.2,38.0 214.8,40.0 206.1,35.0" fill="#4B3E7A" stroke-linejoin="round"/>
+<polygon points="195.7,36.0 200.1,38.5 196.2,40.8 191.8,38.2" fill="#9AD84A" />
+<polygon points="201.6,40.6 216.3,49.1 214.6,50.1 199.9,41.6" fill="#D6CEF2" />
+<polygon points="189.2,39.8 193.6,42.2 189.7,44.5 185.3,42.0" fill="#9AD84A" />
+<polygon points="195.1,44.4 209.8,52.9 208.1,53.9 193.4,45.4" fill="#D6CEF2" />
+<polygon points="182.7,43.5 187.1,46.0 183.2,48.2 178.8,45.8" fill="#FFFFFF" stroke="#B9AEE6" stroke-width="0.8"/>
+<polygon points="188.6,48.1 203.3,56.6 201.6,57.6 186.9,49.1" fill="#D6CEF2" />
+<polygon points="265.0,70.0 271.9,74.0 244.2,90.0 237.3,86.0" fill="rgba(35,60,20,0.12)" />
+<polygon points="240.8,86.0 245.1,88.5 245.1,48.5 240.8,46.0" fill="#CBD6C4" stroke="#C9D3C3" stroke-width="0.6" stroke-linejoin="round"/>
+<polygon points="271.1,73.5 245.1,88.5 245.1,48.5 271.1,33.5" fill="#FFFFFF" stroke="#C9D3C3" stroke-width="0.6" stroke-linejoin="round"/>
+<polygon points="266.7,31.0 271.1,33.5 245.1,48.5 240.8,46.0" fill="#E7ECE3" stroke="#C9D3C3" stroke-width="0.6" stroke-linejoin="round"/>
+<polygon points="261.5,42.5 254.6,46.5 254.6,45.0 261.5,41.0" fill="#D7DED3" />
+<polygon points="267.6,48.5 253.7,56.5 253.7,51.5 267.6,43.5" fill="#E3E9DF" />
+<polygon points="261.5,60.5 248.5,68.0 248.5,62.5 261.5,55.0" fill="#BDEB78" />
+<polygon points="267.6,64.5 256.3,71.0 256.3,67.0 267.6,60.5" fill="#E3E9DF" />
+<polygon points="258.1,77.0 248.5,82.5 248.5,78.5 258.1,73.0" fill="#BDEB78" />
+<circle cx="274.8" cy="34.5" r="7.5" fill="#15181A"/>
+<polyline points="271.2,34.7 273.8,37.1 278.2,32.1" fill="none" stroke="#BDEB78" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<g><rect x="-1.8" y="-15.5" width="67.6" height="17" rx="8.5" fill="#FFFFFF" filter="url(#pillShadow)"/><circle cx="7.2" cy="-7.0" r="2.6" fill="#E99E77"/><text x="13.2" y="-3.5" font-size="9.5" font-weight="700" fill="#15181A">Pull old</text></g>
+<g><rect x="115.4" y="-21.5" width="61.9" height="17" rx="8.5" fill="#FFFFFF" filter="url(#pillShadow)"/><circle cx="124.4" cy="-13.0" r="2.6" fill="#9AD84A"/><text x="130.4" y="-9.5" font-size="9.5" font-weight="700" fill="#15181A">Fit new</text></g>
+<g><rect x="153.0" y="15.5" width="73.3" height="17" rx="8.5" fill="#FFFFFF" filter="url(#pillShadow)"/><circle cx="162.0" cy="24.0" r="2.6" fill="#9C87E6"/><text x="168.0" y="27.5" font-size="9.5" font-weight="700" fill="#15181A">Checklist</text></g>
+<g><rect x="227.6" y="0.0" width="50.5" height="17" rx="8.5" fill="#FFFFFF" filter="url(#pillShadow)"/><circle cx="236.6" cy="8.5" r="2.6" fill="#15181A"/><text x="242.6" y="12.0" font-size="9.5" font-weight="700" fill="#15181A">Share</text></g>
+</svg>
+                    </div>
+                </div>
+                <div class="hero-card" id="hero-card">
                     <div class="hero-row">
                         <div class="hero-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12"/></svg></div>
                         <div>
@@ -405,10 +479,19 @@
                         New Cutter Change
                     </button>
                 </div>
-                <div id="draft-slot"></div>
-                <div class="section-head"><h3>My Cutter Changes</h3><span class="count" id="recent-count"></span></div>
+                <div></div>
             </div>
-            <div class="scrollable-body home-list" id="recent-list"></div>
+
+            <div class="changes-sheet" id="changes-sheet">
+                <div class="cs-handle" id="cs-handle" role="button" aria-label="Show or hide My Cutter Changes" tabindex="0">
+                    <div class="cs-grabber"></div>
+                    <div class="section-head"><h3>My Cutter Changes</h3><span class="count" id="recent-count"></span></div>
+                </div>
+                <div class="cs-list" id="cs-list">
+                    <div id="draft-slot"></div>
+                    <div id="recent-list"></div>
+                </div>
+            </div>
         </div>
 
         <div id="screen-form" class="screen">
@@ -698,6 +781,7 @@
         document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveDraftNow(); });
         window.addEventListener('pagehide', saveDraftNow);
 
+        initHomeSheet();
         showScreen('screen-home');
         startUpdateChecks();
     }
@@ -707,10 +791,111 @@
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         $(screenId).classList.add('active');
         $('nav-back').style.visibility = (screenId === 'screen-home') ? 'hidden' : 'visible';
+        document.querySelector('header').classList.toggle('on-home', screenId === 'screen-home');
         if (screenId === 'screen-home') {
             renderHome();
+            requestAnimationFrame(layoutHomeSheet);
             setTimeout(applyUpdateIfSafe, 400);
         }
+    }
+
+    /* =========================================
+       HOME: pull-up "My Cutter Changes" sheet
+       Collapsed, it starts just below the green card. Drag it up (or tap the
+       handle) to open it; once open the list scrolls, and dragging down from
+       the top of the list closes it again.
+       ========================================= */
+    const homeSheet = { y: 0, collapsedY: 0, expanded: false };
+    let clickSuppressed = false;
+    function suppressClick() { clickSuppressed = true; setTimeout(() => { clickSuppressed = false; }, 350); }
+
+    function setSheetY(y, animate) {
+        const el = $('changes-sheet');
+        el.classList.toggle('animating', !!animate);
+        homeSheet.y = y;
+        el.style.transform = `translateY(${y}px)`;
+    }
+
+    function setSheetExpanded(expanded, animate = true) {
+        homeSheet.expanded = expanded;
+        $('changes-sheet').classList.toggle('expanded', expanded);
+        if (!expanded) $('cs-list').scrollTop = 0;
+        setSheetY(expanded ? 0 : homeSheet.collapsedY, animate);
+    }
+
+    function layoutHomeSheet() {
+        if (!$('screen-home').classList.contains('active')) return;
+        const el = $('changes-sheet'), hero = $('hero-card');
+        const heroBottom = hero.offsetTop + hero.offsetHeight;
+        const sheetTop = el.offsetTop, sheetH = el.offsetHeight;
+        // Start just below the green card, but always leave the header and a card visible.
+        homeSheet.collapsedY = Math.max(0, Math.min(heroBottom + 16 - sheetTop, sheetH - 170));
+        setSheetY(homeSheet.expanded ? 0 : homeSheet.collapsedY, false);
+    }
+
+    function initHomeSheet() {
+        const el = $('changes-sheet'), list = $('cs-list'), handle = $('cs-handle');
+        let drag = null;
+
+        const begin = (y, target) => {
+            drag = { y0: y, sheet0: homeSheet.y, t0: performance.now(), mode: null, moved: false, inList: list.contains(target) };
+        };
+        const move = (y, e) => {
+            if (!drag) return;
+            const dy = y - drag.y0;
+            if (!drag.mode) {
+                if (Math.abs(dy) < 3) return;
+                drag.moved = true;
+                if (!homeSheet.expanded) drag.mode = 'sheet';
+                else if (drag.inList && (list.scrollTop > 0 || dy < 0)) drag.mode = 'scroll';   // let the list scroll
+                else drag.mode = 'sheet';
+                if (drag.mode === 'sheet') el.classList.remove('animating');
+            }
+            if (drag.mode !== 'sheet') return;
+            if (e && e.cancelable) e.preventDefault();
+            let ny = drag.sheet0 + dy;
+            if (ny < 0) ny /= 3;                                                     // rubber-band past the top
+            if (ny > homeSheet.collapsedY) ny = homeSheet.collapsedY + (ny - homeSheet.collapsedY) / 3;
+            setSheetY(ny, false);
+        };
+        const end = (y) => {
+            if (!drag) return;
+            const d = drag; drag = null;
+            if (d.moved) suppressClick();
+            if (d.mode !== 'sheet') return;
+            const v = (y - d.y0) / Math.max(1, performance.now() - d.t0);           // px per ms
+            const expand = v < -0.35 ? true : v > 0.35 ? false : homeSheet.y < homeSheet.collapsedY / 2;
+            setSheetExpanded(expand);
+        };
+
+        el.addEventListener('touchstart', e => begin(e.touches[0].clientY, e.target), { passive: true });
+        el.addEventListener('touchmove', e => move(e.touches[0].clientY, e), { passive: false });
+        el.addEventListener('touchend', e => end(e.changedTouches[0].clientY));
+        el.addEventListener('touchcancel', e => end(e.changedTouches[0].clientY));
+
+        // Mouse: drag the handle (desktop browsers)
+        handle.addEventListener('pointerdown', e => {
+            if (e.pointerType !== 'mouse') return;
+            begin(e.clientY, e.target);
+            const mm = ev => move(ev.clientY, ev);
+            const mu = ev => { end(ev.clientY); window.removeEventListener('pointermove', mm); window.removeEventListener('pointerup', mu); };
+            window.addEventListener('pointermove', mm);
+            window.addEventListener('pointerup', mu);
+        });
+
+        // A drag shouldn't also open the card under the finger
+        el.addEventListener('click', e => { if (clickSuppressed) { e.stopPropagation(); e.preventDefault(); } }, true);
+        handle.addEventListener('click', () => setSheetExpanded(!homeSheet.expanded));
+        handle.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSheetExpanded(!homeSheet.expanded); } });
+
+        // Trackpad / mouse wheel
+        el.addEventListener('wheel', e => {
+            if (!homeSheet.expanded && e.deltaY > 0) { e.preventDefault(); setSheetExpanded(true); }
+            else if (homeSheet.expanded && list.scrollTop <= 0 && e.deltaY < -12) { setSheetExpanded(false); }
+        }, { passive: false });
+
+        window.addEventListener('resize', layoutHomeSheet);
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(layoutHomeSheet);
     }
 
     /* =========================================
@@ -1388,8 +1573,6 @@
             .replace(/(Module ID: )(N\/A)/g, '$1<mark>$2</mark>');
     }
 
-    const WARN_ICON = ICONS.warn;
-    const OK_ICON = ICONS.ok;
 
     /* =========================================
        REVIEW, SAVE & COPY
@@ -1433,26 +1616,17 @@
             });
         }
 
-        // The copied text only has marked items. The preview also lists unmarked
-        // items in red (wrapped in \u0001...\u0002), as a reminder without blocking.
-        let preview = txt;
+        // Unmarked checklist items are simply left out (some tasks are skipped on purpose).
         if (includeChecklist) {
-            let marked = "", previewList = "";
+            let marked = "";
             document.querySelectorAll('.check-input-toggle').forEach(toggle => {
                 const state = toggle.dataset.state;
-                if (state !== 'none') {
-                    const row = `- ${toggle.dataset.taskDesc} : ${state === 'yes' ? 'Yes' : 'No'}\n`;
-                    marked += row;
-                    previewList += row;
-                } else {
-                    previewList += `\u0001- ${toggle.dataset.taskDesc} : not marked\u0002\n`;
-                }
+                if (state !== 'none') marked += `- ${toggle.dataset.taskDesc} : ${state === 'yes' ? 'Yes' : 'No'}\n`;
             });
             if (marked) txt += `Tasks Checklist:\n${marked}\n`;
-            if (previewList) preview += `Tasks Checklist:\n${previewList}\n`;
         }
 
-        if (remarks) { txt += `Remarks:\n${remarks}\n`; preview += `Remarks:\n${remarks}\n`; }
+        if (remarks) txt += `Remarks:\n${remarks}\n`;
 
         currentReviewText = txt.trim();
         currentReviewLine = line;
@@ -1463,13 +1637,9 @@
         const n = currentIssues.length;
 
         $('review-title').textContent = 'Review Report';
-        $('review-sub').textContent = n ? 'Tap an item to fix it, or send the report as is.' : 'Everything is filled in and ready to send.';
-        $('review-issues').innerHTML = n ? `
-            <div class="issues-card">
-                <div class="issues-head">${WARN_ICON}<span>${n} thing${n > 1 ? 's' : ''} to check</span></div>
-                ${currentIssues.map((x, i) => `<button class="issue-row" onclick="goToIssue(${i})"><span>${esc(x.msg)}</span><span class="issue-fix">Fix ›</span></button>`).join('')}
-            </div>` : `<div class="ok-card">${OK_ICON}<span>All fields complete</span></div>`;
-        $('review-text').innerHTML = highlightReport(preview.trim());
+        $('review-sub').textContent = n ? 'Missing details are highlighted in red.' : 'Check the report, then save and copy it.';
+        $('review-issues').innerHTML = '';
+        $('review-text').innerHTML = highlightReport(currentReviewText);
         $('review-buttons').innerHTML = `
             <button class="btn btn-secondary" style="flex:1;" onclick="handleBack()">Edit Form</button>
             <button class="btn" id="copyBtn" style="flex:2;" onclick="saveAndCopy()">Save & Copy</button>
@@ -1486,8 +1656,7 @@
         currentIssues = [];
         $('review-title').textContent = LINES.includes(report.line) ? `Line ${report.line}` : 'Cutter Change';
         $('review-sub').textContent = `${dayLabel(report.date)}${report.time ? ' · ' + niceTime(report.time) : ''}`;
-        $('review-issues').innerHTML = reportHasGaps(report)
-            ? `<div class="issues-card"><div class="issues-head">${WARN_ICON}<span>Saved with gaps, highlighted below</span></div></div>` : '';
+        $('review-issues').innerHTML = '';
         $('review-text').innerHTML = highlightReport(currentReviewText);
         $('review-buttons').innerHTML = `
             <button class="btn btn-icon btn-danger-soft" aria-label="Delete report" onclick="deleteReport(${Number(report.id)})">${ICONS.trash}</button>
