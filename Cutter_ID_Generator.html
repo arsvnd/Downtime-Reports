@@ -251,6 +251,11 @@
 
         .id-input-wrapper { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; background-color: var(--soft-bg); border-radius: 16px; padding: 6px 14px; border: 1.5px solid transparent; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .id-input-wrapper:focus-within { border-color: var(--text-main); background-color: var(--card-bg); }
+        .sfx { white-space: nowrap; display: inline-flex; align-items: center; }
+        .batch-sw { display: inline-flex; margin: 0 1px; padding: 2px; border-radius: 9px; background: var(--card-bg); box-shadow: inset 0 0 0 1px var(--border); }
+        .batch-sw button { border: none; background: transparent; font-family: var(--font-mono); font-size: 12.5px; font-weight: 700; color: var(--text-muted); padding: 4px 5px; border-radius: 7px; cursor: pointer; line-height: 1; letter-spacing: 0.3px; transition: background-color 0.15s, color 0.15s; touch-action: manipulation; }
+        .batch-sw button.on { background: var(--text-main); color: var(--card-bg); }
+        .id-input-wrapper.is-complete .batch-sw button.on { background: var(--lime-ink); color: var(--card-bg); }
         .id-input-wrapper span { color: var(--text-muted); font-family: var(--font-mono); font-size: 13px; font-weight: 600; letter-spacing: 0.5px; transition: color 0.3s; }
         .id-input { border: none; background: transparent; font-size: 22px; font-weight: 700; width: 76px; text-align: center; outline: none; font-family: var(--font-mono); color: var(--text-main); letter-spacing: 3px; padding: 8px 0; transition: color 0.3s; }
         .id-input::placeholder { color: #CDD4C9; }
@@ -768,10 +773,17 @@
     };
     const LINES = ["1-1", "1-2", "1-3", "1-4", "1-5", "1-H", "2-1", "2-2", "2-3", "2-4", "2-5", "3-1", "3-2", "3-3", "3-4", "3-5"];
     const CUTTER_ORDER = ["Upper", "Center", "Final"];
+    // Upper-blade batch (the "656" in CU656X1.8 / FU656X1.2). Lower blades (718) don't change.
+    // When 656 stock is used up, set BATCHES = ['657'] and the switch disappears.
+    const BATCHES = ['656', '657'];
+    const NEW_BATCH = '657';          // default for NEW cutters (current stock)
+    const FALLBACK_OLD_BATCH = '656'; // default for OLD cutters when there's no history for that line/position
+    const suffixText = (c, i, b) => FORMATS[c].suffixes[i].replace('{b}', b || FALLBACK_OLD_BATCH);
+
     const FORMATS = {
-        'Upper': { prefix: 'LCAGHY', suffixes: ['CU656X1.8', 'CL718X0.0'] },
-        'Center': { prefix: 'LCAGHY', suffixes: ['CU656X1.8', 'CL718X0.0'] },
-        'Final': { prefix: 'LCAGHY', suffixes: ['FU656X1.2', 'FL718X0.0'] }
+        'Upper': { prefix: 'LCAGHY', suffixes: ['CU{b}X1.8', 'CL718X0.0'] },
+        'Center': { prefix: 'LCAGHY', suffixes: ['CU{b}X1.8', 'CL718X0.0'] },
+        'Final': { prefix: 'LCAGHY', suffixes: ['FU{b}X1.2', 'FL718X0.0'] }
     };
 
     const CHECKLIST_RULES = [
@@ -913,6 +925,7 @@
 
         // INTERLOCK: Enforce 1-H "Upper" restriction when changing lines
         lineSelect.addEventListener('change', function() {
+            applyBatchDefaults();   // OLD batch follows what was last installed on this line
             if (this.value !== '1-H') return;
             let kidding = false;
             if (selectedCutters.includes('Upper')) {
@@ -1216,7 +1229,13 @@
         const taskStates = {};
         document.querySelectorAll('.check-input-toggle').forEach(t => { taskStates[t.dataset.taskId] = t.dataset.state; });
         const ids = { old: {}, new: {} };
-        selectedCutters.forEach(c => ['old', 'new'].forEach(t => { ids[t][c] = [idInput(t, c, 0).value, idInput(t, c, 1).value]; }));
+        const batches = { old: {}, new: {} };
+        const batchTouched = { old: {}, new: {} };
+        selectedCutters.forEach(c => ['old', 'new'].forEach(t => {
+            ids[t][c] = [idInput(t, c, 0).value, idInput(t, c, 1).value];
+            batches[t][c] = getBatch(t, c);
+            batchTouched[t][c] = !!batchSw(t, c)?.dataset.touched;
+        }));
         const moduleDetails = {};
         selectedModules.forEach(m => {
             moduleDetails[m] = { old: $(`old-mod-${m}`).value, new: $(`new-mod-${m}`).value, reason: $(`reason-mod-${m}`).value };
@@ -1229,6 +1248,8 @@
             includeChecklist: $('includeChecklistToggle').checked,
             cutters: [...selectedCutters],
             ids,
+            batches,
+            batchTouched,
             taskStates,
             includeModules: $('moduleReplacementToggle').checked,
             modules: [...selectedModules],
@@ -1276,6 +1297,8 @@
             input.value = '';
             input.closest('.id-input-wrapper').classList.remove('is-complete');
         });
+        document.querySelectorAll('.batch-sw').forEach(el => { el.dataset.touched = ''; });
+        applyBatchDefaults();
         setCutterBlocks();
         setModuleBlocks();
         updateChecklistUI();
@@ -1311,6 +1334,13 @@
             inp.value = s.ids?.[t]?.[c]?.[i] || "";
             inp.closest('.id-input-wrapper').classList.toggle('is-complete', inp.value.length === 4);
         })));
+        // Batches: saved reports keep exactly what they were saved with (older reports were all 656).
+        selectedCutters.forEach(c => ['old', 'new'].forEach(t => {
+            const saved = s.batches?.[t]?.[c];
+            const touched = s.batchTouched ? !!s.batchTouched[t]?.[c] : true;
+            if (saved) setBatch(t, c, saved, touched);
+            else if (!s.batches) setBatch(t, c, FALLBACK_OLD_BATCH, true);
+        }));
 
         updateChecklistUI();
         if (s.taskStates) {
@@ -1662,6 +1692,70 @@
         markDirty();
     }
 
+    function batchSuffixHtml(c, type, i) {
+        const tpl = FORMATS[c].suffixes[i];
+        if (!tpl.includes('{b}')) return `<span>${tpl}</span>`;
+        const [pre, post] = tpl.split('{b}');
+        if (BATCHES.length < 2) return `<span>${pre}${BATCHES[0]}${post}</span>`;
+        return `<span class="sfx">${pre}<span class="batch-sw" role="radiogroup" aria-label="${type.toUpperCase()} ${c} upper blade batch" data-cutter="${c}" data-type="${type}" data-batch="" data-touched="">${
+            BATCHES.map(b => `<button type="button" role="radio" data-b="${b}" aria-checked="false">${b}</button>`).join('')
+        }</span>${post}</span>`;
+    }
+
+    /* =========================================
+       UPPER-BLADE BATCH (656 / 657)
+       NEW defaults to the current stock; OLD defaults to whatever the app
+       last recorded going onto that line + position. A tap always wins.
+       ========================================= */
+    function batchSw(type, c) { return document.querySelector(`.batch-sw[data-type="${type}"][data-cutter="${c}"]`); }
+
+    function getBatch(type, c) {
+        const el = batchSw(type, c);
+        return (el && el.dataset.batch) || (BATCHES.length === 1 ? BATCHES[0] : (type === 'new' ? NEW_BATCH : FALLBACK_OLD_BATCH));
+    }
+
+    function setBatch(type, c, b, touched) {
+        const el = batchSw(type, c);
+        if (!el) return;
+        el.dataset.batch = b;
+        if (touched !== undefined) el.dataset.touched = touched ? '1' : '';
+        el.querySelectorAll('button').forEach(btn => {
+            const on = btn.dataset.b === b;
+            btn.classList.toggle('on', on);
+            btn.setAttribute('aria-checked', on ? 'true' : 'false');
+        });
+    }
+
+    // The batch most recently installed (NEW) on this line + position, from saved reports.
+    function lastInstalledBatch(line, c) {
+        if (!line) return FALLBACK_OLD_BATCH;
+        const prev = savedReports
+            .filter(r => r.id !== activeEditId && r.line === line && (r.cutters || []).includes(c))
+            .sort((a, b) => reportSortKey(b) - reportSortKey(a))[0];
+        const b = prev?.batches?.new?.[c];
+        return BATCHES.includes(b) ? b : FALLBACK_OLD_BATCH;
+    }
+
+    function applyBatchDefaults() {
+        const line = $('lineSelect').value;
+        CUTTER_ORDER.forEach(c => {
+            const o = batchSw('old', c), n = batchSw('new', c);
+            if (o && !o.dataset.touched) setBatch('old', c, lastInstalledBatch(line, c), false);
+            if (n && !n.dataset.touched) setBatch('new', c, NEW_BATCH, false);
+        });
+    }
+
+    $("content").addEventListener("click", e => {
+        const btn = e.target.closest('.batch-sw button');
+        if (!btn) return;
+        e.preventDefault();
+        const sw_ = btn.closest('.batch-sw');
+        if (sw_.dataset.batch === btn.dataset.b && sw_.dataset.touched) return;
+        buzz(10);
+        setBatch(sw_.dataset.type, sw_.dataset.cutter, btn.dataset.b, true);
+        markDirty();
+    });
+
     function buildInputContainers() {
         const container = $('dynamic-ids-container');
         let oldHtml = `<div id="old-group" style="display:none;">`;
@@ -1673,7 +1767,7 @@
                 <div class="id-input-wrapper"${i === 1 ? ' style="margin-bottom:0;"' : ''}>
                     <span>${format.prefix}</span>
                     <input class="id-input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="____" data-cutter="${c}" data-type="${type}" data-idx="${i}">
-                    <span>${format.suffixes[i]}</span>
+                    ${batchSuffixHtml(c, type, i)}
                 </div>`).join('');
 
             oldHtml += `
@@ -1889,7 +1983,7 @@
                 [0, 1].forEach(i => {
                     // Blank or partial IDs are padded with "_" so the gap is visible in the chat.
                     const v = idInput(type, c, i).value.padEnd(4, "_");
-                    block += `${FORMATS[c].prefix}${v}${FORMATS[c].suffixes[i]}\n`;
+                    block += `${FORMATS[c].prefix}${v}${suffixText(c, i, getBatch(type, c))}\n`;
                 });
             });
             return block;
